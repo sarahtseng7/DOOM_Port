@@ -1,0 +1,10 @@
+{"note":"transcribed from Playwright MCP run_code return value; CDP clearBrowserCache + setCacheDisabled; viewport 1280x720",
+ "responses":[["/",200],["/render_timing.js",200],["/input_audio.js",200],["/audio_web.js",200],["/doom.js",200],["/doom.data",200],["/doom.wasm",200]],
+ "fromServiceWorker":false,"requestfailed":[],"pageerrors":[],
+ "samples":[{"t_ms":101,"cap_ready":1,"tic":1,"meanRGB":[111,50,30],"transparent":"0/2560","title":"DOOM Shareware"},
+            {"t_ms":303,"cap_ready":1,"tic":4,"meanRGB":[111,50,30],"transparent":"0/2560","title":"DOOM Shareware"},
+            {"t_ms":603,"cap_ready":1,"tic":14,"meanRGB":[111,50,30],"transparent":"0/2560","title":"DOOM Shareware"},
+            {"t_ms":1003,"cap_ready":1,"tic":29,"meanRGB":[111,50,30],"transparent":"0/2560","title":"DOOM Shareware"},
+            {"t_ms":2003,"cap_ready":1,"tic":64,"meanRGB":[111,50,30],"transparent":"0/2560","title":"DOOM Shareware"}],
+ "console_non_log":["warning: AudioContext was not allowed to start (x2, pre-gesture)"],"log_count":33,
+ "raw_console":"artifacts/browser/console-2026-11-04T15-03-13-332Z.log"}

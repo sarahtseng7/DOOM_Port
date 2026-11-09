@@ -1,0 +1,13 @@
+PASS entered-e1m1 {"tic":388,"lvl":101,"hp":100,"x":1056,"y":-3616,"sfx":3,"mus":3}
+PASS idkfa-changes-ammo-hud {"ammoDiff":0.18086538461538462}
+PASS fire-shotgun-sfx-and-ammo {"sfxDelta":1,"ammoDiff":0.1403,"hp":100}
+PASS fire-chaingun-sfx-and-ammo {"sfxDelta":2,"ammoDiff":0.2059,"hp":100}
+PASS fire-rocket-sfx-and-ammo {"sfxDelta":1,"ammoDiff":0.1403,"hp":100}
+PASS fire-plasma-sfx-and-ammo {"sfxDelta":1,"ammoDiff":0.0583,"hp":100}
+PASS weapon-sprite-changes {"diff":0.2272}
+PASS iddqd-accepted-alive {"hp":100}
+PASS idclev13-changes-level {"from":101,"to":103,"musicStartedDelta":1}
+PASS level-music-restarts-on-change {"pre":3,"post":4}
+PASS movement-in-new-level {"moved":127.00393694685216}
+PASS no-page-errors []
+SUMMARY pass=12 fail=0

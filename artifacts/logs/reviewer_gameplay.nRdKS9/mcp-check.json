@@ -1,0 +1,6 @@
+{"session":"Playwright MCP, http://127.0.0.1:8198, viewport 1280x720, wasm 7afb94fa1ec64b5c",
+ "run1":{"s0":{"tic":719,"x":1056,"y":-3616,"ang":1073741824,"lvl":101,"valid":1},"heldUp700ms":127,"coast":80,"afterSettle":0,"turnLeft500msDeg":50.98,"turnMovedUnits":0,"turnAfterReleaseDeg":3.52,"sfxFireInstantPress":"67->67","sfxUseInstantPress":"67->67","sfxBad":0,"musicErrors":0,"ctx":"running","maxPeak":0.7105,"musicPlaying":true},
+ "run2":{"instantPress_x5":{"sfx":0,"tics":123},"hold80ms_fire_x5":{"sfx":5},"hold80ms_use_open_space":{"sfx":0}},
+ "run3":{"hold10ms":"3/8","hold20ms":"6/8","hold35ms":"8/8","hold50ms":"8/8","final":{"sfxRequested":97,"sfxPlayed":97,"sfxBad":0,"musicErrors":0,"ctx":"running"}},
+ "screenshot":"screens/mcp-after-fire.png: ammo 20 (50-30 shots = sum of registered fire SFX), HP 100, E1M1, correct colours",
+ "console":"35 messages, 0 errors, 2 pre-gesture AudioContext autoplay warnings (audio_web.js:27,53)"}

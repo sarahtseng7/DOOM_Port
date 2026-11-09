@@ -1,0 +1,650 @@
+I'll start by reading the project docs, the prior reports, and the role prompt.
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+  the resource usage, manual interventions, and final stopping decision.
+
+Preserve failing evidence as well as passing evidence. Record changes to
+acceptance criteria separately, with a reason. Discuss disagreements and
+missed faults in your write-up.
+
+## Where your work belongs
+
+| Location | Purpose |
+| --- | --- |
+| [`loop/`](loop/README.md) | All loop code, prompts, role definitions, MCP configuration, and design documentation. |
+| [`artifacts/`](artifacts/README.md) | All durable run state, handoffs, logs, review findings, and evidence. Agents must use this folder between runs. |
+| `tests/` | Verification code, including checks for the loop itself. |
+| `platform/`, `web/` | The port and browser page. |
+| `third_party/doomgeneric/` | Supplied engine; platform ports have been removed. |
+| `assets/` | Included shareware `doom1.wad` (Episode 1). |
+| `build/`, `dist/` | Generated build output. |
+
+Keep the root for project documentation and shared build/toolchain files.
+The starter supplies engine source, platform and HTML stubs, the shareware
+WAD, documentation, and an optional Docker toolchain. It supplies no working
+game, build script, loop implementation, or test suite. `artifacts/` starts
+with its README only; students create run evidence there during the project.
+Use the supplied engine and Emscripten. Documentation is allowed; copying an
+existing Doom browser port does not satisfy the assignment.
+
+See [`platform/README.md`](platform/README.md) for engine integration caveats,
+including pixel format, timing, and audio. The supplied game data already
+contains sound effects and music; no additional sound assets are required.
+
+## Agent section for setup
+
+### macOS without Docker
+
+Install the build tools directly on your Mac to compile and test the browser
+port. Docker is not required for this workflow. There is currently no macOS
+setup script; run the steps below manually.
+
+1. **Install prerequisites.** In Terminal, run:
+
+artifacts/logs:
+coder_input_audio.9u4tS4
+coder_input_audio.KWBVgQ
+coder_input_audio.XSXPrI
+coder_input_audio.YCG1J3
+coder_input_audio.zZGUhu
+coder_render_timing.1ZyeYK
+coder_render_timing.i3pFKE
+coder_render_timing.licfez
+coder_render_timing.mpRUkR
+coder_render_timing.y2E5IZ
+coder.1Bi21x
+coder.9PHBOq
+coder.GhMtru
+coder.J22PFD
+coder.kf3uJJ
+coder.lRueHg
+coder.pLDPys
+coder.Q1melD
+coder.xIoyo9
+coder.Xl0uaN
+reviewer_gameplay.dAPDqY
+reviewer_gameplay.facW3H
+reviewer_gameplay.ldSVVs
+reviewer_gameplay.Rw1fcA
+reviewer_gameplay.wHMOB2
+reviewer_site.f9dy0D
+reviewer_site.FnUrtZ
+reviewer_site.GwiGfG
+reviewer_site.msvdXx
+reviewer_site.qWTvbw
+tester.8fsQdw
+tester.9SkuzA
+tester.QcBm5A
+tester.QSq2Uh
+tester.QT7YlR
+verify.Gjtb86
+verify.oFQ3cu
+verify.wkzlnA
+verify.za54Fq
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+agent.log
+)
+
+Calling Bash()
+
+Bash response → (
+Exit code 1
+# Gameplay and audio review
+
+You are `reviewer_gameplay`.
+
+Review the playable game: level entry, movement, turning, stopping after release,
+focus loss, fire/use, menus, timing during play, sound effects, and music.
+Write no source, tests, or build files. You may run the existing build and serve
+its output locally; stop only processes you started. Use Playwright MCP or browser
+scripts for actual interactions and observations. Account for normal Doom momentum
+rather than assuming instantaneous stopping. Coordinate startup concerns through
+reviewer_site's report rather than duplicating its full review. Assign controls/
+audio faults to coder_input_audio, timing/display faults to coder_render_timing,
+and integration faults to coder. Audio output that cannot be established remains
+unverified. PASS requires observed required behavior; a loaded page is insufficient.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+(eval):1: ===== not found
+)
+
+Calling Bash()
+
+Bash response → (
+=== reviewer_gameplay
+FINDINGS
+
+Re-ran movement, fire, Esc-menu pause, focus loss, tic rate and audio checks on the current dist/ (assets updated 20:21-20:24). Behaviour matches the earlier reports and no new defects. FINDINGS (not PASS) because audibility, a real hidden tab, door use, level exit and OPL music fidelity are still unverified.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes. I did not rebuild. dist/doom.wasm sha256 prefix a4c6846627bdcb21 (unchanged). dist/render_timing.js is byte-identical to web/render_timing.js. dist/audio_web.js, input_audio.js and index.html were modified at 20:24, after the last gameplay report (20:10), so this run re-covers them. Server: `python3 -m http.server 8125 --bind 127.0.0.1 --directory dist`, started and stopped by me (port confirmed free).
+
+## Prior findings read
+artifacts/reports/ (all six), the earlier gameplay reports under artifacts/logs/reviewer_gameplay.*. No specification.md or acceptance-criteria.md exists.
+
+## Work and evidence (this dir)
+Ad-hoc Playwright, headless Chromium 800x600, no autoplay flag; scripts copied from reviewer_gameplay.Rw1fcA with the port changed. Not protected checks.
+- review.mjs -> run1.log, run1/
+  - AudioContext `suspended` before a gesture, `running` after one Enter, peak 0.23. Level music switches in (musicStarted 3, peak 0.44).
+  - 35.0 tics/s. Forward 500 ms, then coasting diffs 0.508, 0.341, 0.201, 0.129, then 0 for 2 s: normal Doom momentum, then a full stop.
+  - Period strafe (0.535) and Shift+Up run (0.718) move the view. Held ArrowRight + `blur`: turn stops (0.000).
+  - Fire: ammo region changes (0.14), SFX 4->5; held Ctrl 5->9 (autofire). Final: 11 SFX requested/11 played/0 bad, 0 music errors, 0 page/console errors.
+  - Resume after foreground switch: 35.0 tics/s.
+- escpause.mjs -> esc.log, esc/. With the Esc menu open and ArrowUp held, view diff 0.0000 over 1.5 s and 0.0000 after release. After closing the menu, forward motion resumes (0.714). The menu pauses the world.
+- vol.mjs -> vol.log. Music volume 0 gives peak 0 with SFX still playing; restoring gives peak 0.37.
+
+## Failed checks kept (check flaws, not product defects)
+- FAIL A.menu-sfx-and-music-heard: no SFX for the title Enter (engine plays none; music is heard, peak 0.23).
+- FAIL P.menu-pauses-game: `_cap_tic_count` keeps counting while paused (35/s); the pixel diff in esc.log shows the world is frozen.
+  Both were explained in earlier reports; not re-litigated.
+
+## Unresolved (owner)
+1. UNVERIFIED (tester/student): no human has heard the audio. Analyser peak proves non-silent output only. Music is a GM-family oscillator approximation, not OPL (coder_input_audio/student).
+2. UNVERIFIED (tester; timing owner coder_render_timing): a real hidden tab. Headless reports `document.hidden=false`, so throttling, background audio and key release on hide were not exercised.
+3. UNVERIFIED (tester): door use (Space gave SFX delta 0 at spawn), pick-ups, damage/death, level exit. Needs a scripted route or position export.
+4. UNVERIFIED: other E1 songs, music/SFX balance, Safari/Firefox, headed browser, HiDPI.
+5. Scope (student): WASD and mouse are not mapped; Doom default keys only. Criteria are agent-proposed.
+6. Tester reported check I6.backward-returns as marginal/flaky (ratio 0.79 vs 0.7 limit once). I did not test backward movement separately; it is a tester-owned oracle issue.
+
+## Assumptions
+- Doom default key bindings are the requirement.
+- Region screenshot diffs stand in for motion and pause; a 0.0000 diff in an unobstructed region means a frozen world.
+- Stopping allows about 1 s of friction; the pass bar was <2% diff in the last samples.
+- No source, test or loop files edited. Manual interventions: none. Usage: not available.
+=== tester
+FINDINGS
+
+Not PASS: `tests/verify.sh` exited 0 this run, but required behavior remains unverified (below), so the result is partial.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes (verify/identity.txt, dirty_diff_sha256 72688451...). Clean `make clean && make all` ran in the script. I changed no product source or tests.
+
+## Prior findings read
+artifacts/reports/ (tester, reviewer_gameplay, reviewer_site, coder*). The previous tester run failed I6.backward-returns with ratio 0.79 (limit 0.7); it was judged flaky.
+
+## Results (evidence: verify.out, verify/)
+- `SOAK_SECONDS=60 tests/verify.sh`: **exit=0**. Tooling, selftest, clean build and playtest passed (failed=0). Fault injection caught 4/4: drop-keyup, drop-blur, ignore-left, swap-rb.
+- I6 passed this time (start-vs-back=0.318, start-vs-fwd=0.532, ratio 0.60). That is one pass; the last run's failure is not explained. The margin is thin, so I still treat I6 as marginal.
+- T2 measured 34.96 tics/s. The soak ran 60 s, not the 300 s of the prior run: R2 60.4 rAF/s, longtask 0 ms, and 5 sampled frames differed.
+
+## Unresolved (owner)
+1. I6 is timing-sensitive (tester). A stable oracle needs a position export, a longer backward hold, or a direction-only check. I did not loosen it.
+2. UNVERIFIED, listed by the suite:
+   - A1 audio correctness (student scope).
+   - P1 save persistence (student scope).
+   - G3 door use and level exit (no oracle).
+   - I9 input-module identity (coder needs to add a diagnostic export).
+   - H1 hidden-tab timing (needs a manual protocol).
+3. Faults are browser-side only, and the criteria are agent-proposed, not student-approved.
+
+## Assumptions
+Doom default keys; headless Chromium via Playwright; no thresholds changed. The soak was shortened to 60 s for time. Usage: not available.
+=== reviewer_site
+FINDINGS
+
+Startup observed and working on the current dist/. FINDINGS (not PASS) only because time-to-first-frame precision, other viewports, clean rebuild, and post-gesture audio were not verified, plus one minor audio warning.
+
+## Work
+- Read AGENTS.md, loop/prompts/REVIEWER.md, artifacts/reports/reviewer_site.md (prior run). artifacts/specification.md and acceptance-criteria.md were not consulted/not present in prior run.
+- Port 8000 was free (lsof empty). `make`: "Nothing to be done" (make.log). web/*.{html,js} byte-identical to dist/ (cmp). Source: HEAD e500c44 plus uncommitted changes.
+- Started `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist` (pid 1651); stopped it at the end (curl afterwards returns no response).
+- Playwright fresh load of /?r=fresh1: 6 resources (input_audio.js, audio_web.js, render_timing.js, doom.js, doom.data, doom.wasm) + document, all 200 (server.log). Title "DOOM Shareware". loadEventEnd ~32 ms (page load, not time to first frame).
+- Canvas 640x400, displayed 1152x720 CSS (aspect 1.6 kept). Sampled ~158 distinct colours. Module._rt.frames advanced 317 -> 365 in 1 s, so the main loop runs.
+- startup.png: attract-demo gameplay with HUD, correct colours (no R/B swap), no corruption.
+- Console: 0 errors, 2 warnings (console.txt).
+
+## Evidence (this directory)
+startup.png, console.txt, make.log, server.log, rev.txt, server.pid.
+
+## Findings
+1. Minor, owner coder_input_audio: AudioContext "not allowed to start" warnings (audio_web.js:27, :53) before a user gesture. Expected under autoplay policy; resume after gesture left to reviewer_gameplay.
+
+No actionable startup fault found. Prior report's findings are unchanged.
+
+## Not verified
+Precise time to first frame; clean rebuild (make clean && make); non-Chromium browsers; warm-cache reload; other viewport sizes; audio after a gesture; movement/combat (out of scope).
+
+## Assumptions
+Headless Playwright Chromium via MCP. No spec was supplied, so criteria: page loads, no failed required assets, canvas draws with correct colours, loop advances. "Fresh" = new query string on a fresh browser load; the browser cache state of the Playwright profile was not cleared. Wrote nothing outside OUTPUT_DIR, apart from Playwright captures in artifacts/browser/.
+=== coder_input_audio
+FINDINGS
+
+No defect found in my scope; no source files changed. Re-ran the audio check on the current `dist/`: output is non-silent by measurement, but nobody has listened, and music is not OPL-accurate.
+
+## Source identity
+HEAD e500c44 + uncommitted changes. My files (platform/input_audio.*, platform/audio_*, web/input_audio.js, web/audio_web.js) were last modified 19:09 and are unchanged this run. `dist/doom.wasm` sha256 prefix a4c6846627bdcb21, same as earlier runs (dist rebuilt 20:39 by another role; I did not rebuild). No specification.md or acceptance-criteria.md exists.
+
+## Prior findings read
+All six files in artifacts/reports/. Nothing open in my scope. Latest tester run: verify.sh exit 0, controls fault injection caught 4/4. Latest gameplay review: movement, fire, Esc pause, blur release and volume 0 behave correctly.
+
+## Evidence (this dir)
+check.mjs (copied from coder_input_audio.zZGUhu; headless Chromium, no autoplay flag; not a protected check) -> audio_result.json, check.err (empty):
+- Before any key: ctx `suspended`, 0 notes, peak 0. An initialised context is not output.
+- After Enter x4 and Ctrl fire: ctx `running`, SFX 4 requested / 4 played / 0 suppressed / 0 bad, 3 songs started, 73 notes scheduled, 5 voices, peak 0.40, 0 page errors.
+- Controls not re-run by me; relying on the tester and reviewer runs above against the same wasm hash.
+
+## Unresolved (owner)
+1. UNVERIFIED, tester/student: no human has listened; analyser peak shows non-silent output only.
+2. Unmet, student decision: music is a GM-family oscillator synth, not GENMIDI/OPL, so timbre differs from original Doom.
+3. UNVERIFIED, tester: door use, pickups, damage/death, other E1 songs, SFX/music balance, real hidden tab, Safari/Firefox.
+4. Known limits: linked-sound pitch ignored; the first SFX before a user gesture is dropped; WASD and mouse not mapped (Doom default keys only).
+5. Tester: I6.backward-returns is marginal (0.79 failed once, 0.60 passed once); tester-owned.
+
+## Assumptions
+- Persistence out of scope (none supplied); volumes reset on load.
+- Doom default key bindings are the control requirement.
+- No speculative edits to code that passes existing checks.
+- Manual interventions: none. Usage: not available.
+agent.log
+ls: artifacts/acceptance-criteria.md: No such file or directory
+ls: artifacts/specification.md: No such file or directory
+e500c44
+# Doom -> WebAssembly build. Requires Emscripten 4.0.18 (source emsdk_env.sh
+# or use the Dockerfile image). Output: dist/{index.html,doom.js,doom.wasm,doom.data}
+EMCC      ?= emcc
+ENGINE    := third_party/doomgeneric
+BUILD     := build
+DIST      := dist
+WAD       := assets/doom1.wad
+
+# Platform-specific/unused engine files: dummy.c, i_cdmus.c, i_joystick.c are
+# stubs here; net_* sources are absent from this tree.
+ENGINE_EXCLUDE := $(ENGINE)/dummy.c $(ENGINE)/doomgeneric_sdl.c
+ENGINE_SRC := $(filter-out $(ENGINE_EXCLUDE),$(wildcard $(ENGINE)/*.c))
+PLAT_SRC   := $(wildcard platform/*.c)
+OBJS       := $(patsubst %.c,$(BUILD)/%.o,$(ENGINE_SRC) $(PLAT_SRC))
+
+CFLAGS  := -O2 -I$(ENGINE) -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP
+ENGINE_CFLAGS := -w   # silence warnings for the supplied engine only
+LDFLAGS := -O2 -sASYNCIFY -sASYNCIFY_STACK_SIZE=65536 -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=64MB \
+           -sEXPORTED_FUNCTIONS=_main,_cap_ready,_cap_tic_count,_cap_input_event,_cap_input_reset,_cap_bridge_version,_cap_framebuffer_ptr,_cap_input_impl,_cap_input_delivered_count,_cap_input_dropped_count \
+           -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,HEAPU8 \
+           --preload-file $(WAD)@/doom1.wad
+
+.PHONY: all clean
+all: $(DIST)/index.html
+
+$(BUILD)/$(ENGINE)/%.o: $(ENGINE)/%.c
+	@mkdir -p $(dir $@)
+	$(EMCC) $(CFLAGS) $(ENGINE_CFLAGS) -c $< -o $@
+
+$(BUILD)/platform/%.o: platform/%.c
+	@mkdir -p $(dir $@)
+	$(EMCC) $(CFLAGS) -c $< -o $@
+
+-include $(OBJS:.o=.d)
+
+$(DIST)/doom.js: $(OBJS) $(WAD)
+	@mkdir -p $(DIST)
+	$(EMCC) $(OBJS) $(LDFLAGS) -o $@
+
+WEB_FILES := web/index.html web/input_audio.js web/audio_web.js web/render_timing.js
+build:
+platform
+third_party
+
+dist:
+audio_web.js
+doom.data
+doom.js
+doom.wasm
+index.html
+)
+
+Calling Bash()
+
+Bash response → (
+artifacts/logs/reviewer_gameplay.dAPDqY/:
+agent.log
+report.md
+review.mjs
+run1
+run1.log
+server.log
+server.pid
+vol
+vol.log
+vol.mjs
+
+artifacts/logs/reviewer_gameplay.facW3H/:
+agent.log
+pause.log
+pause.mjs
+report.md
+screens
+server.log
+server.pid
+
+artifacts/logs/reviewer_gameplay.ldSVVs/:
+agent.log
+
+artifacts/logs/reviewer_gameplay.Rw1fcA/:
+agent.log
+esc
+esc-invalid-demo
+esc-invalid-demo.log
+esc.log
+escpause.mjs
+report.md
+review.mjs
+run1
+run1.log
+server.log
+server.pid
+vol.mjs
+
+artifacts/logs/reviewer_gameplay.wHMOB2/:
+agent.log
+esc
+esc.log
+escpause.mjs
+report.md
+review.mjs
+run1
+run1.log
+server.log
+server.pid
+vol
+vol.log
+vol.mjs
+dist:
+total 9512
+-rw-r--r--@ 1 sarahtseng  staff    18571 Nov  2 20:42:07 2026 audio_web.js
+-rw-r--r--@ 1 sarahtseng  staff  4196020 Nov  2 20:42:06 2026 doom.data
+-rw-r--r--@ 1 sarahtseng  staff    75656 Nov  2 20:42:07 2026 doom.js
+-rwxr-xr-x@ 1 sarahtseng  staff   554840 Nov  2 20:42:07 2026 doom.wasm
+-rw-r--r--@ 1 sarahtseng  staff      887 Nov  2 20:42:07 2026 index.html
+-rw-r--r--@ 1 sarahtseng  staff     4148 Nov  2 20:42:07 2026 input_audio.js
+-rw-r--r--@ 1 sarahtseng  staff     1189 Nov  2 20:42:07 2026 render_timing.js
+
+web:
+total 72
+-rw-r--r--@ 1 sarahtseng  staff  18571 Nov  2 19:08:09 2026 audio_web.js
+-rw-r--r--@ 1 sarahtseng  staff    887 Nov  2 19:46:35 2026 index.html
+-rw-r--r--@ 1 sarahtseng  staff   4148 Nov  2 17:50:12 2026 input_audio.js
+-rw-r--r--@ 1 sarahtseng  staff   1189 Nov  2 20:22:04 2026 render_timing.js
+a4c6846627bdcb21
+tests/node_modules:
+fsevents
+playwright
+)
+
+Calling Bash()
+
+Calling Bash()
+
+Bash response → (
+1:import { createRequire } from 'node:module'; import fs from 'node:fs';
+6:const { diffFrac, bestShift, VIEW, AMMO, stats } = await import(root + '/tests/lib/frames.mjs');
+11:const page = await (await b.newContext({ viewport: { width: 800, height: 600 } })).newPage();
+13:await page.goto('http://127.0.0.1:8124/'); await sleep(4000);
+      69 review.mjs
+)
+
+Bash response → (
+import { createRequire } from 'node:module'; import fs from 'node:fs';
+const root = '/Users/sarahtseng/Projects/fellowship-loop-capstone';
+const require = createRequire(root + '/tests/package.json');
+const { chromium } = require('playwright');
+const { PNG } = require('pngjs');
+const { diffFrac, bestShift, VIEW, AMMO, stats } = await import(root + '/tests/lib/frames.mjs');
+const OUT = process.argv[2]; fs.mkdirSync(OUT + '/screens', { recursive: true });
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+const res = []; const rec = (id, ok, d) => { res.push({ id, ok, d }); console.log(ok ? 'PASS' : 'FAIL', id, d); };
+const b = await chromium.launch(); // NO autoplay-policy flag
+const page = await (await b.newContext({ viewport: { width: 800, height: 600 } })).newPage();
+const errs = []; page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+await page.goto('http://127.0.0.1:8124/'); await sleep(4000);
+let n = 0; const shot = async (nm) => { const buf = await page.locator('#canvas').screenshot(); fs.writeFileSync(`${OUT}/screens/${String(++n).padStart(2,'0')}-${nm}.png`, buf); return PNG.sync.read(buf); };
+const A = () => page.evaluate(() => window.CapAudio.stats());
+const pre = await A(); console.log('audio before gesture', JSON.stringify(pre));
+const tic = () => page.evaluate(() => Module._cap_tic_count());
+const key = async (k, h = 100) => { await page.keyboard.down(k); await sleep(h); await page.keyboard.up(k); };
+await key('Enter'); await sleep(1500);
+const post = await A(); console.log('audio after gesture', JSON.stringify(post));
+rec('A.ctx-running-after-gesture-no-autoplay-flag', post.ctxState === 'running', `before=${pre.ctxState} after=${post.ctxState}`);
+rec('A.menu-sfx-and-music-heard', post.sfxPlayed > 0 && post.maxPeak > 0.01, `sfxPlayed=${post.sfxPlayed} musicStarted=${post.musicStarted} maxPeak=${post.maxPeak}`);
+// New game
+for (let i = 0; i < 2; i++) { await key('Enter'); await sleep(900); } await key('Enter'); await sleep(7000);
+const s0 = await shot('level'); rec('G.level-entered', stats(s0, {x0:0,y0:0.84,x1:1,y1:1}).distinctColors > 20, 'statusbar colours');
+const a1 = await A(); rec('A.level-music-switched', a1.musicStarted >= 2 || a1.musicPlaying, JSON.stringify({ms:a1.musicStarted, playing:a1.musicPlaying, peak:a1.maxPeak}));
+// tic rate
+const t0 = await tic(); await sleep(3000); const t1 = await tic(); rec('T.tic-rate', Math.abs((t1-t0)/3-35) < 4, `${((t1-t0)/3).toFixed(1)} tics/s`);
+// Momentum: hold forward 500ms, measure motion after release over time
+let prev = await shot('fwd-start'); await page.keyboard.down('ArrowUp'); await sleep(500); await page.keyboard.up('ArrowUp');
+const diffs = []; for (let i = 0; i < 12; i++) { await sleep(250); const c = await shot('coast'); diffs.push(+diffFrac(prev, c, VIEW).toFixed(3)); prev = c; }
+console.log('post-release diffs per 250ms', diffs.join(' '));
+rec('M.forward-coasts-then-stops', diffs[0] > 0.005 && diffs.slice(-3).every(d => d < 0.02), diffs.join(','));
+// strafe via Alt+Left? and comma/period
+const base = await shot('strafe0'); await key('Period', 400); await sleep(1500); const sp = await shot('strafe-period');
+rec('M.period-strafes', diffFrac(base, sp, VIEW) > 0.03, `diff=${diffFrac(base, sp, VIEW).toFixed(3)}`);
+const sr0 = await shot('run0'); const tA = await tic(); await page.keyboard.down('ShiftLeft'); await page.keyboard.down('ArrowUp'); await sleep(600); await page.keyboard.up('ArrowUp'); await page.keyboard.up('ShiftLeft'); await sleep(2000); const sr1 = await shot('run1');
+const w0 = await shot('walk0'); await key('ArrowDown', 700); await sleep(2000); // go back
+const w1 = await shot('walk-back'); rec('M.shift-run-moves', diffFrac(sr0, sr1, VIEW) > 0.05, `diff=${diffFrac(sr0, sr1, VIEW).toFixed(3)}`);
+// fire + sound
+const aBefore = await A(); const p0 = await shot('fire-pre'); await key('ControlLeft', 150); await sleep(1500); const p1 = await shot('fire-post');
+const aAfter = await A();
+rec('C.fire-ammo-and-sfx', diffFrac(p0, p1, AMMO) > 0.02 && aAfter.sfxPlayed > aBefore.sfxPlayed, `ammoDiff=${diffFrac(p0,p1,AMMO).toFixed(3)} sfx ${aBefore.sfxPlayed}->${aAfter.sfxPlayed}`);
+// hold fire: autofire
+const f0 = await A(); await page.keyboard.down('ControlLeft'); await sleep(1500); await page.keyboard.up('ControlLeft'); await sleep(800); const f1 = await A();
+rec('C.held-fire-repeats-sfx', f1.sfxPlayed - f0.sfxPlayed >= 3, `${f0.sfxPlayed}->${f1.sfxPlayed}`);
+// use
+const u0 = await A(); await key('Space', 100); await sleep(600); const u1 = await A(); console.log('use sfx delta', u1.sfxPlayed - u0.sfxPlayed);
+// menu volume: open options, sound volume
+await key('Escape'); await sleep(700); const m0 = await shot('esc-menu');
+const mm = await A();
+// pause key
+const tp0 = await tic(); await sleep(1000); const tp1 = await tic(); rec('P.menu-pauses-game', tp1 - tp0 < 5, `tics in 1s with menu open: ${tp1-tp0}`);
+const pk = await A(); await sleep(800); const pk2 = await A(); console.log('peak while paused (lastPeak)', pk2.lastPeak, 'voices', pk2.musicVoices);
+await key('Escape'); await sleep(800);
+// focus loss: hold turn, blur
+await page.keyboard.down('ArrowRight'); await sleep(400);
+await page.evaluate(() => { window.dispatchEvent(new Event('blur')); }); await sleep(1500);
+const b0 = await shot('blur-a'); await sleep(500); const b1 = await shot('blur-b'); rec('F.blur-stops-turn', diffFrac(b0, b1, VIEW) < 0.02, `diff=${diffFrac(b0,b1,VIEW).toFixed(3)}`);
+await page.keyboard.up('ArrowRight');
+)
+PROGRESS: serving dist on a free port and re-running the movement, audio and pause scripts.
+Calling Bash()
+
+Bash response → (
+artifacts/logs/reviewer_gameplay.ldSVVs/escpause.mjs:1
+artifacts/logs/reviewer_gameplay.ldSVVs/vol.mjs:1
+artifacts/logs/reviewer_gameplay.ldSVVs/review.mjs:1
+review exit 0
+escpause exit 0
+vol exit 0
+audio before gesture {"sfxRequested":0,"sfxPlayed":0,"sfxSuppressed":0,"sfxBad":0,"musicRequested":1,"musicStarted":1,"notesScheduled":0,"musicErrors":0,"maxPeak":0,"lastPeak":0,"ctxState":"suspended","sampleRate":48000,"sfxChannelsActive":0,"musicPlaying":true,"musicVoices":0}
+audio after gesture {"sfxRequested":0,"sfxPlayed":0,"sfxSuppressed":0,"sfxBad":0,"musicRequested":2,"musicStarted":2,"notesScheduled":22,"musicErrors":0,"maxPeak":0.22265885770320892,"lastPeak":0.0024010634515434504,"ctxState":"running","sampleRate":48000,"sfxChannelsActive":0,"musicPlaying":true,"musicVoices":3}
+PASS A.ctx-running-after-gesture-no-autoplay-flag before=suspended after=running
+FAIL A.menu-sfx-and-music-heard sfxPlayed=0 musicStarted=2 maxPeak=0.22265885770320892
+PASS G.level-entered statusbar colours
+PASS A.level-music-switched {"ms":3,"playing":true,"peak":0.5037649869918823}
+PASS T.tic-rate 35.0 tics/s
+post-release diffs per 250ms 0.508 0.337 0.205 0.129 0 0 0 0 0 0 0 0
+PASS M.forward-coasts-then-stops 0.508,0.337,0.205,0.129,0,0,0,0,0,0,0,0
+PASS M.period-strafes diff=0.535
+PASS M.shift-run-moves diff=0.718
+PASS C.fire-ammo-and-sfx ammoDiff=0.140 sfx 4->5
+PASS C.held-fire-repeats-sfx 5->9
+use sfx delta 0
+FAIL P.menu-pauses-game tics in 1s with menu open: 35
+peak while paused (lastPeak) 0.062496304512023926 voices 18
+PASS F.blur-stops-turn diff=0.000
+background tab {"hidden":false,"vis":"visible"} tics in 3s 106 audio {"sfxRequested":11,"sfxPlayed":11,"sfxSuppressed":0,"sfxBad":0,"musicRequested":3,"musicStarted":3,"notesScheduled":930,"musicErrors":0,"maxPeak":0.5037649869918823,"lastPeak":0.03634941577911377,"ctxState":"running","sampleRate":48000,"sfxChannelsActive":0,"musicPlaying":true,"musicVoices":15}
+PASS F.resumes-after-foreground 35.0 tics/s
+final audio {"sfxRequested":11,"sfxPlayed":11,"sfxSuppressed":0,"sfxBad":0,"musicRequested":3,"musicStarted":3,"notesScheduled":1033,"musicErrors":0,"maxPeak":0.5037649869918823,"lastPeak":0.1519063413143158,"ctxState":"running","sampleRate":48000,"sfxChannelsActive":0,"musicPlaying":true,"musicVoices":19}
+errors []
+menu open, ArrowUp still held: left-region diff over 1.5s 0.0000
+after release, still in menu diff 0.0000
+after closing menu, forward moves: diff 0.7165
+errors []
+music+idle peak 0.3170580267906189
+music volume 0 (menu still open) peak 0 {"sfxRequested":26,"sfxPlayed":26,"sfxSuppressed":0,"sfxBad":0,"musicRequested":3,"musicStarted":3,"notesScheduled":404,"musicErrors":0,"maxPeak":0,"lastPeak":0,"ctxState":"running","sampleRate":48000,"sfxChannelsActive":0,"musicPlaying":true,"musicVoices":14}
+music volume restored peak 0.35237979888916016
+)
+
+Calling Bash()
+
+Bash response → (
+trial 1 backward moved vs start 0.307 coast diffs 0.392 0.345 0.365 0.413 0.337 0.267 0.301 0.275 0.435 0.405
+trial 2 backward moved vs start 0.491 coast diffs 0.329 0.328 0.483 0.437 0.889 0.2 0.859 0.414 0.38 0.309
+trial 3 backward moved vs start 0.519 coast diffs 0.486 0.276 0.309 0.408 0.333 0.171 0.245 0.231 0.214 0.368
+stopped
+)
+Backward coasting never settles, unlike forward. I'll check whether that's a stuck key or something in the scene.
+Calling Bash()
+
+Calling Read()
+
+Bash response → "idle (no input) diffs 0.21 0.323 0.391 0.391 stats [6,0]\nafter ArrowDown 500ms 0.377 0.131 0.316 0.281 0.416 0.334 0.317 0.297 0.34 0.269 0.27 0.173 [8,0]"
+
+Read response → "Completed by external harness."
+That was my script's flaw: it started with one Enter too few, so the skill menu was still open over the demo. Fixing the key sequence and re-running.
+Calling Bash()
+
+Bash response → "1\nidle (no input) diffs 0 0 0 0 stats [8,0]\nafter ArrowDown 500ms 0.184 0 0 0 0 0 0 0 0 0 0 0 [10,0]"
+Backward movement is fine: it moves, then stops. Writing the report.
+Calling Write()
+
+Write response → "File created successfully at: /Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/reviewer_gameplay.ldSVVs/report.md (file state is current in your context — no need to Read it back)"
+The report is at `artifacts/logs/reviewer_gameplay.ldSVVs/report.md`. Its verdict is FINDINGS, not PASS: I found no new defect, but several required behaviors are still unverified.
+
+I ran the checks on the current `dist/` (wasm hash prefix `a4c6846627bdcb21`, built at HEAD `e500c44` plus uncommitted changes) in headless Chromium, with no autoplay flag. I did not rebuild.
+
+**Observed working**
+- **Audio start:** the audio context starts suspended and runs after one keypress. Level music starts and the output measures non-silent.
+- **Timing:** 35.0 tics/s.
+- **Movement:** forward movement coasts for about 1 s and then stops fully. Strafe, Shift-run and fire all work, and held fire repeats.
+- **Backward movement:** moves and then stops. I tested this separately because the tester's `I6.backward-returns` check was flaky. This was one trial, so it doesn't prove that check is fine.
+- **Menu and focus:** the Esc menu freezes the world, and play resumes after closing it. A simulated blur stops a held turn.
+- **Volume:** music volume 0 silences music while sound effects still play.
+- **Errors:** no page or console errors.
+
+**Failed checks I kept**
+- **`A.menu-sfx-and-music-heard`:** the engine plays no sound effect for the title Enter.
+- **`P.menu-pauses-game`:** the tic counter keeps running while paused, although the screen is frozen.
+
+Both are flaws in my checks, not product defects, and earlier reports explained them. I also kept one invalid backward-movement run of my own; it left the skill menu open, and `back2.mjs` fixes it.
+
+**Still unverified**
+- **Audio:** nobody has listened. The music is an approximation, not the original Doom OPL (FM-synth) sound.
+- **Hidden tab:** a real hidden tab was not exercised, because headless Chromium never reports one.
+- **Gameplay:** door use, pickups, damage and death, and level exit.
+- **Coverage:** other songs, Safari/Firefox, and WASD or mouse input, which aren't mapped. Doom's default keys are the assumed requirement.
+
+I started and stopped my own local server, and edited nothing outside the output directory.

@@ -1,0 +1,40 @@
+# Claude Code subscription agents. No API key or nested subagents.
+# Browser MCP loads through .mcp.json -> loop/playwright-mcp.sh.
+# Docker Agent toolsets are ignored by this harness; do not add inactive toolsets.
+agents:
+  coder:
+    description: Build and browser integration
+    harness:
+      type: claude-code
+      model: sonnet
+    instruction: Read loop/prompts/CODER.md. Follow the role and permissions there.
+  coder_render_timing:
+    description: Rendering and timing
+    harness:
+      type: claude-code
+      model: sonnet
+    instruction: Read loop/prompts/CODER_RENDER_TIMING.md. Follow the role and permissions there.
+  coder_input_audio:
+    description: Controls and audio
+    harness:
+      type: claude-code
+      model: sonnet
+    instruction: Read loop/prompts/CODER_INPUT_AUDIO.md. Follow the role and permissions there.
+  reviewer_site:
+    description: Site and startup review
+    harness:
+      type: claude-code
+      model: opus
+    instruction: Read loop/prompts/REVIEWER.md. Follow the role and permissions there.
+  reviewer_gameplay:
+    description: Gameplay and audio review
+    harness:
+      type: claude-code
+      model: opus
+    instruction: Read loop/prompts/REVIEWER_GAMEPLAY.md. Follow the role and permissions there.
+  tester:
+    description: Repeatable automated verification
+    harness:
+      type: claude-code
+      model: sonnet
+    instruction: Read loop/prompts/TESTER.md. Follow the role and permissions there.

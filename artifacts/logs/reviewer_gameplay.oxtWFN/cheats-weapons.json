@@ -1,0 +1,126 @@
+{
+ "res": [
+  {
+   "id": "entered-e1m1",
+   "ok": true,
+   "d": {
+    "tic": 389,
+    "lvl": 101,
+    "hp": 100,
+    "x": 1056,
+    "y": -3616,
+    "sfx": 3,
+    "mus": 3
+   }
+  },
+  {
+   "id": "idkfa-changes-ammo-hud",
+   "ok": true,
+   "d": {
+    "ammoDiff": 0.18086538461538462
+   }
+  },
+  {
+   "id": "fire-shotgun-sfx-and-ammo",
+   "ok": true,
+   "d": {
+    "sfxDelta": 1,
+    "ammoDiff": 0.1403,
+    "hp": 100
+   }
+  },
+  {
+   "id": "fire-chaingun-sfx-and-ammo",
+   "ok": true,
+   "d": {
+    "sfxDelta": 2,
+    "ammoDiff": 0.2059,
+    "hp": 100
+   }
+  },
+  {
+   "id": "fire-rocket-sfx-and-ammo",
+   "ok": true,
+   "d": {
+    "sfxDelta": 1,
+    "ammoDiff": 0.1403,
+    "hp": 100
+   }
+  },
+  {
+   "id": "fire-plasma-sfx-and-ammo",
+   "ok": true,
+   "d": {
+    "sfxDelta": 1,
+    "ammoDiff": 0.0583,
+    "hp": 100
+   }
+  },
+  {
+   "id": "weapon-sprite-changes",
+   "ok": true,
+   "d": {
+    "diff": 0.2272
+   }
+  },
+  {
+   "id": "iddqd-accepted-alive",
+   "ok": true,
+   "d": {
+    "hp": 100
+   }
+  },
+  {
+   "id": "idclev13-changes-level",
+   "ok": true,
+   "d": {
+    "from": 101,
+    "to": 103,
+    "musicStartedDelta": 1
+   }
+  },
+  {
+   "id": "level-music-restarts-on-change",
+   "ok": true,
+   "d": {
+    "pre": 3,
+    "post": 4
+   }
+  },
+  {
+   "id": "movement-in-new-level",
+   "ok": true,
+   "d": {
+    "moved": 127.00393694685216
+   }
+  },
+  {
+   "id": "no-page-errors",
+   "ok": true,
+   "d": []
+  }
+ ],
+ "weap": {
+  "shotgun": {
+   "sfxDelta": 1,
+   "ammoDiff": 0.1403,
+   "hp": 100
+  },
+  "chaingun": {
+   "sfxDelta": 2,
+   "ammoDiff": 0.2059,
+   "hp": 100
+  },
+  "rocket": {
+   "sfxDelta": 1,
+   "ammoDiff": 0.1403,
+   "hp": 100
+  },
+  "plasma": {
+   "sfxDelta": 1,
+   "ammoDiff": 0.0583,
+   "hp": 100
+  },
+  "frameDiffShotgunVsChaingun": 0.2272
+ }
+}

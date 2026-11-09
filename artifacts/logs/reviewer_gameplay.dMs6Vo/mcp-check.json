@@ -1,0 +1,6 @@
+{"harness":"Playwright MCP, http://127.0.0.1:8199, new game via click+Esc,Enter,Enter,Enter (80ms holds)",
+ "spawn":{"tic":416,"lvl":101,"x":1056,"y":-3616,"hp":100},
+ "weapon":{"key1":"fist shown, ammo field blank (screens/mcp-weapon1.png)","fistSwingAirSfxDelta":0,"key2":"pistol shown, ammo 50 (screens/mcp-weapon2.png)"},
+ "forward600ms":{"moved":97.0,"coast":77,"movedLast700ms":0},
+ "audioFinal":{"sfxRequested":27,"sfxPlayed":27,"sfxBad":0,"musicErrors":0,"ctxState":"running","maxPeak":0.5685},
+ "console":{"total":35,"errors":0,"warnings":"2 pre-gesture AudioContext autoplay (audio_web.js:27,:53)"}}

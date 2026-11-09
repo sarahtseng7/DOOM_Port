@@ -1,0 +1,1 @@
+{"status":"FINDINGS","summary":"Fixed reviewer F2 (held key after refocus) and F3 (browser shortcuts blocked) in web/input_audio.js; QUICK playtest failed=0 on role-local dist but new behaviours lack tests. Audio, persistence and mouse remain unimplemented (scope undecided)."}

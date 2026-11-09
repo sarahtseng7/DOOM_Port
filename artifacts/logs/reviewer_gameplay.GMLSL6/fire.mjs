@@ -1,0 +1,23 @@
+import http from 'node:http'; import fs from 'node:fs'; import path from 'node:path'; import { pathToFileURL } from 'node:url';
+const R = process.argv[2], OUT = process.argv[3];
+const { chromium } = await import(pathToFileURL(R + '/tests/node_modules/playwright/index.mjs'));
+const DIST = R + '/dist'; const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.wasm': 'application/wasm' };
+const srv = http.createServer((q, s) => { const p = path.join(DIST, q.url.split('?')[0].replace(/^\/$/, '/index.html')); if (!fs.existsSync(p)) { s.writeHead(404).end(); return; } s.writeHead(200, { 'content-type': MIME[path.extname(p)] || 'application/octet-stream' }); fs.createReadStream(p).pipe(s); });
+await new Promise(r => srv.listen(0, '127.0.0.1', r));
+const browser = await chromium.launch(); const page = await (await browser.newContext({ viewport: { width: 1000, height: 700 } })).newPage();
+await page.goto(`http://127.0.0.1:${srv.address().port}/?r=fire1`);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const st = () => page.evaluate(() => JSON.parse(JSON.stringify(window.CapAudio.stats())));
+await sleep(2500); for (let i = 0; i < 4; i++) { await page.keyboard.press('Enter'); await sleep(900); } await sleep(3000);
+const out = {};
+const a = await st();
+await page.keyboard.down('Control'); await sleep(150); await page.keyboard.up('Control'); await sleep(700);
+const b = await st();
+await page.keyboard.down('Control'); await sleep(150); await page.keyboard.up('Control'); await sleep(700);
+const c = await st();
+out.sfx = [a.sfxRequested, b.sfxRequested, c.sfxRequested]; out.played = [a.sfxPlayed, b.sfxPlayed, c.sfxPlayed]; out.bad = c.sfxBad;
+// ammo digits: crop HUD region pixels hash before/after
+const hud = () => page.evaluate(() => { const cv = document.querySelector('canvas'); const x = cv.getContext('2d'); return null; });
+await page.screenshot({ path: OUT + '/fire.png' });
+console.log(JSON.stringify(out)); fs.writeFileSync(OUT + '/fire-results.json', JSON.stringify(out));
+await browser.close(); srv.close();

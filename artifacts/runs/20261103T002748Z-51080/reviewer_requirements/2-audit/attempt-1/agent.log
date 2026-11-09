@@ -1,0 +1,763 @@
+
+Calling Bash()
+
+Bash response → (
+run_id: 20261103T002748Z-51080
+source_commit: e500c440656622db5ab3f8fb7df73d8b5998eeb3
+README.md
+runs
+artifacts/runs/20261103T002748Z-51080/manifest.txt
+artifacts/runs/20261103T002748Z-51080/verification-1.log
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/invocation.txt
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/result.json
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full.log
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/report.md
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/dist-sha256.txt
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/agent.log
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/build.log
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/playtest-results.json
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/verify-result.json
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/verify.log
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/playtest.log
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/selftest.log
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/dist-sha256.txt
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/browser-console.log
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/identity.txt
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/build.log
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/058-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/059-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/013-move-fwd-held2.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/026-settle.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/052-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/053-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/final-page.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/006-idle-b.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/014-settle.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/023-settle.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/003-main-menu.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/036-fire-rest-b.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/019-settle.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/045-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/044-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/048-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/049-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/031-blur-b.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/029-settle.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/011-move-start.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/033-fire-anim.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/043-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/024-settle.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/020-move-fwd-stopped.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/009-turn-right-settled.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/021-settle.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/016-settle.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/061-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/060-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/055-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/054-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/030-settle.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/032-fire-pre.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/015-settle.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/022-settle.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/042-soak-start.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/046-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/047-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/039-automap-off.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/027-blur-turning.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/035-fire-rest-a.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/018-settle.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/038-automap-on.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/004-level-start.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/051-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/050-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/012-move-fwd-held.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/001-boot.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/008-turn-right.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/041-esc-closed.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/007-turn-start.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/065-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/064-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/056-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/057-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/034-fire-post.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/017-settle.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/010-turn-left.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/040-esc-menu.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/028-blur-turning-b.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/062-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/063-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/037-automap-pre.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/005-idle-a.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/002-title.png
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/screens/025-settle.png
+artifacts/runs/20261103T002748Z-51080/tester/verify-005841Z/verify.log
+artifacts/runs/20261103T002748Z-51080/tester/verify-005841Z/identity.txt
+artifacts/runs/20261103T002748Z-51080/reviewer_requirements/1-audit/attempt-1/invocation.txt
+artifacts/runs/20261103T002748Z-51080/reviewer_requirements/1-audit/attempt-1/result.json
+artifacts/runs/20261103T002748Z-51080/reviewer_requirements/1-audit/attempt-1/report.md
+artifacts/runs/20261103T002748Z-51080/reviewer_requirements/1-audit/attempt-1/agent.log
+artifacts/runs/20261103T002748Z-51080/reviewer_requirements/2-audit/attempt-1/invocation.txt
+artifacts/runs/20261103T002748Z-51080/reviewer_requirements/2-audit/attempt-1/agent.log
+artifacts/runs/20261103T002748Z-51080/coder/1-integrate/attempt-1/source-commit.txt
+artifacts/runs/20261103T002748Z-51080/coder/1-integrate/attempt-1/invocation.txt
+artifacts/runs/20261103T002748Z-51080/coder/1-integrate/attempt-1/result.json
+artifacts/runs/20261103T002748Z-51080/coder/1-integrate/attempt-1/verify-full.log
+artifacts/runs/20261103T002748Z-51080/coder/1-integrate/attempt-1/report.md
+artifacts/runs/20261103T002748Z-51080/coder/1-integrate/attempt-1/dist-sha256.txt
+artifacts/runs/20261103T002748Z-51080/coder/1-integrate/attempt-1/agent.log
+artifacts/runs/20261103T002748Z-51080/coder/1-integrate/attempt-1/source-status.txt
+(eval):1: no matches found: loop/prompts/*requirements*
+)
+
+Calling Bash()
+
+Bash response → (
+./coder_render_timing/1-render/attempt-1/report.md
+./coder_render_timing/1-render/attempt-1/result.json
+./coder_render_timing/1-render/attempt-1/source-status.txt
+./coder_render_timing/2-render/attempt-1/agent.log
+./coder_render_timing/2-render/attempt-1/build.log
+./coder_render_timing/2-render/attempt-1/dist-sha256.txt
+./coder_render_timing/2-render/attempt-1/invocation.txt
+./coder_render_timing/2-render/attempt-1/playtest.log
+./coder_render_timing/2-render/attempt-1/playtest/browser-console.log
+./coder_render_timing/2-render/attempt-1/playtest/playtest-results.json
+./coder_render_timing/2-render/attempt-1/report.md
+./coder_render_timing/2-render/attempt-1/result.json
+./coder_render_timing/2-render/attempt-1/source-commit.txt
+./coder_render_timing/2-render/attempt-1/source-diff-sha256.txt
+./coder_render_timing/2-render/attempt-1/source-status.txt
+./coder/1-build/attempt-1/agent.log
+./coder/1-build/attempt-1/build.log
+./coder/1-build/attempt-1/dist-sha256.txt
+./coder/1-build/attempt-1/invocation.txt
+./coder/1-build/attempt-1/report.md
+./coder/1-build/attempt-1/result.json
+./coder/1-build/attempt-1/verify-full.log
+./coder/1-build/attempt-1/verify-full/browser-console.log
+./coder/1-build/attempt-1/verify-full/build.log
+./coder/1-build/attempt-1/verify-full/dist-sha256.txt
+./coder/1-build/attempt-1/verify-full/identity.txt
+./coder/1-build/attempt-1/verify-full/playtest-results.json
+./coder/1-build/attempt-1/verify-full/playtest.log
+./coder/1-build/attempt-1/verify-full/selftest.log
+./coder/1-build/attempt-1/verify-full/verify-result.json
+./coder/1-build/attempt-1/verify-full/verify.log
+./coder/1-integrate/attempt-1/agent.log
+./coder/1-integrate/attempt-1/dist-sha256.txt
+./coder/1-integrate/attempt-1/invocation.txt
+./coder/1-integrate/attempt-1/report.md
+./coder/1-integrate/attempt-1/result.json
+./coder/1-integrate/attempt-1/source-commit.txt
+./coder/1-integrate/attempt-1/source-status.txt
+./coder/1-integrate/attempt-1/verify-full.log
+./coder/1-integrate/attempt-1/verify-full/browser-console.log
+./coder/1-integrate/attempt-1/verify-full/build.log
+./coder/1-integrate/attempt-1/verify-full/dist-sha256.txt
+./coder/1-integrate/attempt-1/verify-full/identity.txt
+./coder/1-integrate/attempt-1/verify-full/playtest-results.json
+./coder/1-integrate/attempt-1/verify-full/playtest.log
+./coder/1-integrate/attempt-1/verify-full/selftest.log
+./coder/1-integrate/attempt-1/verify-full/verify-result.json
+./coder/1-integrate/attempt-1/verify-full/verify.log
+./coder/2-build/attempt-1/agent.log
+./coder/2-build/attempt-1/invocation.txt
+./coder/2-build/attempt-1/report.md
+./coder/2-build/attempt-1/result.json
+./coder/2-build/attempt-1/source-commit.txt
+./coder/2-build/attempt-1/source-dirty.patch
+./coder/2-build/attempt-1/source-status.txt
+./coder/2-build/attempt-1/verify-exit.txt
+./coder/2-build/attempt-1/verify-full.log
+./coder/2-build/attempt-1/verify-full/browser-console.log
+./coder/2-build/attempt-1/verify-full/build.log
+./coder/2-build/attempt-1/verify-full/dist-sha256.txt
+./coder/2-build/attempt-1/verify-full/identity.txt
+./coder/2-build/attempt-1/verify-full/playtest-results.json
+./coder/2-build/attempt-1/verify-full/playtest.log
+./coder/2-build/attempt-1/verify-full/selftest.log
+./coder/2-build/attempt-1/verify-full/verify-result.json
+./coder/2-build/attempt-1/verify-full/verify.log
+./coder/2-integrate/attempt-1/agent.log
+./coder/2-integrate/attempt-1/dist-sha256.txt
+./coder/2-integrate/attempt-1/invocation.txt
+./coder/2-integrate/attempt-1/report.md
+./coder/2-integrate/attempt-1/rerun-1.log
+./coder/2-integrate/attempt-1/rerun-1/browser-console.log
+./coder/2-integrate/attempt-1/rerun-1/playtest-results.json
+./coder/2-integrate/attempt-1/rerun-2.log
+./coder/2-integrate/attempt-1/rerun-2/browser-console.log
+./coder/2-integrate/attempt-1/rerun-2/playtest-results.json
+./coder/2-integrate/attempt-1/rerun-3.log
+./coder/2-integrate/attempt-1/rerun-3/browser-console.log
+./coder/2-integrate/attempt-1/rerun-3/playtest-results.json
+./coder/2-integrate/attempt-1/result.json
+./coder/2-integrate/attempt-1/source-commit.txt
+./coder/2-integrate/attempt-1/source-dirty.patch
+./coder/2-integrate/attempt-1/source-status.txt
+./coder/2-integrate/attempt-1/verify-exit-2.txt
+./coder/2-integrate/attempt-1/verify-exit.txt
+./coder/2-integrate/attempt-1/verify-full-2.log
+./coder/2-integrate/attempt-1/verify-full-2/browser-console.log
+./coder/2-integrate/attempt-1/verify-full-2/build.log
+./coder/2-integrate/attempt-1/verify-full-2/dist-sha256.txt
+./coder/2-integrate/attempt-1/verify-full-2/identity.txt
+./coder/2-integrate/attempt-1/verify-full-2/playtest-results.json
+./coder/2-integrate/attempt-1/verify-full-2/playtest.log
+./coder/2-integrate/attempt-1/verify-full-2/selftest.log
+./coder/2-integrate/attempt-1/verify-full-2/verify-result.json
+./coder/2-integrate/attempt-1/verify-full-2/verify.log
+./coder/2-integrate/attempt-1/verify-full.log
+./coder/2-integrate/attempt-1/verify-full/browser-console.log
+./coder/2-integrate/attempt-1/verify-full/build.log
+./coder/2-integrate/attempt-1/verify-full/dist-sha256.txt
+./coder/2-integrate/attempt-1/verify-full/identity.txt
+./coder/2-integrate/attempt-1/verify-full/playtest-results.json
+./coder/2-integrate/attempt-1/verify-full/playtest.log
+./coder/2-integrate/attempt-1/verify-full/selftest.log
+./coder/2-integrate/attempt-1/verify-full/verify-result.json
+./coder/2-integrate/attempt-1/verify-full/verify.log
+./coder/plan/attempt-1/agent.log
+./coder/plan/attempt-1/interface-contract.md
+./coder/plan/attempt-1/invocation.txt
+./coder/plan/attempt-1/proposed-spec.md
+./coder/plan/attempt-1/report.md
+./coder/plan/attempt-1/result.json
+./coder/plan/attempt-1/source-status.txt
+./manifest.txt
+./reviewer_requirements/1-audit/attempt-1/agent.log
+./reviewer_requirements/1-audit/attempt-1/invocation.txt
+./reviewer_requirements/1-audit/attempt-1/report.md
+./reviewer_requirements/1-audit/attempt-1/result.json
+./reviewer_requirements/2-audit/attempt-1/agent.log
+./reviewer_requirements/2-audit/attempt-1/invocation.txt
+./reviewer/1-review/attempt-1/agent.log
+./reviewer/1-review/attempt-1/invocation.txt
+./reviewer/1-review/attempt-1/report.md
+./reviewer/1-review/attempt-1/result.json
+./reviewer/2-review/attempt-1/agent.log
+./reviewer/2-review/attempt-1/dist-sha256-at-review.txt
+./reviewer/2-review/attempt-1/invocation.txt
+./reviewer/2-review/attempt-1/quick-1.log
+./reviewer/2-review/attempt-1/quick-1/browser-console.log
+./reviewer/2-review/attempt-1/quick-1/playtest-results.json
+./reviewer/2-review/attempt-1/quick-2.log
+./reviewer/2-review/attempt-1/quick-2/browser-console.log
+./reviewer/2-review/attempt-1/quick-2/playtest-results.json
+./reviewer/2-review/attempt-1/quick-3.log
+./reviewer/2-review/attempt-1/quick-3/browser-console.log
+./reviewer/2-review/attempt-1/quick-3/playtest-results.json
+./reviewer/2-review/attempt-1/report.md
+./reviewer/2-review/attempt-1/result.json
+./tester/1-test/attempt-1/agent.log
+./tester/1-test/attempt-1/invocation.txt
+./tester/1-test/attempt-1/report.md
+./tester/1-test/attempt-1/result.json
+./tester/1-test/attempt-1/source-commit.txt
+./tester/1-test/attempt-1/source-dirty.patch
+./tester/1-test/attempt-1/source-status.txt
+./tester/1-test/attempt-1/verify-exit.txt
+./tester/1-test/attempt-1/verify-run0-exit.txt
+./tester/1-test/attempt-1/verify-run0-relpath-invocation-error/identity.txt
+./tester/1-test/attempt-1/verify-run0-relpath-invocation-error/verify.log
+./tester/1-test/attempt-1/verify-run0-stdout.log
+./tester/1-test/attempt-1/verify-stdout.log
+./tester/1-test/attempt-1/verify/browser-console.log
+./tester/1-test/attempt-1/verify/build.log
+./tester/1-test/attempt-1/verify/dist-sha256.txt
+./tester/1-test/attempt-1/verify/identity.txt
+./tester/1-test/attempt-1/verify/playtest-results.json
+./tester/1-test/attempt-1/verify/playtest.log
+./tester/1-test/attempt-1/verify/selftest.log
+./tester/1-test/attempt-1/verify/verify-result.json
+./tester/1-test/attempt-1/verify/verify.log
+./tester/2-test/attempt-1/agent.log
+./tester/2-test/attempt-1/invocation.txt
+./tester/2-test/attempt-1/report.md
+./tester/2-test/attempt-1/result.json
+./tester/2-test/attempt-1/source-commit.txt
+./tester/2-test/attempt-1/source-dirty.patch
+./tester/2-test/attempt-1/source-status.txt
+./tester/2-test/attempt-1/verify-exit.txt
+./tester/2-test/attempt-1/verify-stdout.log
+./tester/2-test/attempt-1/verify/browser-console.log
+./tester/2-test/attempt-1/verify/build.log
+./tester/2-test/attempt-1/verify/dist-sha256.txt
+./tester/2-test/attempt-1/verify/identity.txt
+./tester/2-test/attempt-1/verify/playtest-results.json
+./tester/2-test/attempt-1/verify/playtest.log
+./tester/2-test/attempt-1/verify/selftest.log
+./tester/2-test/attempt-1/verify/verify-result.json
+./tester/2-test/attempt-1/verify/verify.log
+./tester/prepare/attempt-1/agent.log
+./tester/prepare/attempt-1/dist-sha256.txt
+./tester/prepare/attempt-1/invocation.txt
+./tester/prepare/attempt-1/playtest-quick.log
+./tester/prepare/attempt-1/playtest-quick/browser-console.log
+./tester/prepare/attempt-1/playtest-quick/playtest-results.json
+./tester/prepare/attempt-1/proposed-criteria.md
+./tester/prepare/attempt-1/report.md
+./tester/prepare/attempt-1/result.json
+./tester/prepare/attempt-1/source-status.txt
+./tester/verify-005841Z/identity.txt
+./tester/verify-005841Z/verify.log
+./verification-1.log
+----
+# Requirements & evidence audit — reviewer_requirements, attempt-1
+Run 20261103T002748Z-51080, task 1-audit. Source commit e500c44 + 27 uncommitted/untracked paths (git status at audit time; loop/ also modified, not by me). Read-only audit: no code, tests, loop/, or other roles' files touched. No commands were re-run (no build, no playtest); all technical claims below are from other roles' reports and are evidence, not authority.
+
+## Assumptions
+- artifacts/specification.md, acceptance-criteria.md, interface-contract.md and artifacts/state.json do NOT exist. Fallback = run 20261103T001738Z-47122 coder/plan (proposed-spec.md, interface-contract.md) and tester/prepare (proposed-criteria.md rev 2). All are AGENT-PROPOSED; none is student-approved.
+- This run (…51080) contains only manifest.txt (no coder/tester outputs yet), so there is no current-run candidate evidence.
+- loop/DESIGN_DECISION_QUESTIONS.md is a student draft: Evidence, Limits and Recovery answers are thin ("compilation, screenshots, plausible explanations…" is listed as success, which the README says is insufficient). It is not an approved acceptance document.
+
+## Product readiness (README R1-R6 as proposed)
+| Item | Status | Evidence / gap |
+|---|---|---|
+| Clean build (emcc 4.0.18) | PARTIAL | Coder 1-build of run …47122 reports `make clean all` exit 0. Predates the current tree? dist/ files are timestamped 16:52 and platform/render_timing.c, input_audio.c, web/input_audio.js (16:37-16:40) exist, but prior reports say these modules are "not delivered"/absent. Which modules are in the tested dist is NOT_ESTABLISHED. |
+| Quick playtest | PARTIAL | 0 FAIL, 32 PASS, 3 UNVERIFIED (A1, P1, G3), twice (tester + coder), QUICK exits 3 by design. |
+| Full 300s soak / `tests/verify.sh` | NOT_ESTABLISHED | Never run in any run. |
+| Audio, persistence, door/exit, mouse, other browsers | NOT_ESTABLISHED | Student scope undecided; A1/P1/G3 UNVERIFIED. "Faithful play" undefined (no demo/determinism check). |
+| I5/I7 timing hypothesis | WEAK | Earlier failures attributed to test timing; tester then loosened to settle-polling. Two passes on one build, flakiness unassessed. Criteria were changed in response to failure (logged in rev 2 change log, but with no student sign-off) — must not count as evidence the port was right. |
+
+## Assignment readiness
+| Obligation | Status | Next action |
+|---|---|---|
+| Student-approved spec & criteria written before implementation | NOT_ESTABLISHED | Criteria were written by the tester agent after the build existed (run …41864 coder 1-build preceded criteria). Student must review/freeze artifacts/acceptance-criteria.md and record approval + date. |
+| Documented design decisions in loop/ | PARTIAL | Draft answers exist; Evidence/Limits/Authority truncated or vague; no numeric time/token/retry budgets or stop rules distinguishing success/exhaustion/stall. |
+| Separate coder/reviewer/tester invocations | PARTIAL | Prompts and per-role output dirs exist. |
+| Permission enforcement | NOT_ESTABLISHED | loop.sh states isolation is not implemented; every report says instruction-only. No demonstration that coder cannot edit tests/. Today tests/ is untracked and unprotected by hash/read-only mode. |
+| MCP tools / handoffs | NOT_ESTABLISHED | No MCP config or tool definitions found in artifacts evidence. |
+| Independent verification w/ revision identity | PARTIAL | Reports cite commit + "uncommitted changes", but the tree is dirty and untracked; initial-source.patch exists for earlier runs but dist hash vs. tree for the current candidate is unchecked. Recommend recording a tree hash (including untracked files). |
+| Checks catch faults (mutation evidence) | PARTIAL | tests/selftest.mjs covers pixel helpers only (black/swapped/transparent/static/mis-shifted). No evidence that broken *builds* (e.g. dropped key release, BGR swap, frozen loop) fail the playtest. |
+| Autonomous repair of ≥2 undisclosed regressions | NOT_ESTABLISHED | None injected. Needs a teammate/instructor. |
+| Resumption with fresh contexts | NOT_ESTABLISHED | Runs resume by reading prior reports, but no interruption was staged and no state.json exists. loop.log of 20261030T202822-loop-sh shows an earlier failure (missing ANTHROPIC_API_KEY). |
+| Resource accounting | NOT_ESTABLISHED | All reports: "Usage: not available". |
+| Manual interventions log | PARTIAL | Reports say "none"; no central log, and student edits to loop/ are uncommitted. |
+| Deployment (hosting) | NOT_ESTABLISHED | Only local http.server; no hosting decision. |
+| Reflection / disagreement write-up | NOT_ESTABLISHED | Not started. |
+
+## Findings (owner)
+1. (student) Approve or replace the agent-proposed spec and criteria; until then no result is "accepted". Decide audio, persistence, mouse, browsers, faithful-play definition.
+2. (tester) Run full `tests/verify.sh` with absolute OUT_DIR on the current tree; record tree hash/dist hash. Add fault-injection runs proving checks fail on broken builds, and repeat quick runs for I5/I7 flakiness.
+3. (coder) Report whether render_timing / input_audio modules are in dist; reconcile stale "absent" statements in prior reports; no delivery report exists for them.
+4. (student/runner) Implement real permission enforcement (read-only tests/ for coder, hash check of protected files) or document honestly as unenforced; add MCP config.
+5. (student/runner) Add state.json, budgets, usage accounting, stop rules.
+6. (student + instructor) Schedule regression-injection, interruption/resume demonstration, and reflection.
+7. (reviewer note) Prior builds shared dist/; earlier run evidence must be preserved — currently preserved.
+
+## Next action
+Student to freeze criteria (finding 1); tester to run the full verify; coder to clarify module status. Re-audit afterward.
+Usage: not available. Manual interventions by this role: none.
+{"status":"FINDINGS","summary":"Audit incomplete obligations: no student-approved spec/criteria; full 300s verify never run; permission enforcement, MCP, fault-injection, regression repair, resumption, resource accounting, deployment and reflection are NOT_ESTABLISHED; quick playtest 0 FAIL with A1/P1/G3 unverified; status of render_timing/input_audio modules in dist unclear."}
+----
+# coder 1-integrate attempt-1 (run 20261103T002748Z-51080)
+Source: commit e500c44 + uncommitted changes (source-status.txt; verify-full/identity.txt). Criteria are AGENT-PROPOSED (tester/prepare, coder/plan); no student-approved specification / acceptance-criteria / interface-contract exists (assumption: proposals used as-is, not treated as approved).
+
+## Handoffs read
+coder_input_audio/1-input, coder_render_timing/1-render, coder/1-build, tester/prepare, coder/plan.
+
+## Changes (owned files only)
+- `web/index.html`: removed inline key handlers (duplicate of web/input_audio.js); added `<script src="input_audio.js">` before doom.js. `Module` setup kept inline.
+- `Makefile`: dist step now copies `web/index.html` and `web/input_audio.js` to `dist/`.
+- No changes to loop/, tests/, assets/, third_party/. render_timing.c / input_audio.c already linked via the `platform/*.c` glob (no change needed).
+- Not done: optional diagnostic exports (_cap_input_dropped/_delivered); CSS image-rendering: pixelated (canvas not upscaled).
+
+## Evidence
+Full `tests/verify.sh` (selftest, clean build with emcc 4.0.18, playtest, 300 s soak), exit 0, `playtest: PASS failed=0`. See verify-full.log, verify-full/ (identity.txt, playtest.log, screens, browser-console.log), dist-sha256.txt. dist/index.html references input_audio.js, contains no inline KEYS table, and dist/input_audio.js is identical to web/input_audio.js, so the new JS path was the one exercised (I1-I7, C1-C3, U1-U4 pass).
+
+## Limits / open
+1. A1 audio, P1 persistence, G3 door/level-exit remain UNVERIFIED (scope undecided / no oracle). Mouse input not implemented (engine-level). A pass does not cover them.
+2. Headless Chromium only; one run; flakiness not assessed. Playtest passed before this change too, so it shows no regression, not improvement.
+3. No independent reviewer pass has occurred on input_audio.*, render_timing.*, or this wiring.
+4. Untested: keyboard layouts/IME, Meta/context-menu release, hidden-tab timing.
+
+## Decisions needed (student)
+Audio (SFX/music) and save persistence scope; approval of acceptance criteria.
+
+## Next action
+Reviewer reviews platform/ and web/ changes; tester adds held-key-on-tab-hide and repeat-keydown checks. Manual interventions: none. Usage: not available.
+{"status":"FINDINGS","summary":"Wired web/input_audio.js into index.html and Makefile; clean build and full verify.sh (300s soak) exit 0, failed=0. Not READY: A1 audio, P1 persistence, G3 door/exit UNVERIFIED, mouse absent, criteria agent-proposed, no independent review, headless Chromium only."}
+# Coder 1-build report (attempt-1, run 20261103T002748Z-51080)
+Source: commit e500c44 + uncommitted changes (identity: verify-full/identity.txt). Criteria are AGENT-PROPOSED (tester/prepare), not student-approved; no specification.md / acceptance-criteria.md / interface-contract.md exist.
+
+## Work done
+- Reviewed prior findings (runs ...235903Z-41864, ...001738Z-47122). Their open items: full verify not run, dist identity vs tree.
+- No source changes were needed: Makefile, platform/, web/, BUILD.md from earlier attempts were left as-is. Did not touch loop/, tests/, assets/, third_party/.
+- Clean rebuild with emcc 4.0.18 (`make clean && make all`, exit 0; build.log). dist hashes in dist-sha256.txt.
+- Ran full `tests/verify.sh` (selftest, clean build, playtest, 300s soak) with absolute OUT_DIR: exit 0, `playtest: PASS failed=0`. Evidence: verify-full.log, verify-full/.
+
+## Result for owned scope (build, startup, WAD packaging)
+Build reproducible; WAD packaged in doom.data and the game boots, renders, and takes input in headless Chromium (B0-B6, M1, G1, I1-I7, C1-C3, U1-U4, T2 35.0 tics/s, R1-R4 soak all PASS).
+
+## Limits / open
+1. A1 audio, P1 save persistence, G3 door/level-exit are UNVERIFIED (student scope undecided / no oracle). "Exit 0" does not cover them.
+2. Only headless Chromium tested; single full run, flakiness not assessed.
+3. Passing checks are agent-proposed; an independent reviewer pass has not occurred.
+4. verify.sh needs an absolute OUT_DIR (tester-owned; unchanged).
+Manual interventions: none. Usage: not available.
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_REQUIREMENTS.md
+REVIEWER.md
+TESTER.md
+# Run artifacts
+
+**Agents must use this folder for durable artifacts between runs.**
+
+The distributed starter contains only this README in this folder. Create
+run records when student work begins; starter preparation notes and sample
+results are not included.
+
+Anything saved for a later agent or run—state, plans, handoffs, logs, review
+findings, test results, screenshots, recordings, or reports—belongs here.
+Fresh agent contexts must be able to resume using the repo and this folder.
+
+Loop code, prompts, and configuration belong in [`loop/`](../loop/README.md).
+Port code belongs in `platform/` and `web/`, verification code in `tests/`,
+and game assets in `assets/`. Shared build files may live at the root. Build products
+may live in `build/` or `dist/`; link to them from a run record when useful.
+Temporary scratch files may be disposable, but anything needed for a
+handoff, resumption, or evaluation must be copied here before a run ends.
+
+## Suggested layout
+
+You can choose a different layout inside this folder. Document it so another
+agent can find the current state without reading your conversation.
+
+```text
+artifacts/
+  README.md
+  state.json                 # Current run, next task, and stopping status
+  runs/
+    <unique-run-id>/
+      manifest.json          # Source revision, environment, budgets, usage
+      handoffs/              # Tasks and responses between roles
+      reviews/               # Findings and their resolution
+      logs/                  # Tool and build output
+      tests/                 # Commands, results, screenshots, recordings
+      summary.md             # Outcome and next steps
+```
+
+## Required habits
+
+- Give each run a unique ID. Preserve earlier results instead of overwriting
+  failure evidence with the latest passing output.
+- Record the source revision and any uncommitted changes being tested.
+  Evidence from an older revision does not establish that the current one passes.
+- Save the current task, unresolved findings, artifact paths, and next action
+  before handing off or stopping. Include the stopping reason and resource usage.
+- Reference evidence with paths relative to the repo, so it works in a sandbox.
+- Include the artifacts needed to assess your submission. Explain any omitted
+  large files and how to reproduce them.
+- Do not store credentials, API keys, or commercial game data here. Sanitize
+  logs before saving them.
+
+This folder starts with instructions only. Your loop creates the run records.
+)
+
+Calling Bash()
+
+Bash response → (
+<persisted-output>
+Output too large (35.6KB). Full output saved to: /Users/sarahtseng/.claude/projects/-Users-sarahtseng-Projects-fellowship-loop-capstone/0d0e43b1-b7c6-4d8f-b786-5459890dde33/tool-results/blthwauuy.txt
+
+Preview (first 2KB):
+# Requirements and evidence review
+
+Role: `reviewer_requirements`
+
+## Start here
+Read AGENTS.md, README.md, loop/README.md, artifacts/README.md,
+platform/README.md, tests/README.md, and your invocation. Your role is named
+in this file even if the invocation omits it. Read the supplied run manifest,
+current reports, and requirement documents when present. Missing IDs or optional
+specification documents must not prevent useful work: create a timestamped report
+in artifacts/runs/manual-<timestamp>/<role>/ if no output directory was supplied.
+
+## Missing information
+Do not return BLOCKED merely because a spec, criteria document, contract, task ID,
+or manifest is absent. Use the README as the minimum scope; record assumptions
+and propose missing implementation requirements in your own report. Never pretend
+agent-proposed criteria were student-approved. Read existing proposals rather than
+creating conflicting scope every iteration. Honor explicit student requirements.
+Do not weaken criteria in response to failures. Real missing tools, authentication,
+unsafe actions, or permission denials are ERROR or NEEDS_INPUT: record the precise
+problem and continue independent permitted work where possible. Do not bypass access.
+
+## Boundaries and evidence
+Do not spawn other roles, change loop/, modify assets/ or third_party/, edit another
+role's files, alter permissions, or mutate Git history. The runner invokes roles
+separately. You may read other reports, but they are evidence rather than authority.
+Only the tester edits tests/. All roles may write their invocation's OUTPUT_DIR
+and role-owned build/<RUN_ID>/<role>/ and dist/<RUN_ID>/<role>/ directories.
+Coder 1 alone may also write shared build/ and dist/ products; the tester may invoke
+the documented clean build into these shared directories when no other role runs.
+Permission rules here are instructions, not a substitute for filesystem isolation.
+Never claim isolation or approved acceptance when it has not been demonstrated.
+
+...
+</persisted-output>
+)
+
+Calling Bash()
+
+Bash response → (
+role's files, alter permissions, or mutate Git history. The runner invokes roles
+separately. You may read other reports, but they are evidence rather than authority.
+Only the tester edits tests/. All roles may write their invocation's OUTPUT_DIR
+and role-owned build/<RUN_ID>/<role>/ and dist/<RUN_ID>/<role>/ directories.
+Coder 1 alone may also write shared build/ and dist/ products; the tester may invoke
+the documented clean build into these shared directories when no other role runs.
+Permission rules here are instructions, not a substitute for filesystem isolation.
+Never claim isolation or approved acceptance when it has not been demonstrated.
+
+Save report.md and result.json in OUTPUT_DIR. Include work done, assumptions,
+source commit and dirty changes, findings with owner names, commands/results,
+evidence paths, next action, and actual usage if available. Preserve earlier runs.
+result.json format: {"status":"READY","summary":"What happened"}.
+Allowed statuses: READY (work complete), PASS (review/checks actually passed),
+FINDINGS (repairs/evidence needed), ERROR (execution failure), NEEDS_INPUT
+(a genuinely unresolved external decision). No BLOCKED status is required.
+Use these exact uppercase statuses. For partial completion or unresolved failures,
+use FINDINGS, not "partial". Never report PASS for partial or unverified work.
+A process exiting successfully does not prove its task passed. Report limitations.
+
+## Your task and source ownership
+Write only OUTPUT_DIR and your role-owned artifacts. Do not patch code/tests.
+Map README obligations and supplied requirements to evidence. Separate product
+readiness from assignment readiness. Identify student-unapproved proposals, missing
+criteria, permission enforcement, hidden-regression evaluation, resumption evidence,
+resource accounting, deployment, and reflection. Do not demand these be fabricated
+or stop useful implementation because they are absent. Report their status as
+NOT_ESTABLISHED with specific next actions. Check technical/test claims identify
+the actual candidate and preserve failures. Return FINDINGS for incomplete audit
+obligations, PASS only if all audited obligations are established. Never reinterpret
+a gameplay check pass as final homework acceptance.
+=== coder/2-integrate
+# coder 2-integrate attempt-1 (run 20261103T002748Z-51080)
+Status: FINDINGS. The final full verify passed, but one earlier full run failed on I3, A1/P1/G3 are UNVERIFIED, and the criteria are agent-proposed.
+Source: commit e500c44 + uncommitted changes (source-commit.txt, source-status.txt). source-dirty.patch holds the diff of tracked files only; untracked files (platform/*, web/input_audio.js, tests/*, Makefile) are not in it (reviewer F9 only partly addressed). Hashes of the tested dist: dist-sha256.txt. Identity: verify-full*/identity.txt.
+Assumption: no artifacts/specification.md, acceptance-criteria.md or interface-contract.md exists, so I used the agent-proposed coder/plan and tester/prepare proposals. I treated none as approved.
+
+## Handoffs read
+coder/1-integrate, coder/2-build, coder_input_audio/2-input, coder_render_timing/2-render, tester/1-test, reviewer/1-review, reviewer_requirements/1-audit.
+
+## Integration state found
+The shared dist/input_audio.js (sha 75a7bc3c…) was STALE. It lacked the reviewer F2 (refocus-held key) and F3 (browser shortcuts) fixes that coder_input_audio/2-input put in web/input_audio.js (sha 8308f801…). The earlier passing verify runs therefore did not exercise those fixes. The clean rebuild now ships the current file (dist and web hashes match).
+
+## Changes (owned files only)
+- web/index.html: added `image-rendering: pixelated; image-rendering: crisp-edges;` to the canvas (reviewer F8). Chromium honours `pixelated`; `crisp-edges` is a fallback for browsers that lack it. Not visually checked at HiDPI.
+- platform/input_audio.c: comment now states that sound is off because the Makefile does not define FEATURE_SOUND (reviewer F7). No behaviour change.
+- No changes to loop/, tests/, assets/, third_party/.
+- Already done by earlier coders (I confirmed they are present): F1 cap_frame removed, F4 ASYNCIFY stack 64K, F6 scoped -w and -MMD.
+
+## Evidence
+- Run 1 `tests/verify.sh` (verify-full.log, verify-exit.txt = 1): clean build OK, **FAIL I3.turn-left shift=-116px**, all other checks passed, failed=1. Kept as is.
+- 3 QUICK playtest reruns on the same dist (rerun-1..3.log): I3 passed each time, shift=204px. They exit 3 by design, so they are not a pass.
+- Run 2 full `tests/verify.sh` (verify-full-2.log, verify-exit-2.txt = 0): clean build, `playtest: PASS failed=0 unverified=3`, 300 s soak included.
+- Result: I3 failed 1 of 5 runs on an identical build. I have not found the cause. A guess is that bestShift aliases once the left-turn shift (~200 px) gets near the search range limit, or that turn timing varies. That is unconfirmed. The check lives in tests/ (tester-owned) and I did not change it.
+
+## Limits
+- The shipped F2/F3 input fixes still have no behavioural test, so they are verified by inspection only. The full pass shows no regression, not that the fixes work.
+- Headless Chromium only. Hidden-tab timing, other browsers, mouse, IME and HiDPI are untested.
+- A1 audio, P1 persistence and G3 door/exit are UNVERIFIED (scope undecided / no oracle).
+- No independent review has covered F8, the F7 comment or this rebuild.
+- Do not report PASS while I3 is flaky and the criteria are unapproved.
+
+## Findings / owners
+1. tester: investigate the intermittent I3 failure (run 1 evidence in verify-full/playtest*); repeat runs to measure the rate; add F2/F3 and implementation-identity checks.
+2. reviewer: re-check F8, F7 and the stale-dist finding.
+3. student: approve the criteria; decide audio/persistence/mouse scope.
+4. coder (later): commit or snapshot untracked source for F9.
+
+## Next action
+Tester triages I3 flakiness on the current tree. Manual interventions: none. Usage: not available.
+{"status":"FINDINGS","summary":"Rebuilt with current web/input_audio.js (shared dist copy was stale, missing F2/F3), added canvas pixelated CSS (F8) and F7 comment. Full verify: run 1 exit 1 (intermittent FAIL I3.turn-left), run 2 exit 0 failed=0. I3 failed 1 of 5 runs on identical build; cause unknown. A1/P1/G3 UNVERIFIED; criteria agent-proposed; F2/F3 fixes lack behavioural tests."}
+=== tester/2-test
+# tester 2-test attempt-1 (run 20261103T002748Z-51080)
+
+Status: FINDINGS. The unchanged suite FAILED (exit 1): `I3.turn-left shift=-116px`. All other required checks passed. A1, P1 and G3 are UNVERIFIED. The criteria are agent-proposed, not student-approved.
+
+## Source
+- Commit e500c440656622db5ab3f8fb7df73d8b5998eeb3 plus uncommitted changes: source-status.txt, source-dirty.patch (untracked files are not in the patch).
+- Identity (tests_sha256, dirty_diff_sha256, wad_sha256, emcc): verify/identity.txt.
+- No tests/ files were modified, and no thresholds were changed.
+
+## Assumptions
+- No artifacts/specification.md, acceptance-criteria.md or interface-contract.md exists. I used the proposals in coder/plan/attempt-1/ and tester/prepare/attempt-1/. None is student-approved.
+
+## Commands and results
+- `source ~/Developer/emsdk/emsdk_env.sh && RUN_ID=... OUT_DIR=<abs> tests/verify.sh`: exit 1 (verify-exit.txt).
+- Tooling, selftest and `make clean && make all` passed.
+- Playtest: 29 PASS, 1 FAIL (I3), 3 UNVERIFIED (A1, P1, G3). This includes the 300s soak (R1-R4) and 34.96 tics/s.
+- Evidence: verify/ (verify.log, selftest.log, build.log, dist-sha256.txt, playtest-results.json, screenshots), verify-stdout.log.
+
+## Findings
+1. FAIL I3.turn-left (owner: tester for the check; coder only if the cause turns out to be in the product).
+   - Same-build history: coder 2-integrate failed 1 of 5 runs, the reviewer 2 of 3, and now this full run failed (the earlier tester 1-test run passed). That is at least 4 failures in about 10 runs.
+   - I1 (turn-right) gave -200px every time, with a consistent sign. I3 gives +204px when it passes and -116px when it fails. A mirrored result of about 200px that comes out as -116px suggests bestShift aliasing (or turn timing), not the game ignoring ArrowLeft. This is a hypothesis, unconfirmed.
+   - I did not change the check, because I have no authorization to rewrite checks after prepare. I preserved the failing run. Do not report PASS while I3 is intermittent.
+2. UNVERIFIED (owner: student): A1 audio and P1 persistence have no decided scope.
+3. UNVERIFIED (owner: tester/student): G3 door use and level exit have no oracle.
+4. Owner tester, proposed only: the reviewer's R2-3 and R2-4 checks (key edge cases, implementation identity).
+5. Owner student: approve or replace the proposed criteria.
+
+## Limits
+Headless Chromium only. Outcomes are inferred from pixels. Mouse, touch and non-Chromium browsers were not tested. Usage: not available.
+
+## Next action
+Student authorizes a fix for the I3 measurement (e.g. a larger bestShift search range, or an angle-independent turn-left oracle, with no lowered threshold). Tester then runs 10 repeat runs to measure the failure rate. Student decides the audio/persistence scope and approves the criteria.
+{"status":"FINDINGS","summary":"Unchanged tests/verify.sh exited 1: I3.turn-left failed (shift=-116px; intermittent, about 4 failures in 10 runs on the same build). 29 PASS, 3 UNVERIFIED (A1, P1, G3). Criteria are agent-proposed. Tests not modified."}
+=== reviewer/2-review
+# reviewer 2-review attempt-1 (run 20261103T002748Z-51080)
+
+Status: FINDINGS (not PASS). Technical review of the integrated candidate. I re-ran the browser playtest on the current dist and reproduced a failing check.
+
+## Basis and assumptions
+- Source: commit e500c44 + uncommitted changes (manifest). Untracked platform/*, web/input_audio.js, Makefile and tests/* are not in any preserved patch (finding R2-7).
+- No artifacts/specification.md, acceptance-criteria.md or interface-contract.md exists. I used the AGENT-PROPOSED coder/plan and tester/prepare proposals. None is student-approved; I did not approve them.
+- Candidate under review is the shared `dist/` built 17:19. Its sha256 values equal `coder/2-integrate/attempt-1/dist-sha256.txt` (my copy: `dist-sha256-at-review.txt`). The earlier `coder/1-build/attempt-1` report and hashes describe an older tree (before render_timing.c and input_audio.js) and are superseded. Do not cite them for the current candidate.
+- I did not rebuild (emcc is not on this shell's PATH; `verification-1.log` shows the runner hit the same). I reviewed the source and ran the existing playtest against the existing dist.
+- Prior reviewer findings F1, F3, F4, F6, F7, F8 are addressed in source (cap_frame removed, stack 64K, scoped -w, -MMD, shortcut passthrough, pixelated CSS). I re-read the code and found no regression in them. F2, F5, F9 are still open (R2-3, R2-4, R2-7).
+
+## Verified correct by reading source (no action)
+- Pixel path: `render_timing.c` turns word 0x00RRGGBB into 0xFFBBGGRR, so bytes are R,G,B,A and alpha is 255. The 1 MB view is rebuilt per frame, so ALLOW_MEMORY_GROWTH cannot leave a detached buffer. Frame `B3/B4/B6` checks agree, and the screenshots I viewed have correct colours.
+- WAD: `--preload-file assets/doom1.wad@/doom1.wad`, `main` passes `-iwad /doom1.wad`. The game boots to E1M1 in every run.
+- Timing: `cap_time_ms` is nonzero on the first call (i_timer.c `basetime==0` rule). `cap_sleep_ms` uses `emscripten_sleep`, so the wipe and tic waits yield. T2 measured 35 tics/s.
+- Input queue: `input_audio.c` keeps strict press/release alternation. The 256-press limit plus at most 255 outstanding releases fits the 512 slots, so a release is never dropped. `I_GetEvent` breaks after each release; extra queued events wait for the next tick, which is harmless.
+- Key table in `web/input_audio.js` matches `doomkeys.h`. Weak fallbacks in `cap_fallback.c` are overridden by the strong definitions (confirmed by earlier role reports; `rt_js_put` is present in doom.js).
+
+## Findings (most severe first)
+
+### R2-1 (high, owner: tester) I3.turn-left is flaky because of the check, and the "PASS" gate is unreliable
+- Evidence: three QUICK playtests on the identical current dist. Run 1 and 2: `FAIL I3.turn-left shift=-116px`, exit 1. Run 3: `PASS I3 shift=204px`. Logs: `quick-1.log`, `quick-2.log`, `quick-3.log`. Coder 2-integrate saw 1 failure in 5 runs; I saw 2 in 3. I1 was `-200px` every time.
+- Root cause (read from `tests/lib/frames.mjs:54` and `tests/playtest.mjs:104-112`, and from screenshots): the check holds a key for a fixed 350 ms. The scene shift then depends on how many tics ran in that window, and it is about 200-240 px. `bestShift` only searches ±`width/3` = ±213 px. When the real shift exceeds 213 px the search lands on an alias (-116 px). In `quick-1/screens/008-turn-right.png` the blood pool is at x≈70. In `010-turn-left.png` it is at x≈310, which is +240 px and in the correct direction. The engine turned the right way; the check measured it wrongly. This is a hypothe
+- Consequence: a full `verify.sh` exit 0 does not establish the input checks. It passed on a coin flip. The same flaw can mask or fake a regression in the required regression-injection evaluation.
+- Expected validation: shorten the hold (about 150 ms) or widen the search, then run at least 10 consecutive playtests with 0 failures. Tests are tester-owned and this review did not change them.
+
+### R2-2 (medium, owner: student decision, then coder_input_audio/coder) The port has no audio
+`FEATURE_SOUND` is not defined and `cap_audio_init` is empty. README.md and platform/README.md describe audio (sound effects and music) as part of the port, and the WAD already contains them. The tester lists A1 as UNVERIFIED. This means the build is a silent Doom. If the student wants audio in scope, it needs a `DG_sound_module` and an `SDL_mixer.h` workaround, plus an oracle that proves sound was produced (an active AudioContext does not). If it is out of scope, record that decision in artifacts/. Do not describe the port as faithful until then.
+
+### R2-3 (medium, owner: tester) Key-handling fixes remain unproven
+F2 (re-press of a key still held after refocus) and F3 (F5/F11/F12 and Ctrl+letter not default-prevented) are in `web/input_audio.js` but no check exercises them. Still untested: `visibilitychange`, `pagehide`, `contextmenu`, Meta, L+R Ctrl, auto-repeat. Expected validation: Playwright cases that dispatch `keydown{repeat:true}` after blur and assert `defaultPrevented===false` for F5 and Ctrl+R.
+
+### R2-4 (medium, owner: tester, with coder) Silent fallback hides a regression
+`cap_fallback.c` still ships a complete second renderer and queue. If `render_timing.c` or `input_audio.c` stops linking, the build passes and no check notices. Expected validation: a test asserting `Module._rt` exists (render module) and an exported diagnostic from `input_audio.c` such as `cap_input_delivered`. This matters for the injected-regression evaluation, because dropping a module is an obvious fault to inject.
+
+### R2-5 (medium, owner: coder_input_audio / student) Save and config persistence is absent
+Files go to the in-memory FS and are lost on reload. P1 is UNVERIFIED and unscoped. I did not exercise saving in this review, so I make no claim about whether in-session save and load work.
+
+### R2-6 (low-medium, owner: tester) Hidden-tab behaviour is unchecked
+The main loop is ASYNCIFY with `setTimeout`-based sleeps. Browsers throttle timers in background tabs, so the game will run slowly or stall while hidden and catch up on return. The input code releases keys on hide, but nothing tests timing after a hide/show cycle. Report it as unverified, not as a defect.
+
+### R2-7 (low, owner: coder / runner) Candidate source is not reproducible from artifacts
+`coder/2-integrate/.../source-dirty.patch` covers tracked files only. platform/*.c, web/input_audio.js, Makefile and tests/* are untracked, so another agent cannot recreate the exact tested tree. This was prior finding F9 and is only partly fixed. Expected: a snapshot or tree hash that includes untracked files, or a commit.
+
+### R2-8 (low, owner: coder_render_timing) Per-frame allocation
+`rt_js_put` allocates a new `Uint8ClampedArray` and `ImageData` every frame, and `cap_render_present` also copies 256k pixels in C. T2 and rAF checks show it keeps up (35 tics/s, 60 rAF/s headless), so this is only a GC and efficiency note. Not measured on slower hardware.
+
+### R2-9 (process, owner: student/runner) Runner verification failed to run
+`verification-1.log` reads `VERIFY FAIL: emcc missing (source emsdk 4.0.18 env)` and the run continued. `loop/` is read-only for me, so I only report it: the runner's own verify step does not source emsdk, so its independent check produced no evidence for this run.
+
+## Coverage limits
+This review does not certify gameplay or the final submission. Not established: audio, persistence, door use and level exit (G3), mouse, browsers other than headless Chromium, HiDPI, flakiness beyond the runs listed, and fidelity to original Doom (no demo or determinism oracle). The student has not approved any criteria.
+
+## Commands and results
+- `shasum -a 256 dist/*` compared with `coder/2-integrate` hashes: identical.
+- `QUICK=1 OUT_DIR=<abs> node tests/playtest.mjs` ×3 on that dist: exit 1, 1, 3. Failures only in I3, as above. Evidence: `quick-N.log`, `quick-N/` (screens, results json).
+- Read: platform/*, web/*, Makefile, tests/lib/frames.mjs, tests/playtest.mjs (lines 100-113), i_input.c, i_timer.c, doomfeatures.h, all role reports under this run.
+
+## Next action
+Tester: fix I3 (R2-1) and repeat 10 runs; add R2-3 and R2-4 checks. Student: decide audio/persistence scope (R2-2, R2-5) and approve criteria. Coder: preserve a full source snapshot (R2-7). Reviewer re-check after those land. Manual interventions: none. Usage: not available.
+{"status":"FINDINGS","summary":"Current dist (hashes equal coder/2-integrate) boots and renders correctly, and code review found no defects in colour conversion, WAD loading, timing or the input queue. But the I3.turn-left check is flaky because of the test itself (failed 2 of 3 of my QUICK runs; shift exceeds the +/-213px search range and aliases), so a verify exit 0 is not reliable. Also open: no audio, no persistence, F2/F3 and fallback-identity checks missing, hidden-tab timing untested, untracked source not snapshotted. Criteria are agent-proposed, not student-approved.","findings_count":9,"source_commit":"e500c440656622db5ab3f8fb7df73d8b5998eeb3","reviewed_dirty":true}
+)
+
+Calling Bash()
+
+Bash response → (
+README.md
+runs
+commit: e500c440656622db5ab3f8fb7df73d8b5998eeb3
+dirty_diff_sha256: e216dde7205b9621f0bf4204c8c964ff54f6f5d566d32292acb117fba00966c3
+status:  M loop/agents.yaml
+status:  M loop/loop.sh
+status:  M platform/doomgeneric_wasm.c
+status:  M tests/README.md
+status:  M web/index.html
+status: ?? BUILD.md
+status: ?? Makefile
+status: ?? loop/DESIGN_DECISION_QUESTIONS.md
+status: ?? loop/prompts/
+status: ?? platform/cap_fallback.c
+status: ?? platform/capstone_bridge.h
+status: ?? platform/engine_stubs.c
+status: ?? platform/input_audio.c
+status: ?? platform/input_audio.h
+status: ?? platform/render_timing.c
+status: ?? platform/render_timing.h
+status: ?? tests/lib/
+status: ?? tests/package-lock.json
+1d7d43be501e67d927e415e0b8f3e29c3bf33075e859721816f652a526cac771  doom.data
+b02755a83c1db50a61b4865d031d812d444d63f8b697fce7508c1ca7a9f69bb1  doom.js
+11ecbb45e45cc08bd726aa299ab2a822f02320ad7beedba2e456179cd5a6fd1c  doom.wasm
+066eb792f6e1f405e0856aeb7e7320019b1730f6a24cb3331c3f4ae71e1f3708  index.html
+8308f801511da836740f717820318be323c738c2efb1a2cf23511ba9806091d2  input_audio.js
+1d0
+< 1d7d43be501e67d927e415e0b8f3e29c3bf33075e859721816f652a526cac771  doom.data
+3a3
+> 1d7d43be501e67d927e415e0b8f3e29c3bf33075e859721816f652a526cac771  doom.data
+      24
+coder
+coder_input_audio
+coder_render_timing
+manifest.txt
+reviewer
+reviewer_requirements
+tester
+verification-1.log
+== tooling
+VERIFY FAIL: emcc missing (source emsdk 4.0.18 env)
+loop/DESIGN_DECISION_QUESTIONS.md
+loop/README.md
+(eval):1: no matches found: --include=*
+)
+Checking out the evidence is done; I'm writing the audit report and result.json now.
+Calling Bash()
+
+Bash response → (
+SAME
+agent.log
+invocation.txt
+report.md
+result.json
+)
+I audited the requirements and evidence and wrote `report.md` and `result.json` to the output directory. The status is FINDINGS, not PASS. I read the other roles' reports and compared the current `dist/` hashes with `coder/2-integrate/attempt-1/dist-sha256.txt`, which are identical. I did not rebuild or re-run any tests.
+
+**Product**
+- The build is current, and the full 300 s verify run has now happened.
+- The `tests/verify.sh` result can't be trusted yet. `I3.turn-left` failed in about 4 of roughly 10 runs on the same build. Tester `2-test` exited 1 with `-116px`, and other full verify runs on the same build exited 0.
+- The reviewer's analysis blames the check, not the port, but that is still a hypothesis. The check's search range is ±213 px and the real shift is 200–240 px, so the measurement can land on a wrong value.
+- Audio, save persistence, and door/level-exit are unverified. Mouse input, other browsers, and the input fixes the reviewer flagged (F2/F3) are also untested.
+- There is no check that would notice if a module silently dropped out of the build, because the fallback renderer would cover for it.
+
+**Assignment**
+- No criteria are student-approved. Everything I used as a reference is agent-proposed.
+- The runner's own independent verify failed because `emcc` wasn't on its path (`verification-1.log`), so it produced no evidence for this run.
+- The tested source can't be recreated from the artifacts, because `source-dirty.patch` leaves out the untracked files.
+- Not yet established:
+  - permission enforcement
+  - MCP configuration
+  - fault-injection checks
+  - repair of injected regressions
+  - a staged resume test
+  - resource accounting
+  - deployment
+  - the reflection write-up
+
+**Next action:** the tester fixes the `I3` check and then runs 10 consecutive passes. The student freezes the criteria and decides audio and persistence scope. The runner fixes the `emcc` path in verify.
+
+Files are in `artifacts/runs/20261103T002748Z-51080/reviewer_requirements/2-audit/attempt-1/`:
+- `report.md`
+- `result.json`

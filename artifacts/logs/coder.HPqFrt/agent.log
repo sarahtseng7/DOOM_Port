@@ -1,0 +1,548 @@
+I'll start by reading the required docs and prior reports.
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+  the resource usage, manual interventions, and final stopping decision.
+
+Preserve failing evidence as well as passing evidence. Record changes to
+acceptance criteria separately, with a reason. Discuss disagreements and
+missed faults in your write-up.
+
+## Where your work belongs
+
+| Location | Purpose |
+| --- | --- |
+| [`loop/`](loop/README.md) | All loop code, prompts, role definitions, MCP configuration, and design documentation. |
+| [`artifacts/`](artifacts/README.md) | All durable run state, handoffs, logs, review findings, and evidence. Agents must use this folder between runs. |
+| `tests/` | Verification code, including checks for the loop itself. |
+| `platform/`, `web/` | The port and browser page. |
+| `third_party/doomgeneric/` | Supplied engine; platform ports have been removed. |
+| `assets/` | Included shareware `doom1.wad` (Episode 1). |
+| `build/`, `dist/` | Generated build output. |
+
+Keep the root for project documentation and shared build/toolchain files.
+The starter supplies engine source, platform and HTML stubs, the shareware
+WAD, documentation, and an optional Docker toolchain. It supplies no working
+game, build script, loop implementation, or test suite. `artifacts/` starts
+with its README only; students create run evidence there during the project.
+Use the supplied engine and Emscripten. Documentation is allowed; copying an
+existing Doom browser port does not satisfy the assignment.
+
+See [`platform/README.md`](platform/README.md) for engine integration caveats,
+including pixel format, timing, and audio. The supplied game data already
+contains sound effects and music; no additional sound assets are required.
+
+## Agent section for setup
+
+### macOS without Docker
+
+Install the build tools directly on your Mac to compile and test the browser
+port. Docker is not required for this workflow. There is currently no macOS
+setup script; run the steps below manually.
+
+1. **Install prerequisites.** In Terminal, run:
+
+   ```sh
+   xcode-select --install
+   ```
+
+   Finish the installer, then check `git --version` and `python3 --version`.
+   If Python is missing, install it from [python.org](https://www.python.org/downloads/macos/),
+   or run `brew install python` if you already have Homebrew.
+
+2. **Install Emscripten.** Use version `4.0.18` to match the supplied Dockerfile:
+
+   ```sh
+   mkdir -p ~/Developer
+   cd ~/Developer
+   git clone https://github.com/emscripten-core/emsdk.git
+   cd emsdk
+   ./emsdk install 4.0.18
+   ./emsdk activate 4.0.18
+   source ./emsdk_env.sh
+   emcc --version
+   ```
+
+   If you already have an SDK checkout at that location, use it instead of
+   cloning again. In each new Terminal session where you want to compile, run:
+
+   ```sh
+   source ~/Developer/emsdk/emsdk_env.sh
+   ```
+
+   See the [official installation instructions](https://emscripten.org/docs/getting_started/downloads.html).
+
+3. **Verify the compiler and browser workflow.** Return to this repository's
+   root directory, then run:
+
+   ```sh
+   mkdir -p build/smoke
+   cat > build/smoke/hello.c <<'EOF'
+   #include <stdio.h>
+   int main(void) {
+       printf("Emscripten works!\n");
+       return 0;
+   }
+   EOF
+
+   emcc build/smoke/hello.c -o build/smoke/index.html
+   python3 -m http.server 8000 --bind 127.0.0.1 --directory build/smoke
+   ```
+
+   Open <http://localhost:8000>. The generated page should print
+   `Emscripten works!`. Press **Control-C** in Terminal to stop the server.
+   This verifies the toolchain and local serving, not the game.
+
+4. **Have your agents implement and build the game.** The supplied platform callbacks are
+   empty, there is no entry point or build script, and the HTML does not yet
+   load a compiled module. These are student implementation tasks; see
+   [platform/README.md](platform/README.md). Document the actual build command
+   once implemented. A completed build could produce:
+
+   ```text
+   dist/
+     index.html
+     doom.js
+     doom.wasm
+     doom.data
+   ```
+
+   The exact filenames depend on the build configuration. For example,
+   `doom.data` could contain the packaged shareware WAD. The build must make
+   that WAD available to the engine inside the browser module.
+
+5. **Test the completed game locally.** Once the build output is in `dist/`,
+   run this from the repository root:
+
+   ```sh
+   python3 -m http.server 8000 --bind 127.0.0.1 --directory dist
+   ```
+
+   Open <http://localhost:8000> and exercise the game's behavior. Use a local
+   web server rather than opening the HTML file directly, as explained in
+   [Emscripten's deployment documentation](https://emscripten.org/docs/compiling/Deploying-Pages.html).
+
+artifacts/logs:
+coder_input_audio.6WSU74
+coder_input_audio.6zHSnA
+coder_input_audio.9u4tS4
+coder_input_audio.KWBVgQ
+coder_input_audio.N0e4K8
+coder_input_audio.OwOtK6
+coder_input_audio.PrVlSe
+coder_input_audio.rdvBFz
+coder_input_audio.XSXPrI
+coder_input_audio.YCG1J3
+coder_input_audio.zZGUhu
+coder_render_timing.1ZyeYK
+coder_render_timing.6XCJuY
+coder_render_timing.8nHQTI
+coder_render_timing.cK29OS
+coder_render_timing.i3pFKE
+coder_render_timing.kFsAu7
+coder_render_timing.KuIme0
+coder_render_timing.licfez
+coder_render_timing.mpRUkR
+coder_render_timing.Wkpv1o
+coder_render_timing.y2E5IZ
+coder.1Bi21x
+coder.7cXMRV
+coder.9PHBOq
+coder.CzMECd
+coder.FaD2R7
+coder.GhMtru
+coder.H58uUd
+coder.HPqFrt
+coder.ICaI0g
+coder.J22PFD
+coder.JMrJmA
+coder.kf3uJJ
+coder.lRueHg
+coder.n6GiEG
+coder.nUFHev
+coder.NWKoK5
+coder.pLDPys
+coder.Q1melD
+coder.s3mRzG
+coder.VgF4Hv
+coder.XGU7Cd
+coder.xIoyo9
+coder.Xl0uaN
+reviewer_gameplay.Bt9KSs
+reviewer_gameplay.dAPDqY
+reviewer_gameplay.facW3H
+reviewer_gameplay.GTAfxW
+reviewer_gameplay.ldSVVs
+reviewer_gameplay.Rw1fcA
+reviewer_gameplay.WeHatJ
+reviewer_gameplay.wHMOB2
+reviewer_gameplay.wQbJ7c
+reviewer_gameplay.Xy92jH
+reviewer_gameplay.ZUZV8O
+reviewer_site.f9dy0D
+reviewer_site.FDoXaA
+reviewer_site.FMO0C9
+reviewer_site.FnUrtZ
+reviewer_site.GwiGfG
+reviewer_site.msvdXx
+reviewer_site.Q4XPrg
+reviewer_site.qWTvbw
+reviewer_site.Rm0IxG
+reviewer_site.U8Ka1G
+reviewer_site.ZELzZH
+tester.3P7z9H
+tester.3Pq6Xx
+tester.8fsQdw
+tester.9SkuzA
+tester.aZlP2G
+tester.bajOBH
+tester.JAaNjg
+tester.oPtvHA
+tester.Q0YUP2
+tester.QcBm5A
+tester.QSq2Uh
+tester.QT7YlR
+tester.w2Z6BS
+verify.2u2qnP
+verify.B9OMLq
+verify.Gjtb86
+verify.Gm8XQE
+verify.hDJeOV
+verify.ICvgiu
+verify.KBbHyS
+verify.oFQ3cu
+verify.wkzlnA
+verify.xskzsM
+verify.za54Fq
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+artifacts/runs:
+20261030T202822-loop-sh
+20261102T235903Z-41864
+20261103T001738Z-47122
+20261103T002748Z-51080
+manual-20261103T034616Z
+manual-20261103T034657Z
+manual-20261103T040301Z
+manual-20261103T042103Z
+manual-20261103T043851Z
+manual-20261103T045814Z
+manual-20261103T051722Z
+manual-20261103T053546Z
+manual-20261103T060404Z
+manual-20261103T063034Z
+manual-20261103T065539Z
+manual-20261103T083647Z
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+# Building the Doom WebAssembly port
+
+Toolchain: Emscripten **4.0.18** (`source ~/Developer/emsdk/emsdk_env.sh`), GNU make, Node (tests only).
+
+    make        # builds build/*.o and dist/{index.html,doom.js,doom.wasm,doom.data}
+    make clean  # removes build/ and dist/
+
+- Engine sources: all `third_party/doomgeneric/*.c` except `dummy.c`, `doomgeneric_sdl.c`; platform code: `platform/*.c`.
+- WAD packaging: `assets/doom1.wad` is embedded via `--preload-file` at `/doom1.wad` in `dist/doom.data`.
+- `web/index.html` is copied to `dist/index.html`. Serve `dist/` over HTTP (not `file://`).
+- Audio: built with `-DFEATURE_SOUND -Iplatform/audio_compat` (stub SDL_mixer.h); `web/audio_web.js` provides the Web Audio backend. Scripts load before doom.js: input_audio.js, audio_web.js, render_timing.js.
+- JS/C bridge exports are listed in the Makefile `EXPORTED_FUNCTIONS`; see `platform/capstone_bridge.h`.
+- Bridge v4 adds read-only player diagnostics (`_cap_player_valid/x/y/angle/health`, `_cap_level_id`) for position-based checks.
+- Bridge v5 adds read-only sector exports (`_cap_sector_count/floor/ceiling(i)`, `_cap_player_sector`) so a tester can detect a door opening (ceiling rises) or a lift moving.
+- Acceptance: `tests/verify.sh` (tester-owned); `QUICK=1` is partial and never exits 0.
+
+## Serving
+
+After `make`, serve `dist/` on port 8000 and open <http://localhost:8000/>:
+
+```sh
+python3 -m http.server 8000 --bind 127.0.0.1 --directory dist
+```
+)
+
+Calling Bash()
+
+Bash response → (
+# Build and browser integration
+
+You are `coder`.
+
+Deliver a reproducible Emscripten 4.0.18 build and a correctly loaded browser game.
+Own Makefile, BUILD.md, web/index.html, platform/doomgeneric_wasm.c,
+platform/capstone_bridge.h, platform/cap_fallback.c, and platform/engine_stubs.c.
+You may create additional glue files only with names platform/glue_* or web/glue_*.
+Keep module interfaces coherent with the specialists. Implement startup, WAD
+packaging, exports, and final integration. Document serving dist/ on port 8000.
+Create missing interfaces pragmatically; ask specialists for changes in their
+files rather than making them yourself. Do not copy another browser port.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+FINDINGS
+
+Integration check on bridge v5: all specialist outputs are consistent with the tree, and the full `tests/verify.sh` suite now passes on the v5 wasm. FINDINGS rather than PASS because the same 4 required behaviours remain UNVERIFIED (below). I made no source edits.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes; `git diff HEAD` sha256 prefix 2c74d74fd2c699f9 (matches coder, coder_input_audio and coder_render_timing reports). emcc 4.0.18. dist/doom.wasm sha256 prefix 7afb94fa1ec64b5c. web/{index.html,input_audio.js,audio_web.js,render_timing.js} are cmp-identical to dist/. `make -n` before the run: nothing to do. artifacts/specification.md and acceptance-criteria.md do not exist.
+
+## Prior findings read
+All six files in artifacts/reports/. No role reports an open defect in a coder-owned file. The only item aimed at me (sector oracle for G3) was done in the previous coder run.
+
+## Work
+- Cross-checked report source hashes against the tree (above); they agree.
+- Ran `RUN_ID=coder.H58uUd OUT_DIR=artifacts/logs/coder.H58uUd/verify tests/verify.sh` (emsdk 4.0.18 sourced). I did not edit tests/.
+
+## Evidence (artifacts/logs/coder.H58uUd/)
+verify.out (exit 0), verify/ (build.log, playtest.log, playtest-results.json, faults.log, identity.txt, screens/):
+- Selftest, clean build, and playtest: `PASS failed=0 unverified=4` (includes the 300 s soak).
+- Fault injection: 5/5 caught: drop-keyup (I2 I5 I6 C3 I7), drop-blur (I7), ignore-left (I3 E2a E2b), swap-rb (B4), bad-aspect (S1).
+
+## Unresolved (owner)
+1. UNVERIFIED G3 door use / level exit (tester): the v5 exports (`cap_sector_ceiling`, `cap_player_sector`) exist, but verify.sh still reports "no door/sector oracle exported". The tester has to write the scenario; the suite does not use the exports yet.
+2. UNVERIFIED A1 audio by ear (student/human). Music is an oscillator synth, not GENMIDI/OPL (student decision).
+3. UNVERIFIED H1 real hidden-tab timing (human, protocol in tests/README.md).
+4. UNVERIFIED P1 save persistence (student scope).
+5. Known limits: headless Chromium only; no Firefox/Safari/physical HiDPI; no WASD/mouse mapping; first SFX before a gesture dropped; criteria are agent-proposed, not student-approved; faults injected browser-side only.
+
+## Assumptions
+- Doom default keys are the control requirement. Suite run once. Bridge v5 is agent-proposed. Manual interventions: none. Usage: not available.
+
+## Next action
+Tester adds a sector-based door scenario to tests/playtest.mjs using the v5 exports; human listens to audio and runs H1.
+----
+FINDINGS
+
+`tests/verify.sh` exited 0 (tooling, selftest, clean build, playtest failed=0, 5/5 fault injections caught). Result is FINDINGS, not PASS, because 4 required behaviors remain UNVERIFIED.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes; dirty_diff_sha256 2c74d74f... (verify/identity.txt). Command: `RUN_ID=tester.bajOBH OUT_DIR=artifacts/logs/tester.bajOBH/verify tests/verify.sh` (emsdk sourced). Evidence: verify.out, verify/ (identity.txt, build/playtest logs, playtest-results.json, faults.log).
+
+## Work
+Read artifacts/reports/tester.md (prior run) and loop/prompts/TESTER.md. Re-ran the full suite unchanged; no tests edited or weakened, no product source touched. Faults caught: drop-keyup (I2 I5 I6 C3 I7), drop-blur (I7), ignore-left (I3 E2a E2b), swap-rb (B4), bad-aspect (S1).
+
+## Unresolved (owner)
+1. UNVERIFIED A1 audio correctness (student/human: nobody has listened).
+2. UNVERIFIED P1 save persistence (student scope decision).
+3. UNVERIFIED G3 door use / level exit (coder: needs sector/line export).
+4. UNVERIFIED H1 real hidden-tab timing (human: manual protocol in tests/README.md).
+Limits: headless Chromium only; criteria agent-proposed, not student-approved; non-position outcomes pixel-inferred.
+
+## Assumptions
+Criteria as in prior tester report. Suite run once; no regressions versus the previous run. Usage: not available.
+
+## Next action
+Human listens to audio and runs H1; coder adds door/sector export so G3 can be checked.
+
+- Read AGENTS.md, loop/prompts/REVIEWER.md and artifacts/reports/* (including the prior reviewer_site.md). No specification.md or acceptance-criteria.md exists.
+- Port 8000 had no listener. I started `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist` (pid in server.pid) and stopped it afterwards. Port confirmed free.
+- `make -n` reports "Nothing to be done", so dist/ is current. web/{index.html,input_audio.js,audio_web.js,render_timing.js} are byte-identical to dist/ (cmp). Source is HEAD e500c44 plus uncommitted changes (rev.txt).
+- Playwright loaded /?r=site7. Six resources, all HTTP 200: input_audio.js, audio_web.js, render_timing.js, doom.js (~77 KB), doom.data (~4.2 MB), doom.wasm (~556 KB). server.log: 8 responses at 200, none other.
+- Title "DOOM Shareware". Canvas 640x400, shown at 1152x720 CSS (16:10).
+- 101 distinct colours in a sparse sample. Module._rt.frames went 749 -> 819 in 1 s, so the render loop advances (headless Chromium).
+- startup.png (viewed): in-game 3D view with HUD, a monster and a corpse, and "Picked up an armor bonus." HUD shows ammo 1, health 92%, armor 98%. Colours look correct, there is no corruption, and the image is letterboxed.
+- Console: 0 errors, 2 warnings (console.txt).
+
+## Evidence (this directory)
+startup.png, console.txt, server.log, server.pid, rev.txt. Playwright captures are in artifacts/browser/.
+
+## Findings
+1. Minor, owner coder_input_audio: the AudioContext "not allowed to start" warning appears twice (audio_web.js:27 and :53) before a user gesture. This is expected under the autoplay policy. I did not verify that audio resumes after the first gesture. Same as prior reviews.
+2. Informational, for the tester/coordinator: dist/doom.wasm sha256 prefix is 7afb94fa1ec64b5c. The prior reviewer_site and tester reports record 6c93cbf125bd366a, and the git diff hash also differs. The build has changed since those reports, so their evidence does not cover this build. I did not investigate why.
+3. Unexplained, needs checking: the first screenshot (a few seconds after load) shows mid-gameplay state (damaged player, killed monster, armor pickup), not a title screen or fresh E1M1 start. This is probably the attract demo, but I did not confirm that. Owner: coder_render_timing / coordinator, to confirm intended startup behaviour.
+
+No failed-load or console-error fault was found.
+
+## Not verified
+- Precise time to first frame; first frame content (see finding 3).
+- Clean rebuild; non-Chromium browsers; warm-cache reload; other viewports.
+- Audio after a gesture.
+- Movement and combat (out of scope).
+
+## Assumptions
+- Headless Playwright Chromium via MCP. Criteria were: the page loads, no required asset fails, the canvas draws with plausible colours, and the loop advances.
+- "Fresh" means a new query string (?r=site7). I did not clear the browser cache, but server.log shows every asset requested.
+- I wrote nothing outside OUTPUT_DIR apart from the Playwright captures in artifacts/browser/. I modified no source, tests or loop files.
+- Same OUTPUT_DIR as the prior run's layout; the older reviewer_site.md in artifacts/reports/ was left untouched.
+agent.log
+)
+
+Calling Bash()
+
+Bash response → (
+emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 4.0.18 (fae107463db4d20a276a27ede393048deaeebf76)
+make: Nothing to be done for `all'.
+2c74d74fd2c699f9
+7afb94fa1ec64b5c
+88:// player mobj exists (title screen, demo before spawn).
+141:int main(int argc, char **argv)
+145:    (void)argv;
+agent.log
+tester.md
+reviewer_gameplay.md
+reviewer_site.md
+coder.md
+coder_input_audio.md
+coder_render_timing.md
+)
+
+Calling Bash()
+
+Bash response → (
+int cap_player_sector(void)
+{
+    return cap_player_valid() ? (int)(players[consoleplayer].mo->subsector->sector - sectors) : -1;
+}
+
+int main(int argc, char **argv)
+{
+    static char *args[] = { "doom", "-iwad", CAP_WAD_PATH, NULL };
+    (void)argc;
+    (void)argv;
+
+    doomgeneric_Create(3, args);
+    cap_started = 1;
+
+    // ASYNCIFY build: cap_sleep_ms yields to the browser inside the engine's
+    // tic waits; the explicit sleep(0) yields once per frame otherwise.
+    for (;;) {
+        doomgeneric_Tick();
+        emscripten_sleep(0);
+    }
+    return 0;
+}
+97:  check('B4.channel-order', boot.s.meanR > boot.s.meanB, `meanR=${boot.s.meanR.toFixed(1)} meanB=${boot.s.meanB.toFixed(1)} (title/menu are warm; swap => blue)`);
+105:  // Menu navigation -> new game E1M1 (episode + skill menus with defaults).
+106:  const title = await shot('title');
+107:  await key('Enter'); await sleep(1200); const menu = await shot('main-menu');
+108:  check('M1.enter-opens-menu', diffFrac(title, menu, VIEW) > 0.01, `diff=${diffFrac(title, menu, VIEW).toFixed(3)}`);
+112:  check('G1.level-started', diffFrac(menu, lvl) > 0.2 && sb.distinctColors > 20, `diff-from-menu=${diffFrac(menu, lvl).toFixed(2)} statusbarColors=${sb.distinctColors}`);
+169:  // Use key + automap + menu overlay do not crash and change the display as expected.
+175:  await key('Escape'); await sleep(800); const esc = await shot('esc-menu');
+176:  check('U3.escape-opens-menu', diffFrac(am2, esc, VIEW) > 0.01, `diff=${diffFrac(am2, esc, VIEW).toFixed(3)}`);
+178:  check('U4.escape-closes-menu', diffFrac(esc, esc2, VIEW) > 0.01, `diff=${diffFrac(esc, esc2, VIEW).toFixed(3)}`);
+)
+
+Calling Bash()
+
+Bash response → "(Bash completed with no output)"
+I made no source edits this run, and the report is saved at `artifacts/logs/coder.HPqFrt/report.md`. Its result line is FINDINGS, not PASS.
+
+- **Build state:** The build is current and reproducible. `make -n` says there is nothing to do, and Emscripten is 4.0.18. The diff hash (`2c74d74fd2c699f9`) matches the latest tester and coder reports. The `doom.wasm` hash is `7afb94fa1ec64b5c`.
+- **No coder defect:** None of the six prior reports raises an open defect in a coder-owned file.
+- **Why FINDINGS:** I did not re-run the full suite. The earlier suite runs (tester.bajOBH, coder.H58uUd) passed with 5/5 injected faults caught, but four behaviors are still unverified.
+  - **Door use / level exit (G3):** The sector exports from bridge v5 exist, but the tester hasn't written a scenario that uses them.
+  - **Audio by ear (A1):** Nobody has listened to it yet.
+  - **Hidden-tab timing (H1):** This needs the manual protocol in `tests/README.md`.
+  - **Save persistence (P1):** This is a scope decision for you.
+- **Mid-gameplay first screenshot:** A reviewer noticed the first screenshot showed mid-gameplay. The startup code passes no `-warp` or `-nodemo`, so Doom runs its normal title and demo loop. The shareware demo is the likely source. I didn't capture the first frame myself, so this is likely, not verified.
+
+Next, the tester writes the G3 door scenario. Someone also needs to listen to the audio and run the H1 protocol.

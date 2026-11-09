@@ -1,0 +1,644 @@
+I'll start by reading the project docs, role prompt, and prior reports.
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+artifacts/logs:
+coder_input_audio.1EbASm
+coder_input_audio.3fWNbv
+coder_input_audio.6WSU74
+coder_input_audio.6zHSnA
+coder_input_audio.9u4tS4
+coder_input_audio.a8DgOL
+coder_input_audio.DUI82V
+coder_input_audio.g90qsB
+coder_input_audio.GUXhIX
+coder_input_audio.gVnY6U
+coder_input_audio.kjW35H
+coder_input_audio.KqlYco
+coder_input_audio.KWBVgQ
+coder_input_audio.N0e4K8
+coder_input_audio.OwOtK6
+coder_input_audio.PrVlSe
+coder_input_audio.RB2acD
+coder_input_audio.rdvBFz
+coder_input_audio.XJqG3c
+coder_input_audio.XSXPrI
+coder_input_audio.YCG1J3
+coder_input_audio.zZGUhu
+coder_render_timing.1ZyeYK
+coder_render_timing.6XCJuY
+coder_render_timing.8nHQTI
+coder_render_timing.cK29OS
+coder_render_timing.El3oAP
+coder_render_timing.EqHAI4
+coder_render_timing.HgDIMK
+coder_render_timing.i3pFKE
+coder_render_timing.kFsAu7
+coder_render_timing.KuIme0
+coder_render_timing.licfez
+coder_render_timing.lpNQaR
+coder_render_timing.mobiWy
+coder_render_timing.mpRUkR
+coder_render_timing.Pct78q
+coder_render_timing.vyC811
+coder_render_timing.wbiVKQ
+coder_render_timing.Wkpv1o
+coder_render_timing.xSCZrJ
+coder_render_timing.Xt27oG
+coder_render_timing.y2E5IZ
+coder_render_timing.zWYUzc
+coder.1Bi21x
+coder.5cbI3A
+coder.7cXMRV
+coder.7RfYKW
+coder.9PHBOq
+coder.acGoDX
+coder.ACrcCc
+coder.b0xh2K
+coder.caQaH6
+coder.cRMV3j
+coder.CzMECd
+coder.diUW6i
+coder.FaD2R7
+coder.GhMtru
+coder.H58uUd
+coder.HgewO7
+coder.HPqFrt
+coder.HT7Mh0
+coder.ICaI0g
+coder.J22PFD
+coder.JMrJmA
+coder.kf3uJJ
+coder.lRueHg
+coder.MB4v9E
+coder.mtnqTz
+coder.n6GiEG
+coder.nUFHev
+coder.NWKoK5
+coder.O0vxbS
+coder.pLDPys
+coder.Q1melD
+coder.qdu038
+coder.s3mRzG
+coder.UAUPuD
+coder.UVP1dP
+coder.UWFAhI
+coder.UwvRwk
+coder.VDHNTr
+coder.VgF4Hv
+coder.XbhNOg
+coder.XGU7Cd
+coder.xIoyo9
+coder.Xl0uaN
+coder.xM6chO
+reviewer_gameplay.3rXq3f
+reviewer_gameplay.6zun55
+reviewer_gameplay.9WUqPT
+reviewer_gameplay.Bt9KSs
+reviewer_gameplay.dAPDqY
+reviewer_gameplay.EqGhpV
+reviewer_gameplay.facW3H
+reviewer_gameplay.GMLSL6
+reviewer_gameplay.GTAfxW
+reviewer_gameplay.j2SZgT
+reviewer_gameplay.ldSVVs
+reviewer_gameplay.LPg0t8
+reviewer_gameplay.Lw1bQv
+reviewer_gameplay.PEszG3
+reviewer_gameplay.q0AKMe
+reviewer_gameplay.Rw1fcA
+reviewer_gameplay.T486PX
+reviewer_gameplay.WeHatJ
+reviewer_gameplay.wHMOB2
+reviewer_gameplay.wQbJ7c
+reviewer_gameplay.Xy92jH
+reviewer_gameplay.ZUZV8O
+reviewer_site.32cQhq
+reviewer_site.7RuKMK
+reviewer_site.9wJ6HG
+reviewer_site.aZiFrh
+reviewer_site.f9dy0D
+reviewer_site.FDoXaA
+reviewer_site.FMO0C9
+reviewer_site.FnUrtZ
+reviewer_site.GwiGfG
+reviewer_site.msvdXx
+reviewer_site.NOQPIi
+reviewer_site.nSpEMa
+reviewer_site.pWAMB0
+reviewer_site.Q4XPrg
+reviewer_site.qWTvbw
+reviewer_site.RLrOVV
+reviewer_site.Rm0IxG
+reviewer_site.sLn6b5
+reviewer_site.U8Ka1G
+reviewer_site.UpTuZG
+reviewer_site.w91AQ9
+reviewer_site.ZELzZH
+tester.06TdYY
+tester.3P7z9H
+tester.3Pq6Xx
+tester.4fEyMa
+tester.6hWyX9
+tester.8DASDy
+tester.8fsQdw
+tester.98BZhM
+tester.9SkuzA
+tester.aZlP2G
+tester.bajOBH
+tester.BNf9ts
+tester.gkbn63
+tester.InaBUN
+tester.JAaNjg
+tester.jQ8WOj
+tester.oPtvHA
+tester.puK0iM
+tester.Q0YUP2
+tester.qBOVWc
+tester.QcBm5A
+tester.QSq2Uh
+tester.QT7YlR
+tester.w2Z6BS
+tester.wO71Dk
+verify.2u2qnP
+verify.69kwht
+verify.B9OMLq
+verify.C0hQ9F
+verify.Gjtb86
+verify.Gm8XQE
+verify.hDJeOV
+verify.ICvgiu
+verify.jfRFOF
+verify.KBbHyS
+verify.KEqrSN
+verify.kUtnpP
+verify.oFQ3cu
+verify.Px69Yu
+verify.RZPoxv
+verify.wkzlnA
+verify.XOoz2M
+verify.xskzsM
+verify.XSzOzq
+verify.za54Fq
+verify.ZC3dO1
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+
+tests:
+faults.sh
+lib
+node_modules
+package-lock.json
+package.json
+playtest.mjs
+README.md
+selftest.mjs
+verify.sh
+# Verification
+
+Keep verification code here, including browser checks, fixtures, and tests
+for the loop itself. You design the checks; no test suite is provided.
+
+See [the acceptance criteria and evidence requirements](../README.md#evaluate-the-system-you-built).
+Document how to run your checks and what each one establishes.
+
+Save test results, logs, screenshots, and recordings in `artifacts/`.
+Keep acceptance checks outside the coder's write permissions using your
+sandbox/tool configuration; a folder name alone does not enforce access.
+
+## Suite (tester-owned; criteria are AGENT-PROPOSED, not student-approved)
+
+Run: `source ~/Developer/emsdk/emsdk_env.sh && tests/verify.sh` (RUN_ID, SOAK_SECONDS, QUICK=1 optional).
+Evidence goes to `artifacts/runs/$RUN_ID/tester/verify-*/` (identity.txt, logs, screenshots, playtest-results.json).
+Exit 0 only when tooling, build, selftest and every required playtest check pass; `QUICK=1` never exits 0.
+
+| File | Establishes |
+| --- | --- |
+| `verify.sh` | tooling check, source identity, selftest, `make clean && make all`, playtest |
+| `selftest.mjs` | pixel helpers FAIL on black, channel-swapped, transparent, static, wrongly shifted frames (no build needed) |
+| `playtest.mjs` | Chromium: load/console errors, boot frame, colors, rAF liveness, menu -> E1M1, turn/move/fire/release, blur, automap, Esc menu, soak |
+| `lib/frames.mjs` | region diff / color stats / horizontal-shift estimation on canvas screenshots |
+
+Limits: outcomes are inferred from pixels (no engine state hook); audio, persistence, door/level-exit and the
+35 tics/s rate are listed as UNVERIFIED in every result. Ammo/status regions assume the stock 320x200 layout.
+Test deps: `npm ci` in `tests/` (network needed once; Playwright 1.49.1, pngjs 7.0.0).
+
+## Rev 3 additions (tester)
+- `I6` is now position-based (`cap_player_x/y`; limit 0.7 unchanged) — TEST CORRECTION: the pixel oracle flaked (0.60-0.79). New: `G1b` (E1M1, health 100 via engine state), `I4b` (forward moves player >=32 units), `I9` (`cap_input_impl==1`, delivered>0, dropped==0), `S1` (canvas stays 16:10 and fits 4 viewports); fault `bad-aspect` must fail S1.
+- Still UNVERIFIED: A1 audio by ear, P1, G3 (no door/sector export), H1.
+
+### H1 manual protocol (real hidden tab; headless cannot do this)
+1. `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist`; open http://127.0.0.1:8000 in headed Chrome, start E1M1.
+2. In the console run `a=Module._cap_tic_count(); t=Date.now()`, switch to another tab for 60 s, return.
+3. Run `(Module._cap_tic_count()-a)/((Date.now()-t)/1000)`. Pass: game did not run >2x real time (<=70 tics/s catch-up burst) and no keys remain stuck (player stands still, `Module._cap_player_x()` stable across 2 s).
+4. Record browser version, result, and screenshot under artifacts/. Not automated; do not report PASS without doing it.
+
+## Rev 4 additions (tester)
+- `U5.menu-freezes-player`: after coasting, opening the Esc menu leaves engine position/angle unchanged for 1.5 s (precondition: player was moving). TEST CORRECTION: first draft also demanded a frozen `gametic`; Doom keeps counting it in the menu, so only player state is asserted.
+- `A0` (AudioContext `running` after gestures), `A2` (SFX played, 0 bad SFX, music started, 0 music errors), `A3` (peak > 0.01). `A3` is asserted only if `AudioContext.currentTime` advances ~2 s per 2 s; a stalled clock (seen in headless runs by reviewer_gameplay) is reported UNVERIFIED, never PASS. These show non-silent output, not correct sound: `A1` (by ear) stays UNVERIFIED.
+- `G3a.door-opens-on-use`: fresh game, steers to the E1M1 sector-4 door with engine position/angle and presses Use; PASS only if sector 4 starts closed (floor==ceiling) and its ceiling rises. Fault `drop-use` (Use never delivered) must fail it. `G3b` (walking through, level exit) remains UNVERIFIED.
+- Not covered by a fault: U5 and A0-A3 have no injected fault (would need a product-side break, which the tester may not make).
+)
+
+Calling Bash()
+
+Bash response → (
+# Repeatable automated verification
+
+You are `tester`.
+
+Own tests/ verification code (except explicitly student-frozen criteria/baselines).
+Deliver an executable tests/verify.sh that clean-builds and tests the game in
+Chromium, returning 0 only when all required checks genuinely pass. Create missing
+tests and test-only dependencies as needed. Automate browser actions AND assertions
+for loading, level start, controls, key release, responsiveness, and required audio.
+Use existing supplied criteria; if absent, document proposed criteria before first
+using them. Do not silently lower criteria after failures; record test corrections
+with evidence and reasons. Read reviewers' findings and turn reproducible failures
+into regression checks. Use MCP for exploration where helpful; scripts must work
+without an agent interpreting output. Preserve logs and failed evidence. Do not
+fix product source. Report unavailable tooling or unverifiable required audio as
+FINDINGS/nonzero, never skip required behavior and report PASS.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+FINDINGS
+
+`tests/verify.sh` exited 0 (verify.out, last line `exit=0`): tooling, selftest, clean `make clean && make all`, playtest (0 FAIL) and 6/6 fault injections caught. FINDINGS, not PASS, because 4 required behaviors remain UNVERIFIED. No product source or tests were edited this run, and nothing was weakened.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes; `git diff HEAD` sha256 prefix fe88782d1c55d299 (same as prior reports). Full identity (tests hash, WAD hash, emcc 4.0.18) is in verify/identity.txt; dist hashes in verify/dist-sha256.txt. Command: `RUN_ID=tester.98BZhM OUT_DIR=<abs>/verify bash tests/verify.sh` with emsdk sourced.
+
+## Results
+- Playtest: failed=0. Examples: G1b (E1M1, health 100), I6 (start-to-fwd 401 vs start-to-back 85 units), T2 35.21 tics/s, R2/R3/R4 soak clean (rAF 60/s, no long tasks, 24 changed frames), G3a door opens (sector 4 ceiling 0->16 in 93 steps).
+- Faults caught: drop-keyup (I2 I5 I6 C3 I7), drop-blur (I7), ignore-left (I3 E2a E2b), swap-rb (B4), bad-aspect (S1), drop-use (G3a).
+- Prior reports read (artifacts/reports/*): no reproducible failure to convert into a new regression check; every open item there is an UNVERIFIED item below.
+
+## Evidence (this directory)
+verify.out, verify/ (identity.txt, build.log, selftest.log, playtest.log, playtest-results.json, faults.log, per-fault logs, browser-console.log, screens/).
+
+## Unresolved (owner)
+1. UNVERIFIED A1 audio correctness (human): nobody has listened. A0/A2/A3 only show a non-silent context.
+2. UNVERIFIED P1 save persistence (student scope decision).
+3. UNVERIFIED G3b walk through the door / level exit (tester, needs a scripted route or a coder level-exit hook).
+4. UNVERIFIED H1 real hidden-tab timing (human; protocol in tests/README.md).
+Also unverified or uncovered: pickups, damage/death, Firefox, Safari, HiDPI. WASD and mouse unmapped (coder_input_audio). U5 and A0-A3 have no injected fault. G3a steering is greedy, so it may flake on a slow machine (93 of 100 steps used this run, versus 46 and 69 earlier, which is close to the limit).
+
+## Assumptions
+- Criteria are agent-proposed, not student-approved; artifacts/specification.md and acceptance-criteria.md do not exist.
+- Headless Chromium only. Door/sector 4 data comes from the reviewer's WAD cross-check.
+- Manual interventions: none.
+
+## Next action
+Human: listen to audio, run H1. Tester: G3b, and consider raising the G3a step limit if it flakes (93/100 used). Student: decide P1 scope and approve or replace the proposed criteria.
+agent.log
+e500c440656622db5ab3f8fb7df73d8b5998eeb3
+)
+
+Calling Bash()
+
+Bash response → (
+PASS       I1.turn-right shift=-123px err=4.7 err0=6.4
+PASS       I2.turn-stops-on-release diff=0.0000
+PASS       I3.turn-left shift=70px
+PASS       I4.forward-moves start-vs-mid=0.699 still-moving=0.616
+PASS       I4b.forward-moves-player moved 409 map units (need >=32)
+PASS       I5.forward-stops-on-release settled=true after 2168ms (momentum allowed up to 4s); later-diff=0.0000
+PASS       I6.backward-returns start-to-fwd=409 start-to-back=93 map units (pixel diff for reference: 0.374 vs 0.543)
+PASS       I7a.turn-held-keeps-changing diff=0.3575 (precondition: key effective before blur)
+PASS       I7.blur-releases-keys settled=true after 500ms; later-diff=0.0001 (key still physically down)
+PASS       C1.fire-animates view-diff=0.0288
+PASS       C2.fire-decrements-ammo ammo-region-diff=0.140 (persisting after weapon returns to rest)
+PASS       C3.fire-stops-on-release diff=0.0000
+PASS       U1.automap-toggles diff=0.766
+PASS       U2.automap-returns diff=0.000
+PASS       U3.escape-opens-menu diff=0.241
+PASS       U4.escape-closes-menu diff=0.241
+PASS       U5.menu-freezes-player coasting-before-menu=20.6u/120ms; frozen-in-menu moved=0.0u tics=53 over 1.5s
+PASS       E1.browser-shortcuts-not-blocked {"f5":false,"ctrlR":false,"up":true}
+PASS       E2a.pagehide-releases-keys precondition-turning=true settled=true later-diff=0.0000
+PASS       E2b.hidden-releases-keys precondition-turning=true settled=true later-diff=0.0000
+PASS       E3.repeat-after-blur-is-fresh-press diff=0.3026 (view must turn again)
+PASS       E4.dual-ctrl-held-until-both-up held after one up=1, after both=0 (JS state; engine side not observable)
+PASS       I8.render-module-active Module._rt.frames 3021 -> 3091
+PASS       I9.input-module-identity {"impl":1,"delivered":52,"dropped":0}
+PASS       S1.canvas-scales-16x10 viewports 1280x720, 500x300, 1000x700, 800x600 all 16:10 and fit
+PASS       A0.audio-context-created state=running after user gestures (suspended => autoplay resume broken)
+PASS       A2.sfx-played-no-errors sfxPlayed=9 sfxBad=0 musicStarted=3 musicErrors=0 notes=1016
+PASS       A3.audible-peak audio clock advanced 2.01s/2s; maxPeak=0.403 (non-silent only, not correct sound)
+PASS       T2.35-tics-per-second 34.97 tics/s over 4s (need 35 +/-10%)
+PASS       R1.soak-no-errors 300s; errors=
+PASS       R2.soak-still-rendering rAF/s=60.1 visibleFrame=true
+PASS       R3.no-long-stalls max longtask=0ms (must be <1500)
+PASS       R4.soak-frames-changed sampled frames that differed: 21
+FAIL       G3a.door-opens-on-use start=(1056,-3616) closed-at-start=true sector4 ceil 0->0 steps=100 end=(1519,-2504)
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3b.level-exit-and-walk-through-door door opening is checked (G3a); no route/oracle yet for walking through it or finishing E1M1 (needs scripted route or coder level-exit hook)
+UNVERIFIED H1.hidden-tab-timing headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)
+playtest: FAIL failed=1 unverified(not-in-scope, listed)=4
+exit=1
+)
+
+Calling Bash()
+
+Calling Bash()
+
+Bash response → (
+== tooling
+== helper self-test (fault injection on pixel checks)
+ok   good frame: colourful, warm, opaque
+ok   black frame detected
+ok   R/B channel swap detected
+ok   alpha=0 (unfixed BGR0) detected
+ok   identical frames: diff 0
+ok   different frames: diff large
+ok   shift sign/size: right-moved content => +12
+ok   shift sign: left-moved => -12
+ok   static frames: no spurious shift improvement
+ok   shift beyond +-213px window is NOT reported as 240 (documents aliasing)
+ok   150ms-class shift (~90px) measured exactly
+== clean build
+== browser playtest
+272:  // G3a (new rev 4): door via engine state. Fresh game (deterministic start), steer to the E1M1 sector-4 door at ~(1544,-2496)
+291:  check('G3a.door-opens-on-use', !!g0 && g0.lvl === 101 && g0.c4 === g0.f4 && opened, g0 ? `start=(${g0.x},${g0.y}) closed-at-start=${g0.c4 === g0.f4} sector4 ceil ${g0.c4}->${g ? g.c4 : '?'} steps=${its} end=(${g ? g.x : '?'},${g ? g.y : '?'})` : 'no engine state in fresh game');
+296:  ['P1.save-persistence', 'scope undecided'], ['G3b.level-exit-and-walk-through-door', 'door opening is checked (G3a); no route/oracle yet for walking through it or finishing E1M1 (needs scripted route or coder level-exit hook)'],
+browser-console.log
+build.log
+dist-sha256.txt
+identity.txt
+playtest-results.json
+playtest.log
+screens
+selftest.log
+verify-result.json
+verify.log
+)
+
+Bash response → "1:76:// consecutive 300ms steps differ <2% (settled) instead of assuming a fixed delay.\n13:287:    await gp.keyboard.down('ArrowUp'); await sleep(350); if (doorUse) await gp.keyboard.press(doorUse); await sleep(100); await gp.keyboard.up('ArrowUp'); await sleep(100);\n14:291:  check('G3a.door-opens-on-use', !!g0 && g0.lvl === 101 && g0.c4 === g0.f4 && opened, g0 ? `start=(${g0.x},${g0.y}) closed-at-start=${g0.c4 === g0.f4} sector4 ceil ${g0.c4}->${g ? g.c4 : '?'} steps=${its} end=(${g ? g.x : '?'},${g ? g.y : '?'})` : 'no engine state in fresh game');"
+
+Calling Bash()
+
+Bash response → (
+check('R2.soak-still-rendering', (r3 - r2) / SOAK >= 20 && stats(last).darkFrac < 0.95, `rAF/s=${((r3 - r2) / SOAK).toFixed(1)} visibleFrame=${stats(last).darkFrac < 0.95}`);
+  check('R3.no-long-stalls', longMax < 1500, `max longtask=${longMax.toFixed(0)}ms (must be <1500)`);
+  check('R4.soak-frames-changed', moved > 0, `sampled frames that differed: ${moved}`);
+
+  // G3a (new rev 4): door via engine state. Fresh game (deterministic start), steer to the E1M1 sector-4 door at ~(1544,-2496)
+  // using cap_player_x/y/angle and press Use (Space) while walking. PASS = sector 4 ceiling rose above its closed height (starts closed).
+  // Recipe from reviewer_gameplay.WeHatJ (door5-use-results.json); its no-Use control opened nothing. Level exit stays UNVERIFIED.
+  const gp = await (await browser.newContext({ viewport: { width: 800, height: 600 }, deviceScaleFactor: 1 })).newPage();
+  gp.on('pageerror', (e) => errors.push(`g3 pageerror: ${e.message}`));
+  await gp.goto(url); await sleep(2500); for (let i = 0; i < 4; i++) { await gp.keyboard.press('Enter'); await sleep(900); } await sleep(3500);
+  const GS = () => gp.evaluate(() => { const M = window.Module; return M && M._cap_player_valid && M._cap_player_valid() ? { x: M._cap_player_x(), y: M._cap_player_y(), a: M._cap_player_angle(), lvl: M._cap_level_id(), c4: M._cap_sector_ceiling(4), f4: M._cap_sector_floor(4), sec: M._cap_player_sector() } : null; });
+  const g0 = await GS(); const TX = 1544, TY = -2496; let g = g0, opened = false, stuck = 0, gLast = null, its = 0;
+  const doorUse = FAULT === 'drop-use' ? null : 'Space'; // drop-use fault: the Use key never reaches the game
+  if (g0 && g0.lvl === 101) for (; its < 100 && !opened; its++) {
+    g = await GS(); if (g.c4 > g.f4) { opened = true; break; }
+    const ang = g.a / 2 ** 32 * 2 * Math.PI; let d = Math.atan2(TY - g.y, TX - g.x) - ang; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+    if (gLast && Math.hypot(g.x - gLast[0], g.y - gLast[1]) < 8) stuck++; else stuck = 0; gLast = [g.x, g.y];
+    if (stuck >= 2) { const k = its % 2 ? 'ArrowLeft' : 'ArrowRight'; await gp.keyboard.down(k); await sleep(300 + (its % 5) * 100); await gp.keyboard.up(k); await gp.keyboard.down('ArrowUp'); await sleep(700); await gp.keyboard.up('ArrowUp'); stuck = 0; continue; }
+    if (Math.abs(d) > 0.12) { const k = d > 0 ? 'ArrowLeft' : 'ArrowRight'; await gp.keyboard.down(k); await sleep(Math.min(500, 60 + Math.abs(d) * 220)); await gp.keyboard.up(k); await sleep(150); }
+    await gp.keyboard.down('ArrowUp'); await sleep(350); if (doorUse) await gp.keyboard.press(doorUse); await sleep(100); await gp.keyboard.up('ArrowUp'); await sleep(100);
+  }
+  if (!opened && g0 && g0.lvl === 101) { await sleep(1500); g = await GS(); opened = !!g && g.c4 > g.f4; }
+  await gp.screenshot({ path: path.join(OUT, 'screens', 'g3-final.png') }).catch(() => {});
+  check('G3a.door-opens-on-use', !!g0 && g0.lvl === 101 && g0.c4 === g0.f4 && opened, g0 ? `start=(${g0.x},${g0.y}) closed-at-start=${g0.c4 === g0.f4} sector4 ceil ${g0.c4}->${g ? g.c4 : '?'} steps=${its} end=(${g ? g.x : '?'},${g ? g.y : '?'})` : 'no engine state in fresh game');
+} catch (e) {
+ 5 files changed, 263 insertions(+), 21 deletions(-)
+fe88782d1c55d299
+)
+G3a failed at 100 steps with the player stopping 25 units from the door, and I'm tightening the steering near the door next, leaving the sector 4 ceiling check as it is.
+
+
+Calling Bash()
+
+Bash response → (
+FAIL       E2b.hidden-releases-keys precondition-turning=true settled=true later-diff=0.0466
+PASS       G3a.door-opens-on-use start=(1056,-3616) closed-at-start=true sector4 ceil 0->14 steps=55 end=(1519,-2520)
+UNVERIFIED G3b.level-exit-and-walk-through-door door opening is checked (G3a); no route/oracle yet for walking through it or finishing E1M1 (needs scripted route or coder level-exit hook)
+playtest: FAIL failed=1 unverified(not-in-scope, listed)=4
+exit=1
+)
+E2b now fails where it passed in run 1, with later-diff 0.0466. I'll look at the check and rerun to see whether it's flaky or a real regression.
+Calling Bash()
+
+Bash response → "199:                          ['E2b.hidden-releases-keys', \"Object.defineProperty(document, 'hidden', { configurable: true, get: () => true }); document.dispatchEvent(new Event('visibilitychange'))\"]]) {\nCommand did not complete within its 600s timeout and was moved to the background (ID: b0c3xu4vm). Output is being written to: /private/tmp/claude-501/-Users-sarahtseng-Projects-fellowship-loop-capstone/6a332010-8377-4733-82a3-7a3c8c9e760a/tasks/b0c3xu4vm.output. You will be notified when it completes. If it is still running after 10m in the background, it will be stopped and you will be notified. It is running now: do not start a second copy while it runs. If it is no longer needed, stop it with TaskStop. To check interim output, use Read on that file path."
+
+Calling Bash()
+
+Bash response → "<tool_use_error>Blocked: sleep 240 followed by: cd /Users/sarahtseng/Projects/fellowship-loop-capstone grep -E \"G3a|E2|FAIL|^playtest|exit=|fault\" artifacts/logs/tester.qBOVWc/verify.out. To wait for a condition, use Monitor with an until-loop (e.g. `until <check>; do sleep 2; done`). To wait for a command you started, use run_in_background: true. Do not chain shorter sleeps to work around this block.</tool_use_error>"
+
+Calling Monitor()
+
+Monitor response → "Monitor started (task bcnyuutbk, expires in 10m unless the source ends first; you get one notice at expiry — re-arm if you still need the watch). You will be notified on each event. Keep working — do not poll or sleep. Events may arrive while you are waiting for the user — an event is not their reply."
+
+Calling Bash()
+
+Bash response → (
+== helper self-test (fault injection on pixel checks)
+PASS       E2a.pagehide-releases-keys precondition-turning=true settled=true later-diff=0.0001
+PASS       E2b.hidden-releases-keys precondition-turning=true settled=true later-diff=0.0000
+PASS       G3a.door-opens-on-use start=(1056,-3616) closed-at-start=true sector4 ceil 0->14 steps=76 end=(1519,-2477)
+UNVERIFIED G3b.level-exit-and-walk-through-door door opening is checked (G3a); no route/oracle yet for walking through it or finishing E1M1 (needs scripted route or coder level-exit hook)
+playtest: PASS failed=0 unverified(not-in-scope, listed)=4
+== fault injection (checks must fail on broken behaviour)
+agent.log
+verify
+verify-run1
+verify-run1-G3a-fail.out
+verify-run2
+verify-run2-E2b-fail.out
+verify.out
+)
+Run 3's playtest passed. The fault injections are still running, so I'll wait for them.
+Calling Monitor()
+
+Monitor response → "Monitor started (task b7upv3u6x, expires in 10m unless the source ends first; you get one notice at expiry — re-arm if you still need the watch). You will be notified on each event. Keep working — do not poll or sleep. Events may arrive while you are waiting for the user — an event is not their reply."
+
+Calling Bash()
+
+Bash response → (
+PASS       R1.soak-no-errors 300s; errors=
+PASS       R2.soak-still-rendering rAF/s=60.0 visibleFrame=true
+PASS       R3.no-long-stalls max longtask=0ms (must be <1500)
+PASS       R4.soak-frames-changed sampled frames that differed: 23
+PASS       G3a.door-opens-on-use start=(1056,-3616) closed-at-start=true sector4 ceil 0->14 steps=76 end=(1519,-2477)
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3b.level-exit-and-walk-through-door door opening is checked (G3a); no route/oracle yet for walking through it or finishing E1M1 (needs scripted route or coder level-exit hook)
+UNVERIFIED H1.hidden-tab-timing headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)
+playtest: PASS failed=0 unverified(not-in-scope, listed)=4
+== fault injection (checks must fail on broken behaviour)
+caught  FAULT=drop-keyup (failed: I2 I5 I6 C3 I7)
+FAIL       E2b.hidden-releases-keys precondition-turning=true settled=true later-diff=0.0466
+)
+
+Calling Monitor()
+
+Monitor response → "Monitor started (task bdjhgklus, expires in 10m unless the source ends first; you get one notice at expiry — re-arm if you still need the watch). You will be notified on each event. Keep working — do not poll or sleep. Events may arrive while you are waiting for the user — an event is not their reply."
+
+Calling Bash()
+
+Bash response → (
+PASS       G3a.door-opens-on-use start=(1056,-3616) closed-at-start=true sector4 ceil 0->14 steps=76 end=(1519,-2477)
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3b.level-exit-and-walk-through-door door opening is checked (G3a); no route/oracle yet for walking through it or finishing E1M1 (needs scripted route or coder level-exit hook)
+UNVERIFIED H1.hidden-tab-timing headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)
+playtest: PASS failed=0 unverified(not-in-scope, listed)=4
+== fault injection (checks must fail on broken behaviour)
+caught  FAULT=drop-keyup (failed: I2 I5 I6 C3 I7)
+)
+Still running; waiting on the monitor.
+Calling Monitor()
+
+Monitor response → "Monitor started (task bbj56dyl7, expires in 10m unless the source ends first; you get one notice at expiry — re-arm if you still need the watch). You will be notified on each event. Keep working — do not poll or sleep. Events may arrive while you are waiting for the user — an event is not their reply."
+
+Calling Bash()
+
+Bash response → (
+PASS       G3a.door-opens-on-use start=(1056,-3616) closed-at-start=true sector4 ceil 0->14 steps=76 end=(1519,-2477)
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3b.level-exit-and-walk-through-door door opening is checked (G3a); no route/oracle yet for walking through it or finishing E1M1 (needs scripted route or coder level-exit hook)
+UNVERIFIED H1.hidden-tab-timing headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)
+playtest: PASS failed=0 unverified(not-in-scope, listed)=4
+== fault injection (checks must fail on broken behaviour)
+caught  FAULT=drop-keyup (failed: I2 I5 I6 C3 I7)
+)
+
+Calling Monitor()
+
+Monitor response → "Monitor started (task bybeoy6no, expires in 10m unless the source ends first; you get one notice at expiry — re-arm if you still need the watch). You will be notified on each event. Keep working — do not poll or sleep. Events may arrive while you are waiting for the user — an event is not their reply."
+The run is still in progress. I'll end this turn and continue when the monitor reports.
+Calling Bash()
+
+Bash response → "waiting"
+Waiting for the fault-injection phase to finish; the monitor will notify me.The background run was killed at its time limit, so run 3 has no exit code. I'll restart it with a longer timeout.
+Calling Bash()
+
+Bash response → "Command running in background with ID: bbpy9syy2. Output is being written to: /private/tmp/claude-501/-Users-sarahtseng-Projects-fellowship-loop-capstone/6a332010-8377-4733-82a3-7a3c8c9e760a/tasks/bbpy9syy2.output. You will be notified when it completes. To check interim output, use Read on that file path."
+Run 4 is going in the background with a 30-minute limit. I'll write the report once it finishes.That expired monitor was for the killed run 3, so I'm ignoring it. I'm waiting for run 4 (task bbpy9syy2) to complete.Another stale monitor expired. Run 4 is still going, so I'm still waiting on it.Another stale monitor expired. I'm still waiting on run 4 (bbpy9syy2).
+Calling Bash()
+
+Bash response → (
+ok   shift sign: left-moved => -12
+ok   static frames: no spurious shift improvement
+ok   shift beyond +-213px window is NOT reported as 240 (documents aliasing)
+ok   150ms-class shift (~90px) measured exactly
+== clean build
+)
+Run 4 is still in the clean-build step, so nothing to report yet. I'll wait for the completion notification.Another stale monitor expired. I'm still waiting on run 4's completion notification.

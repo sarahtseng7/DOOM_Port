@@ -1,0 +1,447 @@
+I'll start by reading the project docs, the prior reports, and the reviewer role prompt.
+Calling Bash()
+
+Calling Read()
+
+Bash response → (
+artifacts/logs:
+coder_input_audio.KWBVgQ
+coder_input_audio.zZGUhu
+coder_render_timing.licfez
+coder_render_timing.y2E5IZ
+coder.9PHBOq
+coder.J22PFD
+coder.pLDPys
+coder.xIoyo9
+reviewer_gameplay.dAPDqY
+reviewer_site.f9dy0D
+reviewer_site.msvdXx
+tester.QSq2Uh
+tester.QT7YlR
+verify.oFQ3cu
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+agent.log
+e500c44
+)
+
+Read response → (
+1	# Run artifacts
+2	
+3	**Agents must use this folder for durable artifacts between runs.**
+4	
+5	The distributed starter contains only this README in this folder. Create
+6	run records when student work begins; starter preparation notes and sample
+7	results are not included.
+8	
+9	Anything saved for a later agent or run—state, plans, handoffs, logs, review
+10	findings, test results, screenshots, recordings, or reports—belongs here.
+11	Fresh agent contexts must be able to resume using the repo and this folder.
+12	
+13	Loop code, prompts, and configuration belong in [`loop/`](../loop/README.md).
+14	Port code belongs in `platform/` and `web/`, verification code in `tests/`,
+15	and game assets in `assets/`. Shared build files may live at the root. Build products
+16	may live in `build/` or `dist/`; link to them from a run record when useful.
+17	Temporary scratch files may be disposable, but anything needed for a
+18	handoff, resumption, or evaluation must be copied here before a run ends.
+19	
+20	## Suggested layout
+21	
+22	You can choose a different layout inside this folder. Document it so another
+23	agent can find the current state without reading your conversation.
+24	
+25	```text
+26	artifacts/
+27	  README.md
+28	  state.json                 # Current run, next task, and stopping status
+29	  runs/
+30	    <unique-run-id>/
+31	      manifest.json          # Source revision, environment, budgets, usage
+32	      handoffs/              # Tasks and responses between roles
+33	      reviews/               # Findings and their resolution
+34	      logs/                  # Tool and build output
+35	      tests/                 # Commands, results, screenshots, recordings
+36	      summary.md             # Outcome and next steps
+37	```
+38	
+39	## Required habits
+40	
+41	- Give each run a unique ID. Preserve earlier results instead of overwriting
+42	  failure evidence with the latest passing output.
+43	- Record the source revision and any uncommitted changes being tested.
+44	  Evidence from an older revision does not establish that the current one passes.
+45	- Save the current task, unresolved findings, artifact paths, and next action
+46	  before handing off or stopping. Include the stopping reason and resource usage.
+47	- Reference evidence with paths relative to the repo, so it works in a sandbox.
+48	- Include the artifacts needed to assess your submission. Explain any omitted
+49	  large files and how to reproduce them.
+50	- Do not store credentials, API keys, or commercial game data here. Sanitize
+51	  logs before saving them.
+52	
+53	This folder starts with instructions only. Your loop creates the run records.
+54
+)
+
+Calling Read()
+
+Calling Read()
+
+Read response → (
+1	# Site and startup review
+2	
+3	You are `reviewer_site`.
+4	
+5	Review build/startup and actual browser loading at http://localhost:8000.
+6	Write no source, tests, or build files. You may run the existing build and start a
+7	local HTTP server without modifying source; stop only a server you started.
+8	Use Playwright MCP (or existing browser scripts) to verify the page, canvas, fresh
+9	JS/WASM/WAD loading, console/network failures, initial image, colors, and startup
+10	responsiveness. Ensure an existing port-8000 server serves this project's current
+11	build; do not kill an unknown service or accept an unrelated page as evidence.
+12	Leave movement, combat, and audio depth to reviewer_gameplay. Report actionable
+13	faults to the relevant coder. PASS requires actual observed startup, not inspection
+14	alone. Keep evidence in OUTPUT_DIR; screenshots are supporting evidence, not all
+15	of acceptance. Browser tools do not grant permission to patch files.
+16	
+17	Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+18	Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+19	Use your judgment to reach the requested result. If details are absent, choose
+20	reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+21	Honor supplied requirements. Never weaken tests to hide a failure or call an
+22	assumption student-approved. Prefer completing useful work over writing plans.
+23	
+24	Hard boundaries: edit only the source paths allowed below and your supplied
+25	REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+26	(except for the tester), other roles' source files, and Git history are read-only.
+27	Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+28	Browser-managed captures may go to artifacts/browser/.
+29	Builds may generate build/ and dist/; do not edit generated files as source fixes.
+30	These instructions do not themselves enforce OS-level permissions.
+31	
+32	Print brief PROGRESS: updates when changing activities. Read previous findings
+33	under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+34	if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+35	evidence, unresolved problems with owners, and assumptions. Partial/unverified
+36	work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+37
+)
+
+Read response → (
+1	FINDINGS
+2	
+3	Startup observed and working; FINDINGS only because of minor items and limited scope (not a full acceptance run).
+4	
+5	## Work
+6	- Port 8000 was free at start (curl code 000, lsof empty). I started `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist` (pid in server.pid) and stopped it at the end. Did not run a build; reviewed existing dist/.
+7	- Source identity: HEAD e500c44 plus uncommitted changes. dist/ files index.html, audio_web.js, input_audio.js, render_timing.js are byte-identical to web/. Wasm/js/data sha prefixes are in dist-sha.txt (doom.wasm a4c68466..., differs from the tester report's 23aac171..., so dist/ was rebuilt after that report; I did not rebuild or verify the source->dist link for the C code).
+8	- Playwright MCP, fresh load of http://localhost:8000/ (and a cache-busted reload ?r=2). Server log shows GET /, 4 JS files, doom.data, doom.wasm all 200; doom.wasm is served as application/wasm.
+9	- Console: engine boot log is complete (W_Init adds /doom1.wad, I_InitGraphics 640x400 RGBA, 320x200 auto-scale 2). No page errors.
+10	- Canvas 640x400, 104 distinct colours, all pixels non-black at ~5s; `Module._rt.frames` = 902 (render_timing linked, advancing).
+11	- Initial image (early.png): DOOM title screen with correct colours (red/green/gold, no R/B swap). startup.png at ~5s shows the attract-mode demo (HUD, normal gameplay frame), so the loop runs without input.
+12	
+13	## Evidence (OUTPUT_DIR)
+14	startup.png, early.png, console-warn.txt, server.log, dist-sha.txt; raw console logs in artifacts/browser/.
+15	
+16	## Findings
+17	1. Minor, owner coder (web/): GET /favicon.ico returns 404, shown as a console error on the first load. Add a favicon or `<link rel="icon" href="data:,">`.
+18	2. Minor, owner coder_input_audio: two AudioContext "not allowed to start" warnings (audio_web.js:27, :53) until a user gesture. Expected under autoplay policy. I did not verify that audio resumes after a gesture (left to reviewer_gameplay).
+19	3. Cosmetic, owner coder (web/): canvas is shown at 640x400 CSS pixels and not scaled to the viewport, so it is small on large screens.
+20	
+21	## Not verified
+22	Startup time was not measured (page showed the title within the screenshot taken right after load); build from clean (emsdk not used); other browsers; cache behaviour on second load with a stale dist.
+23	
+24	## Assumptions
+25	Headless Playwright Chromium via the MCP; title "DOOM Shareware" is set by the engine at runtime (HTML title is "Doom (WASM)"); no spec or acceptance criteria were present, so criteria were: page loads, no failed required assets, canvas draws correct colours, loop advances.
+26
+)
+
+Calling Bash()
+
+Bash response → (
+artifacts/logs/reviewer_site.f9dy0D:
+total 24
+drwx------   3 sarahtseng  staff    96 Nov  2 19:49 .
+drwxr-xr-x  17 sarahtseng  staff   544 Nov  2 19:49 ..
+-rw-r--r--   1 sarahtseng  staff  8532 Nov  2 19:50 agent.log
+
+artifacts/logs/reviewer_site.msvdXx:
+total 400
+drwx------  10 sarahtseng  staff    320 Nov  2 19:12 .
+drwxr-xr-x  17 sarahtseng  staff    544 Nov  2 19:49 ..
+-rw-r--r--   1 sarahtseng  staff  28091 Nov  2 19:12 agent.log
+-rw-r--r--@  1 sarahtseng  staff    447 Nov  2 19:12 console-warn.txt
+-rw-r--r--@  1 sarahtseng  staff     97 Nov  2 19:11 dist-sha.txt
+-rw-r--r--@  1 sarahtseng  staff  96495 Nov  2 19:12 early.png
+-rw-r--r--@  1 sarahtseng  staff   2595 Nov  2 19:12 report.md
+-rw-r--r--@  1 sarahtseng  staff   1319 Nov  2 19:12 server.log
+-rw-r--r--@  1 sarahtseng  staff      6 Nov  2 19:11 server.pid
+-rw-r--r--@  1 sarahtseng  staff  53829 Nov  2 19:12 startup.png
+000
+# Building the Doom WebAssembly port
+
+Toolchain: Emscripten **4.0.18** (`source ~/Developer/emsdk/emsdk_env.sh`), GNU make, Node (tests only).
+
+    make        # builds build/*.o and dist/{index.html,doom.js,doom.wasm,doom.data}
+    make clean  # removes build/ and dist/
+
+- Engine sources: all `third_party/doomgeneric/*.c` except `dummy.c`, `doomgeneric_sdl.c`; platform code: `platform/*.c`.
+- WAD packaging: `assets/doom1.wad` is embedded via `--preload-file` at `/doom1.wad` in `dist/doom.data`.
+- `web/index.html` is copied to `dist/index.html`. Serve `dist/` over HTTP (not `file://`).
+- Audio: built with `-DFEATURE_SOUND -Iplatform/audio_compat` (stub SDL_mixer.h); `web/audio_web.js` provides the Web Audio backend. Scripts load before doom.js: input_audio.js, audio_web.js, render_timing.js.
+- JS/C bridge exports are listed in the Makefile `EXPORTED_FUNCTIONS`; see `platform/capstone_bridge.h`.
+- Acceptance: `tests/verify.sh` (tester-owned); `QUICK=1` is partial and never exits 0.
+)
+PROGRESS: checking dist freshness and starting the server (port 8000 is free).
+Calling Bash()
+
+Bash response → (
+total 9512
+-rw-r--r--@ 1 sarahtseng  staff    18571 Nov  2 19:46:52 2026 audio_web.js
+-rw-r--r--@ 1 sarahtseng  staff  4196020 Nov  2 19:46:51 2026 doom.data
+-rw-r--r--@ 1 sarahtseng  staff    75656 Nov  2 19:46:52 2026 doom.js
+-rwxr-xr-x@ 1 sarahtseng  staff   554840 Nov  2 19:46:52 2026 doom.wasm
+-rw-r--r--@ 1 sarahtseng  staff      887 Nov  2 19:46:52 2026 index.html
+-rw-r--r--@ 1 sarahtseng  staff     4148 Nov  2 19:46:52 2026 input_audio.js
+-rw-r--r--@ 1 sarahtseng  staff      885 Nov  2 19:46:52 2026 render_timing.js
+---
+Nov 2 19:10:52 2026 Makefile
+Nov 2 19:09:16 2026 platform/audio_web.c
+Nov 2 16:05:13 2026 platform/cap_fallback.c
+Nov 2 19:03:16 2026 platform/capstone_bridge.h
+Nov 2 19:03:16 2026 platform/doomgeneric_wasm.c
+Nov 2 16:05:37 2026 platform/engine_stubs.c
+Nov 2 19:06:57 2026 platform/input_audio.c
+Nov 2 16:59:27 2026 platform/input_audio.h
+Nov 2 19:04:58 2026 platform/render_timing.c
+Nov 2 16:37:37 2026 platform/render_timing.h
+Nov 2 19:08:09 2026 web/audio_web.js
+Nov 2 19:46:35 2026 web/index.html
+Nov 2 17:50:12 2026 web/input_audio.js
+Nov 2 19:04:58 2026 web/render_timing.js
+09969002dba6  dist/audio_web.js
+1d7d43be501e  dist/doom.data
+a16a29a0a9b0  dist/doom.js
+a4c6846627bd  dist/doom.wasm
+5905489e0412  dist/index.html
+cc5e94829d38  dist/input_audio.js
+db294e4e8dbf  dist/render_timing.js
+)
+Dist is newer than all sources. I'll confirm the web files match, then start the server.
+Calling Bash()
+
+Calling ToolSearch()
+
+Bash response → (
+same index.html
+same audio_web.js
+same input_audio.js
+same render_timing.js
+200
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Doom (WASM)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <style>
+    html, body { margin: 0; height: 100%; background: #000; }
+    body { display: flex; align-items: center; justify-content: center; }
+    canvas { background: #111; image-rendering: pixelated; image-rendering: crisp-edges; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="640" height="400"></canvas>
+  <script>
+    var Module = {
+      canvas: document.getElementById('canvas'),
+      print: function (t) { console.log(t); },
+      printErr: function (t) { console.warn(t); }
+    };
+  </script>
+  <script src="input_audio.js"></script>
+  <script src="audio_web.js"></script>
+  <script src="render_timing.js"></script>
+  <script src="doom.js"></script>
+</body>
+</html>
+)
+
+ToolSearch response → "Completed by external harness."
+
+Calling mcp__playwright__browser_navigate()
+
+mcp__playwright__browser_navigate response → (
+### Ran Playwright code
+```js
+await page.goto('http://localhost:8000/?r=f9dy');
+```
+### Page
+- Page URL: http://localhost:8000/?r=f9dy
+- Page Title: DOOM Shareware
+- Console: 0 errors, 2 warnings
+### Snapshot
+- [Snapshot](artifacts/browser/page-2026-11-03T03-50-21-848Z.yml)
+### Events
+- New console entries: artifacts/browser/console-2026-11-03T03-50-21-524Z.log#L1-L35
+)
+
+Calling mcp__playwright__browser_take_screenshot()
+
+Calling mcp__playwright__browser_wait_for()
+
+mcp__playwright__browser_take_screenshot response → (
+### Result
+- [Screenshot of viewport](artifacts/logs/reviewer_site.f9dy0D/early.png)
+### Ran Playwright code
+```js
+// Screenshot viewport and save it as artifacts/logs/reviewer_site.f9dy0D/early.png
+await page.screenshot({
+  path: 'artifacts/logs/reviewer_site.f9dy0D/early.png',
+  scale: 'css',
+  type: 'png'
+});
+```
+)
+
+mcp__playwright__browser_wait_for response → (
+### Result
+Waited for 5 seconds
+### Ran Playwright code
+```js
+await new Promise(f => setTimeout(f, 5 * 1000));
+```
+### Page
+- Page URL: http://localhost:8000/?r=f9dy
+- Page Title: DOOM Shareware
+- Console: 0 errors, 2 warnings
+### Snapshot
+- [Snapshot](artifacts/browser/page-2026-11-03T03-50-29-397Z.yml)
+)
+
+Calling mcp__playwright__browser_evaluate()
+
+Calling mcp__playwright__browser_take_screenshot()
+
+Calling Bash()
+
+mcp__playwright__browser_evaluate response → (
+### Result
+{
+  "w": 640,
+  "h": 400,
+  "css": [
+    640,
+    400
+  ],
+  "colors": 115,
+  "nonblack": 1,
+  "frames": 796,
+  "nav": 31.69999998807907,
+  "res": [
+    [
+      "input_audio.js",
+      12,
+      200
+    ],
+    [
+      "audio_web.js",
+      13,
+      200
+    ],
+    [
+      "render_timing.js",
+      12,
+      200
+    ],
+    [
+      "doom.js",
+      13,
+      200
+    ],
+    [
+      "doom.data",
+      32,
+      200
+    ],
+    [
+      "doom.wasm",
+      28,
+      200
+    ]
+  ]
+}
+### Ran Playwright code
+```js
+await page.evaluate('() => { const c=document.getElementById(\'canvas\'); const t=document.createElement(\'canvas\'); t.width=c.width;t.height=c.height; const x=t.getContext(\'2d\'); x.drawImage(c,0,0); const d=x.getImageData(0,0,c.width,c.height).data; const s=new Set(); let nb=0; for(let i=0;i<d.length;i+=4){ s.add(d[i]<<16|d[i+1]<<8|d[i+2]); if(d[i]||d[i+1]||d[i+2]) nb++; } return {w:c.width,h:c.height,css:[c.clientWidth,c.clientHeight],colors:s.size,nonblack:nb/(d.length/4),frames:window.Module&&Module._rt?Module._rt.frames:null, nav:performance.getEntriesByType(\'navigation\')[0].domContentLoadedEventEnd, res:performance.getEntriesByType(\'resource\').map(r=>[r.name.split(\'/\').pop(),Math.round(r.responseEnd),r.responseStatus])}; }');
+```
+)
+
+mcp__playwright__browser_take_screenshot response → (
+### Result
+- [Screenshot of viewport](artifacts/logs/reviewer_site.f9dy0D/startup.png)
+### Ran Playwright code
+```js
+// Screenshot viewport and save it as artifacts/logs/reviewer_site.f9dy0D/startup.png
+await page.screenshot({
+  path: 'artifacts/logs/reviewer_site.f9dy0D/startup.png',
+  scale: 'css',
+  type: 'png'
+});
+```
+)
+
+Bash response → (
+[     246ms] [WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:27
+[     288ms] [WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:53
+127.0.0.1 - - [02/Nov/2026 19:50:17] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 19:50:21] "GET /?r=f9dy HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 19:50:21] "GET /input_audio.js HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 19:50:21] "GET /render_timing.js HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 19:50:21] "GET /doom.js HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 19:50:21] "GET /audio_web.js HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 19:50:21] "GET /doom.data HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 19:50:21] "GET /doom.wasm HTTP/1.1" 200 -
+)
+Favicon is fixed (no 404). I'll view the screenshots.
+Calling Read()
+
+Calling Read()
+
+Read response → "Completed by external harness."
+
+Read response → "Completed by external harness."
+PROGRESS: writing the report and stopping my server.
+Calling Bash()
+
+Bash response → "after stop: 000"
+FINDINGS. Startup works on the current `dist/`, with one cosmetic item left and a limited scope. This was not a full acceptance run, and I did no clean build.
+
+- **Server:** Port 8000 was free at the start. I started `python3 -m http.server` on `dist/` and stopped it afterwards, and port 8000 is free again.
+- **Source match:** `dist/` is newer than every `platform/` and `web/` source and the Makefile, and the four web files are byte-identical to their `web/` copies. I did not rebuild, so the C-to-wasm link is inferred from timestamps only.
+- **Loading:** `/`, the four JS files, `doom.data` and `doom.wasm` all returned 200. Everything had finished loading by about 32 ms. The console showed 0 errors and 2 warnings.
+- **Rendering:** The 640x400 canvas had 115 distinct colours and was fully non-black at about 5 s. The frame counter was 796 and advancing.
+- **Screenshots:** The first one shows the DOOM title screen with correct colours. The one at about 5 s shows the attract-mode demo, so the game runs without input.
+
+**Findings**
+1. The favicon 404 from the prior review is fixed.
+2. Two AudioContext "not allowed to start" warnings appear before a user gesture (`audio_web.js:27` and `:53`). This is expected under the browser's autoplay policy, so it is minor. The owner is `coder_input_audio`, and I did not check whether audio resumes after a gesture. That is for `reviewer_gameplay`.
+3. The canvas stays 640x400 CSS pixels instead of scaling to the viewport. It looks small with wide black borders on a 1280x720 window. This is cosmetic, still unfixed from the prior review, and owned by the coder for `web/`.
+
+Not verified: precise time to first frame, clean build, other browsers, a stale-cache second load, and audio after a gesture.
+
+The report is at `artifacts/logs/reviewer_site.f9dy0D/report.md`. The screenshots, console log, server log and file hashes are in the same folder.

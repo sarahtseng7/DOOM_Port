@@ -1,0 +1,264 @@
+{
+  "status": "FAIL",
+  "quick": false,
+  "soak_seconds": 5,
+  "failed": 3,
+  "unverified": 4,
+  "results": [
+    {
+      "id": "B0.dist-present",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "B1.canvas-640x400",
+      "status": "PASS",
+      "detail": "canvas#canvas intrinsic size"
+    },
+    {
+      "id": "B2.boot-renders-frame",
+      "status": "PASS",
+      "detail": "after 209ms colors=240"
+    },
+    {
+      "id": "B3.opaque-pixels",
+      "status": "PASS",
+      "detail": "transparentFrac=0"
+    },
+    {
+      "id": "B4.channel-order",
+      "status": "PASS",
+      "detail": "meanR=109.8 meanB=30.7 (title/menu are warm; swap => blue)"
+    },
+    {
+      "id": "B5.no-load-errors",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "T1.main-thread-responsive",
+      "status": "PASS",
+      "detail": "60.0 rAF/s over 3s (need >=20)"
+    },
+    {
+      "id": "M1.enter-opens-menu",
+      "status": "PASS",
+      "detail": "diff=0.234"
+    },
+    {
+      "id": "G1.level-started",
+      "status": "PASS",
+      "detail": "diff-from-menu=0.93 statusbarColors=86"
+    },
+    {
+      "id": "B6.level-colors",
+      "status": "PASS",
+      "detail": "E1M1 view not blue-biased"
+    },
+    {
+      "id": "G1b.engine-state-e1m1",
+      "status": "PASS",
+      "detail": "{\"x\":1056,\"y\":-3616,\"angle\":1073741824,\"health\":100,\"level\":101}"
+    },
+    {
+      "id": "G2.idle-stable",
+      "status": "PASS",
+      "detail": "diff=0.0000"
+    },
+    {
+      "id": "I1.turn-right",
+      "status": "PASS",
+      "detail": "shift=-75px err=3.7 err0=6.4"
+    },
+    {
+      "id": "I2.turn-stops-on-release",
+      "status": "PASS",
+      "detail": "diff=0.0000"
+    },
+    {
+      "id": "I3.turn-left",
+      "status": "FAIL",
+      "detail": "shift=0px"
+    },
+    {
+      "id": "I4.forward-moves",
+      "status": "PASS",
+      "detail": "start-vs-mid=0.716 still-moving=0.601"
+    },
+    {
+      "id": "I4b.forward-moves-player",
+      "status": "PASS",
+      "detail": "moved 409 map units (need >=32)"
+    },
+    {
+      "id": "I5.forward-stops-on-release",
+      "status": "PASS",
+      "detail": "settled=true after 2155ms (momentum allowed up to 4s); later-diff=0.0001"
+    },
+    {
+      "id": "I6.backward-returns",
+      "status": "PASS",
+      "detail": "start-to-fwd=409 start-to-back=85 map units (pixel diff for reference: 0.358 vs 0.581)"
+    },
+    {
+      "id": "I7a.turn-held-keeps-changing",
+      "status": "PASS",
+      "detail": "diff=0.3471 (precondition: key effective before blur)"
+    },
+    {
+      "id": "I7.blur-releases-keys",
+      "status": "PASS",
+      "detail": "settled=true after 499ms; later-diff=0.0002 (key still physically down)"
+    },
+    {
+      "id": "C1.fire-animates",
+      "status": "PASS",
+      "detail": "view-diff=0.0374"
+    },
+    {
+      "id": "C2.fire-decrements-ammo",
+      "status": "PASS",
+      "detail": "ammo-region-diff=0.140 (persisting after weapon returns to rest)"
+    },
+    {
+      "id": "C3.fire-stops-on-release",
+      "status": "PASS",
+      "detail": "diff=0.0000"
+    },
+    {
+      "id": "U1.automap-toggles",
+      "status": "PASS",
+      "detail": "diff=0.783"
+    },
+    {
+      "id": "U2.automap-returns",
+      "status": "PASS",
+      "detail": "diff=0.000"
+    },
+    {
+      "id": "U3.escape-opens-menu",
+      "status": "PASS",
+      "detail": "diff=0.240"
+    },
+    {
+      "id": "U4.escape-closes-menu",
+      "status": "PASS",
+      "detail": "diff=0.240"
+    },
+    {
+      "id": "U5.menu-freezes-player",
+      "status": "PASS",
+      "detail": "coasting-before-menu=22.2u/120ms; frozen-in-menu moved=0.0u tics=53 over 1.5s"
+    },
+    {
+      "id": "E1.browser-shortcuts-not-blocked",
+      "status": "PASS",
+      "detail": "{\"f5\":false,\"ctrlR\":false,\"up\":true}"
+    },
+    {
+      "id": "E2a.pagehide-releases-keys",
+      "status": "FAIL",
+      "detail": "precondition-turning=false settled=true later-diff=0.0000"
+    },
+    {
+      "id": "E2b.hidden-releases-keys",
+      "status": "FAIL",
+      "detail": "precondition-turning=false settled=true later-diff=0.0000"
+    },
+    {
+      "id": "E3.repeat-after-blur-is-fresh-press",
+      "status": "PASS",
+      "detail": "diff=0.7861 (view must turn again)"
+    },
+    {
+      "id": "E4.dual-ctrl-held-until-both-up",
+      "status": "PASS",
+      "detail": "held after one up=1, after both=0 (JS state; engine side not observable)"
+    },
+    {
+      "id": "I8.render-module-active",
+      "status": "PASS",
+      "detail": "Module._rt.frames 3005 -> 3075"
+    },
+    {
+      "id": "I9.input-module-identity",
+      "status": "PASS",
+      "detail": "{\"impl\":1,\"delivered\":46,\"dropped\":0}"
+    },
+    {
+      "id": "S1.canvas-scales-16x10",
+      "status": "PASS",
+      "detail": "viewports 1280x720, 500x300, 1000x700, 800x600 all 16:10 and fit"
+    },
+    {
+      "id": "A0.audio-context-created",
+      "status": "PASS",
+      "detail": "state=running after user gestures (suspended => autoplay resume broken)"
+    },
+    {
+      "id": "A2.sfx-played-no-errors",
+      "status": "PASS",
+      "detail": "sfxPlayed=9 sfxBad=0 musicStarted=3 musicErrors=0 notes=1013"
+    },
+    {
+      "id": "A3.audible-peak",
+      "status": "PASS",
+      "detail": "audio clock advanced 2.00s/2s; maxPeak=0.414 (non-silent only, not correct sound)"
+    },
+    {
+      "id": "T2.35-tics-per-second",
+      "status": "PASS",
+      "detail": "34.98 tics/s over 4s (need 35 +/-10%)"
+    },
+    {
+      "id": "R1.soak-no-errors",
+      "status": "PASS",
+      "detail": "5s; errors="
+    },
+    {
+      "id": "R2.soak-still-rendering",
+      "status": "PASS",
+      "detail": "rAF/s=62.0 visibleFrame=true"
+    },
+    {
+      "id": "R3.no-long-stalls",
+      "status": "PASS",
+      "detail": "max longtask=0ms (must be <1500)"
+    },
+    {
+      "id": "R4.soak-frames-changed",
+      "status": "PASS",
+      "detail": "sampled frames that differed: 1"
+    },
+    {
+      "id": "G3a.door-opens-on-use",
+      "status": "PASS",
+      "detail": "start=(1056,-3616) closed-at-start=true sector4 ceil 0->14 steps=69 end=(1519,-2534)"
+    },
+    {
+      "id": "G3b.walk-through-door",
+      "status": "PASS",
+      "detail": "door-opened=true entered-sector-4=true reached-beyond=true start-sector=38 sector-sequence=[3>4>0]"
+    },
+    {
+      "id": "A1.audio",
+      "status": "UNVERIFIED",
+      "detail": "scope undecided; an active AudioContext would not prove correct sound/music"
+    },
+    {
+      "id": "P1.save-persistence",
+      "status": "UNVERIFIED",
+      "detail": "scope undecided"
+    },
+    {
+      "id": "G3c.level-exit",
+      "status": "UNVERIFIED",
+      "detail": "walking through the door is checked (G3b); no route/oracle yet for finishing E1M1 (needs scripted route or coder level-exit hook)"
+    },
+    {
+      "id": "H1.hidden-tab-timing",
+      "status": "UNVERIFIED",
+      "detail": "headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+{"note":"transcribed from Playwright MCP run_code return values",
+ "steady_state_1280x720":{"started_s_after_load":"~9","tic0":809,"tic1":1019,"secs":6.0,"ticsPerSec":35.0,"maxRafGapMs":10.3,"maxTicStallMs":34.8},
+ "geometry1280":{"x":64,"y":0,"w":1152,"h":720,"aspect":1.6,"scrollW":1280,"scrollH":720},
+ "menu_after_reload":{"tic_menu_open":203,"tic_open_plus_0.8s":233,"tic_after_close":250,"note":"demo continues under menu, as vanilla"},
+ "geometry800x600":{"x":0,"y":50,"w":800,"h":500,"scrollW":800,"scrollH":600}}

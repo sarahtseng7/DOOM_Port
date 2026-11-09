@@ -1,0 +1,333 @@
+{
+ "res": [
+  {
+   "id": "A.ctx-running-after-gesture",
+   "ok": true,
+   "d": "before=suspended after=running"
+  },
+  {
+   "id": "A.title-music-nonsilent",
+   "ok": true,
+   "d": "musicStarted=2 maxPeak=0.21830734610557556"
+  },
+  {
+   "id": "A.menu-nav-sfx",
+   "ok": true,
+   "d": "sfxPlayed 0->2 (2 cursor moves)"
+  },
+  {
+   "id": "G.level-entered-E1M1",
+   "ok": true,
+   "d": {
+    "tic": 431,
+    "valid": 1,
+    "x": 1056,
+    "y": -3616,
+    "ang": 1073741824,
+    "hp": 100,
+    "lvl": 101,
+    "sec": 38
+   }
+  },
+  {
+   "id": "A.level-music-switched",
+   "ok": true,
+   "d": {
+    "musicStarted": 3,
+    "playing": true
+   }
+  },
+  {
+   "id": "T.tic-rate",
+   "ok": true,
+   "d": "35.0 tics/s"
+  },
+  {
+   "id": "M.idle-no-drift",
+   "ok": true,
+   "d": {
+    "d": 0,
+    "dAng": 0
+   }
+  },
+  {
+   "id": "M.forward-moves",
+   "ok": true,
+   "d": {
+    "walkUnits": 76,
+    "ticks": 18
+   }
+  },
+  {
+   "id": "M.forward-coasts-then-stops",
+   "ok": false,
+   "d": {
+    "coastUnits": 65,
+    "stoppedAfterTics": 47,
+    "stepsPerSample": "6 5 5 5 4 4 3 3 3 3 2 2 0"
+   }
+  },
+  {
+   "id": "M.forward-along-facing",
+   "ok": true,
+   "d": {
+    "cosToFacing": 1
+   }
+  },
+  {
+   "id": "M.backward-opposite-facing",
+   "ok": true,
+   "d": {
+    "units": 117,
+    "cosToFacing": -1
+   }
+  },
+  {
+   "id": "M.turn-ArrowRight",
+   "ok": true,
+   "d": {
+    "degWhileHeld": -40.43,
+    "ticksHeld": 14,
+    "moved": 0
+   }
+  },
+  {
+   "id": "M.turn-ArrowRight-stops-on-release",
+   "ok": true,
+   "d": {
+    "degAfterRelease": -3.52,
+    "lastChangeTicAfterRelease": 1
+   }
+  },
+  {
+   "id": "M.turn-ArrowLeft",
+   "ok": true,
+   "d": {
+    "degWhileHeld": 36.91,
+    "ticksHeld": 14,
+    "moved": 0
+   }
+  },
+  {
+   "id": "M.turn-ArrowLeft-stops-on-release",
+   "ok": true,
+   "d": {
+    "degAfterRelease": 3.52,
+    "lastChangeTicAfterRelease": 1
+   }
+  },
+  {
+   "id": "M.strafe-right-period",
+   "ok": true,
+   "d": {
+    "d": 112.2,
+    "cosF": 0.008,
+    "cosR": 1,
+    "dAng": 0
+   }
+  },
+  {
+   "id": "M.strafe-left-comma",
+   "ok": true,
+   "d": {
+    "d": 112.2,
+    "cosF": -0.008,
+    "cosR": -1,
+    "dAng": 0
+   }
+  },
+  {
+   "id": "M.alt-arrow-strafes",
+   "ok": true,
+   "d": {
+    "d": 112.2,
+    "cosR": 1,
+    "dAng": 0
+   }
+  },
+  {
+   "id": "M.shift-run-faster",
+   "ok": true,
+   "d": {
+    "walkUnitsPerTic": 2.2,
+    "runUnitsPerTic": 6.92
+   }
+  },
+  {
+   "id": "C.fire-ammo-and-sfx",
+   "ok": true,
+   "d": {
+    "ammoDiff": 0.14,
+    "sfx": "11->12"
+   }
+  },
+  {
+   "id": "C.held-fire-repeats-and-stops",
+   "ok": true,
+   "d": {
+    "during": 4,
+    "after1200ms": 0
+   }
+  },
+  {
+   "id": "C.use-sfx-at-wall",
+   "ok": null,
+   "d": {
+    "sfxDelta": 1,
+    "at": {
+     "tic": 1417,
+     "valid": 1,
+     "x": 1180,
+     "y": -2897,
+     "ang": 1031798784,
+     "hp": 100,
+     "lvl": 101,
+     "sec": 38
+    }
+   }
+  },
+  {
+   "id": "P.menu-pauses-world",
+   "ok": false,
+   "d": {
+    "dPos": 0,
+    "dTic": 57
+   }
+  },
+  {
+   "id": "A.audio-clock-advances",
+   "ok": true,
+   "d": "2.000 s per 2.003 s wall"
+  },
+  {
+   "id": "A.music-in-menu",
+   "ok": null,
+   "d": {
+    "musicPlaying": true,
+    "voices": 13,
+    "lastPeak": 0.020341232419013977
+   }
+  },
+  {
+   "id": "A.ingame-menu-nav-sfx",
+   "ok": true,
+   "d": "18->19"
+  },
+  {
+   "id": "F.no-stuck-key-after-menu",
+   "ok": true,
+   "d": {
+    "dPos": 0,
+    "dAng": 0,
+    "dTic": 42
+   }
+  },
+  {
+   "id": "F.blur-stops-held-turn",
+   "ok": true,
+   "d": {
+    "degBlurLatency": 3.52,
+    "degAfterBlur1s": 0
+   }
+  },
+  {
+   "id": "F.input-works-after-blur",
+   "ok": true,
+   "d": {
+    "deg": 29.88
+   }
+  },
+  {
+   "id": "F.blur-stops-held-forward",
+   "ok": true,
+   "d": {
+    "coastAfterBlur": 0,
+    "movedLast800ms": 0
+   }
+  },
+  {
+   "id": "P.pause-key-toggles",
+   "ok": false,
+   "d": {
+    "ticsPaused1s": 39,
+    "ticsResumed1s": 35
+   }
+  },
+  {
+   "id": "G.automap-toggle-no-move",
+   "ok": true,
+   "d": {
+    "dPos": 0
+   }
+  },
+  {
+   "id": "E.no-page-errors",
+   "ok": true,
+   "d": []
+  },
+  {
+   "id": "A.no-bad-sfx-or-music-errors",
+   "ok": true,
+   "d": {
+    "sfxPlayed": 21,
+    "sfxRequested": 21,
+    "sfxSuppressed": 0,
+    "sfxBad": 0,
+    "musicErrors": 0,
+    "maxPeak": 0.4659397006034851
+   }
+  }
+ ],
+ "pre": {
+  "sfxRequested": 0,
+  "sfxPlayed": 0,
+  "sfxSuppressed": 0,
+  "sfxBad": 0,
+  "musicRequested": 1,
+  "musicStarted": 1,
+  "notesScheduled": 0,
+  "musicErrors": 0,
+  "maxPeak": 0,
+  "lastPeak": 0,
+  "ctxState": "suspended",
+  "sampleRate": 48000,
+  "sfxChannelsActive": 0,
+  "musicPlaying": true,
+  "musicVoices": 0
+ },
+ "post": {
+  "sfxRequested": 0,
+  "sfxPlayed": 0,
+  "sfxSuppressed": 0,
+  "sfxBad": 0,
+  "musicRequested": 2,
+  "musicStarted": 2,
+  "notesScheduled": 22,
+  "musicErrors": 0,
+  "maxPeak": 0.21830734610557556,
+  "lastPeak": 0.002341496292501688,
+  "ctxState": "running",
+  "sampleRate": 48000,
+  "sfxChannelsActive": 0,
+  "musicPlaying": true,
+  "musicVoices": 3
+ },
+ "fin": {
+  "sfxRequested": 21,
+  "sfxPlayed": 21,
+  "sfxSuppressed": 0,
+  "sfxBad": 0,
+  "musicRequested": 3,
+  "musicStarted": 3,
+  "notesScheduled": 1184,
+  "musicErrors": 0,
+  "maxPeak": 0.4659397006034851,
+  "lastPeak": 0.205346018075943,
+  "ctxState": "running",
+  "sampleRate": 48000,
+  "sfxChannelsActive": 0,
+  "musicPlaying": true,
+  "musicVoices": 14
+ },
+ "errs": []
+}

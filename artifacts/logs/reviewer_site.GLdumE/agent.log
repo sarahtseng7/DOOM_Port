@@ -1,0 +1,934 @@
+
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+  the resource usage, manual interventions, and final stopping decision.
+
+Preserve failing evidence as well as passing evidence. Record changes to
+acceptance criteria separately, with a reason. Discuss disagreements and
+missed faults in your write-up.
+
+## Where your work belongs
+
+| Location | Purpose |
+| --- | --- |
+| [`loop/`](loop/README.md) | All loop code, prompts, role definitions, MCP configuration, and design documentation. |
+| [`artifacts/`](artifacts/README.md) | All durable run state, handoffs, logs, review findings, and evidence. Agents must use this folder between runs. |
+| `tests/` | Verification code, including checks for the loop itself. |
+| `platform/`, `web/` | The port and browser page. |
+| `third_party/doomgeneric/` | Supplied engine; platform ports have been removed. |
+| `assets/` | Included shareware `doom1.wad` (Episode 1). |
+| `build/`, `dist/` | Generated build output. |
+
+Keep the root for project documentation and shared build/toolchain files.
+The starter supplies engine source, platform and HTML stubs, the shareware
+WAD, documentation, and an optional Docker toolchain. It supplies no working
+game, build script, loop implementation, or test suite. `artifacts/` starts
+with its README only; students create run evidence there during the project.
+Use the supplied engine and Emscripten. Documentation is allowed; copying an
+existing Doom browser port does not satisfy the assignment.
+
+See [`platform/README.md`](platform/README.md) for engine integration caveats,
+including pixel format, timing, and audio. The supplied game data already
+contains sound effects and music; no additional sound assets are required.
+
+## Agent section for setup
+
+### macOS without Docker
+
+Install the build tools directly on your Mac to compile and test the browser
+port. Docker is not required for this workflow. There is currently no macOS
+setup script; run the steps below manually.
+
+1. **Install prerequisites.** In Terminal, run:
+
+   ```sh
+   xcode-select --install
+   ```
+
+   Finish the installer, then check `git --version` and `python3 --version`.
+   If Python is missing, install it from [python.org](https://www.python.org/downloads/macos/),
+   or run `brew install python` if you already have Homebrew.
+
+2. **Install Emscripten.** Use version `4.0.18` to match the supplied Dockerfile:
+
+   ```sh
+   mkdir -p ~/Developer
+   cd ~/Developer
+   git clone https://github.com/emscripten-core/emsdk.git
+   cd emsdk
+   ./emsdk install 4.0.18
+   ./emsdk activate 4.0.18
+   source ./emsdk_env.sh
+   emcc --version
+   ```
+
+   If you already have an SDK checkout at that location, use it instead of
+   cloning again. In each new Terminal session where you want to compile, run:
+
+   ```sh
+   source ~/Developer/emsdk/emsdk_env.sh
+   ```
+
+   See the [official installation instructions](https://emscripten.org/docs/getting_started/downloads.html).
+
+3. **Verify the compiler and browser workflow.** Return to this repository's
+   root directory, then run:
+
+   ```sh
+   mkdir -p build/smoke
+   cat > build/smoke/hello.c <<'EOF'
+   #include <stdio.h>
+   int main(void) {
+       printf("Emscripten works!\n");
+       return 0;
+   }
+   EOF
+
+   emcc build/smoke/hello.c -o build/smoke/index.html
+   python3 -m http.server 8000 --bind 127.0.0.1 --directory build/smoke
+   ```
+
+   Open <http://localhost:8000>. The generated page should print
+   `Emscripten works!`. Press **Control-C** in Terminal to stop the server.
+   This verifies the toolchain and local serving, not the game.
+
+4. **Have your agents implement and build the game.** The supplied platform callbacks are
+   empty, there is no entry point or build script, and the HTML does not yet
+   load a compiled module. These are student implementation tasks; see
+   [platform/README.md](platform/README.md). Document the actual build command
+   once implemented. A completed build could produce:
+
+   ```text
+   dist/
+     index.html
+     doom.js
+     doom.wasm
+     doom.data
+   ```
+
+   The exact filenames depend on the build configuration. For example,
+   `doom.data` could contain the packaged shareware WAD. The build must make
+   that WAD available to the engine inside the browser module.
+
+5. **Test the completed game locally.** Once the build output is in `dist/`,
+   run this from the repository root:
+
+   ```sh
+   python3 -m http.server 8000 --bind 127.0.0.1 --directory dist
+   ```
+
+   Open <http://localhost:8000> and exercise the game's behavior. Use a local
+   web server rather than opening the HTML file directly, as explained in
+   [Emscripten's deployment documentation](https://emscripten.org/docs/compiling/Deploying-Pages.html).
+
+artifacts/logs:
+coder_input_audio.0yubr6
+coder_input_audio.1EbASm
+coder_input_audio.1TaZlK
+coder_input_audio.3fWNbv
+coder_input_audio.6WSU74
+coder_input_audio.6zHSnA
+coder_input_audio.7uDQyJ
+coder_input_audio.9u4tS4
+coder_input_audio.a8DgOL
+coder_input_audio.DUI82V
+coder_input_audio.Ew3ETW
+coder_input_audio.g90qsB
+coder_input_audio.gRFlNu
+coder_input_audio.GUXhIX
+coder_input_audio.gVnY6U
+coder_input_audio.hlDobF
+coder_input_audio.kjW35H
+coder_input_audio.KqlYco
+coder_input_audio.KWBVgQ
+coder_input_audio.N0e4K8
+coder_input_audio.niQiMB
+coder_input_audio.OKDYKj
+coder_input_audio.OwOtK6
+coder_input_audio.PrVlSe
+coder_input_audio.RB2acD
+coder_input_audio.rdvBFz
+coder_input_audio.RfUwSi
+coder_input_audio.XJqG3c
+coder_input_audio.XSXPrI
+coder_input_audio.YCG1J3
+coder_input_audio.yleZko
+coder_input_audio.YoKls9
+coder_input_audio.zZGUhu
+coder_render_timing.0MFb7w
+coder_render_timing.1ZyeYK
+coder_render_timing.6XCJuY
+coder_render_timing.8nHQTI
+coder_render_timing.cK29OS
+coder_render_timing.Dy4Q1i
+coder_render_timing.EEYKNe
+coder_render_timing.EjeWNb
+coder_render_timing.El3oAP
+coder_render_timing.EqHAI4
+coder_render_timing.HgDIMK
+coder_render_timing.HwUXVM
+coder_render_timing.i3pFKE
+coder_render_timing.kFsAu7
+coder_render_timing.KuIme0
+coder_render_timing.licfez
+coder_render_timing.lpNQaR
+coder_render_timing.mobiWy
+coder_render_timing.mpRUkR
+coder_render_timing.Pct78q
+coder_render_timing.sbbbAi
+coder_render_timing.T2WY45
+coder_render_timing.TqIUTQ
+coder_render_timing.vhFGrK
+coder_render_timing.vyC811
+coder_render_timing.WB04Nu
+coder_render_timing.wbiVKQ
+coder_render_timing.Wkpv1o
+coder_render_timing.xSCZrJ
+coder_render_timing.Xt27oG
+coder_render_timing.y2E5IZ
+coder_render_timing.yJ4J8e
+coder_render_timing.zWYUzc
+coder.03woB7
+coder.1Bi21x
+coder.5cbI3A
+coder.72fg2O
+coder.7cXMRV
+coder.7RfYKW
+coder.8JOBA4
+coder.8NI43t
+coder.9PHBOq
+coder.acGoDX
+coder.ACrcCc
+coder.b0xh2K
+coder.caQaH6
+coder.cRMV3j
+coder.cwCqji
+coder.CzMECd
+coder.diUW6i
+coder.f60Esm
+coder.FaD2R7
+coder.GhMtru
+coder.H58uUd
+coder.HgewO7
+coder.HPqFrt
+coder.Hq7OD9
+coder.HT7Mh0
+coder.i9iFY7
+coder.ICaI0g
+coder.J22PFD
+coder.JMrJmA
+coder.kf3uJJ
+coder.KoXm1s
+coder.kpfpV0
+coder.KQZPBB
+coder.KvCoMT
+coder.l3P8AO
+coder.L6tVZi
+coder.lRueHg
+coder.MB4v9E
+coder.mfefCt
+coder.mtnqTz
+coder.n6GiEG
+coder.nUFHev
+coder.NWKoK5
+coder.O0vxbS
+coder.OPvVkW
+coder.pLDPys
+coder.Q1melD
+coder.qdu038
+coder.rRdM6A
+coder.rRGfb0
+coder.s3mRzG
+coder.UAUPuD
+coder.UVP1dP
+coder.UWFAhI
+coder.UwvRwk
+coder.VDHNTr
+coder.VgF4Hv
+coder.vtsyOC
+coder.X6XMnq
+coder.XbhNOg
+coder.XGU7Cd
+coder.xIoyo9
+coder.Xl0uaN
+coder.xM6chO
+coder.XTOgLt
+coder.yjG9kc
+reviewer_gameplay.3rXq3f
+reviewer_gameplay.6SoKWH
+reviewer_gameplay.6zun55
+reviewer_gameplay.9WUqPT
+reviewer_gameplay.Bt9KSs
+reviewer_gameplay.dAPDqY
+reviewer_gameplay.E8OE8y
+reviewer_gameplay.EGn2Bb
+reviewer_gameplay.EqGhpV
+reviewer_gameplay.F2duYo
+reviewer_gameplay.facW3H
+reviewer_gameplay.GMLSL6
+reviewer_gameplay.GTAfxW
+reviewer_gameplay.GV2v4U
+reviewer_gameplay.HCHqDZ
+reviewer_gameplay.j2SZgT
+reviewer_gameplay.ldSVVs
+reviewer_gameplay.LPg0t8
+reviewer_gameplay.Lw1bQv
+reviewer_gameplay.oH1nxw
+reviewer_gameplay.PEszG3
+reviewer_gameplay.q0AKMe
+reviewer_gameplay.rhBDEY
+reviewer_gameplay.Rw1fcA
+reviewer_gameplay.T486PX
+reviewer_gameplay.tJuPwN
+reviewer_gameplay.WeHatJ
+reviewer_gameplay.wHMOB2
+reviewer_gameplay.wQbJ7c
+reviewer_gameplay.Xy92jH
+reviewer_gameplay.ZIYPuo
+reviewer_gameplay.ZUZV8O
+reviewer_site.32cQhq
+reviewer_site.7RuKMK
+reviewer_site.9wJ6HG
+reviewer_site.aZiFrh
+reviewer_site.B6IHWG
+reviewer_site.cdLCtG
+reviewer_site.f9dy0D
+reviewer_site.FDoXaA
+reviewer_site.FMO0C9
+reviewer_site.FnUrtZ
+reviewer_site.GLdumE
+reviewer_site.GwiGfG
+reviewer_site.Hwj708
+reviewer_site.inVZde
+reviewer_site.JBMgao
+reviewer_site.lWGySs
+reviewer_site.M9x4Dk
+reviewer_site.msvdXx
+reviewer_site.NOQPIi
+reviewer_site.nSpEMa
+reviewer_site.p97OZ1
+reviewer_site.pWAMB0
+reviewer_site.Q4XPrg
+reviewer_site.qchn1m
+reviewer_site.qWTvbw
+reviewer_site.RLrOVV
+reviewer_site.Rm0IxG
+reviewer_site.sFYP5z
+reviewer_site.sLn6b5
+reviewer_site.U8Ka1G
+reviewer_site.UpTuZG
+reviewer_site.w91AQ9
+reviewer_site.ZELzZH
+tester.06TdYY
+tester.3P7z9H
+tester.3Pq6Xx
+tester.4fEyMa
+tester.4StVeO
+tester.6hWyX9
+tester.7sHdq1
+tester.8DASDy
+tester.8fsQdw
+tester.98BZhM
+tester.9SkuzA
+tester.aZlP2G
+tester.bajOBH
+tester.BNf9ts
+tester.byIkGV
+tester.gkbn63
+tester.I2eTl9
+tester.InaBUN
+tester.JAaNjg
+tester.jQ8WOj
+tester.l8juQD
+tester.nJZO5N
+tester.oPtvHA
+tester.PLOvPR
+tester.puK0iM
+tester.Q0YUP2
+tester.qBOVWc
+tester.QcBm5A
+tester.QSq2Uh
+tester.QT7YlR
+tester.rMyy2B
+tester.s4m9oQ
+tester.sAC1ys
+tester.SytnGa
+tester.w2Z6BS
+tester.wO71Dk
+tester.yX1CIJ
+verify.2u2qnP
+verify.69kwht
+verify.8rMyby
+verify.B9OMLq
+verify.C0hQ9F
+verify.f8X5Tq
+verify.FdoEfO
+verify.Gjtb86
+verify.Gm8XQE
+verify.hDJeOV
+verify.ICvgiu
+verify.IyPdrJ
+verify.jfRFOF
+verify.KBbHyS
+verify.KEqrSN
+verify.kUtnpP
+verify.NNY4oS
+verify.oFQ3cu
+verify.pE5sQx
+verify.Px69Yu
+verify.ritpV3
+verify.RZPoxv
+verify.v7aj9s
+verify.WDjDxF
+verify.wkzlnA
+verify.XOoz2M
+verify.xskzsM
+verify.XSzOzq
+verify.za54Fq
+verify.ZC3dO1
+verify.ZS3tau
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+agent.log
+)
+
+Calling Bash()
+
+Bash response → (
+Exit code 1
+# Site and startup review
+
+You are `reviewer_site`.
+
+Review build/startup and actual browser loading at http://localhost:8000.
+Write no source, tests, or build files. You may run the existing build and start a
+local HTTP server without modifying source; stop only a server you started.
+Use Playwright MCP (or existing browser scripts) to verify the page, canvas, fresh
+JS/WASM/WAD loading, console/network failures, initial image, colors, and startup
+responsiveness. Ensure an existing port-8000 server serves this project's current
+build; do not kill an unknown service or accept an unrelated page as evidence.
+Leave movement, combat, and audio depth to reviewer_gameplay. Report actionable
+faults to the relevant coder. PASS requires actual observed startup, not inspection
+alone. Keep evidence in OUTPUT_DIR; screenshots are supporting evidence, not all
+of acceptance. Browser tools do not grant permission to patch files.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+(eval):1: ===== not found
+)
+
+Calling Bash()
+
+Bash response → (
+PASS
+
+I loaded the current dist/ build cold at http://localhost:8000 (Playwright MCP Chromium, 2026-11-04 ~09:00 UTC) and watched it start.
+
+- All 7 assets returned HTTP 200, with 0 failed requests, 0 page errors and 0 console errors.
+- The first correctly coloured TITLEPIC frame was drawn by 340 ms after navigation commit.
+- The steady tic rate is 34.89/s, with no stall during the demo.
+- Escape opens and closes the menu, and the canvas keeps 16:10 at 1280x720 and 800x600.
+
+There is one new observation: `gametic` freezes for about 1.17 s at the title→demo handoff. I checked this, and it is the engine's melt wipe working as designed, not a hang (see below). This covers loading and startup only. Movement, combat and audio depth belong to reviewer_gameplay.
+
+## Source identity
+- HEAD e500c44 plus uncommitted changes. `git diff HEAD -- . ':!artifacts' | shasum -a 256` = 320b73c4c8ae5476…, the same as the prior reviewer_site report.
+- Per-path diff hashes are unchanged: platform 1acdffa1e570967d, web 85ac276c9dfe4d6d, tests c0501e435fcc724a, loop 61ff85ca3ce21ac8.
+- `make -n` printed "Nothing to be done for `all'". Nothing in platform/, web/, Makefile or tests/ is newer than dist/doom.wasm. I did not rebuild.
+- dist sha256 prefixes match the prior report:
+  - doom.wasm 7afb94fa1ec64b5c
+  - doom.js 0090630eeaf16a87
+  - doom.data 1d7d43be501e67d9
+  - index.html 5905489e041214ce
+  - audio_web.js 09969002dba66a00
+  - input_audio.js cc5e94829d3893bf
+  - render_timing.js e4114e9951ad4ed1
+- The four web/ files are byte-identical (cmp) to their dist/ copies.
+- artifacts/specification.md and artifacts/acceptance-criteria.md are absent.
+
+## Server
+- PID 13430 listens on 127.0.0.1:8000. It started 2026-11-03 23:25:53 and runs `python -m http.server 8000 --bind 127.0.0.1 --directory dist` with cwd at this repo. It is the same process as in the prior report.
+- I did not start it, so I left it running.
+- All 7 files served by curl are 200 and hash-identical to dist/ (served-hashes.txt).
+
+## Work and evidence (this directory)
+1. **Cold load** at 1280x720. I used a CDP cache clear plus `setCacheDisabled`, then sampled canvas and tics every ~100 ms for 5.4 s.
+   - At 55 ms: transparent 640x400 canvas, no Module yet.
+   - At 232 ms: tic 0.
+   - At 340 ms: tic 3, 150 colour buckets, 0 transparent pixels, mean RGB (110,50,30), and the title changed to "DOOM Shareware".
+   - Responses: index.html, input_audio.js, audio_web.js, render_timing.js, doom.js, doom.data and doom.wasm, all 200.
+   - title-1s.png (viewed, tic 36): TITLEPIC with correct colours (red sky, blue/gold logo, green armour, yellow/blue id logo, gold bottom text). No channel swap.
+   - Geometry: the canvas is 1152x720 at x=64 (pillarboxed), and scroll size equals the viewport.
+2. **Title→demo pause investigated.** Tool-paced sampling showed tic stuck at 172 at the end of the window. I re-measured in-page with rAF on reloads:
+   - tic stayed at 172 from 4947 to 6122 ms, i.e. 1175 ms. It was the only gap over 60 ms in 9 s, and the maximum rAF gap was 12 ms, so the main thread was not blocked.
+   - Canvas hashes during that window gave 40 distinct frames out of 141 samples, so the screen was animating.
+   - startup.png (viewed, ~5.4 s) captured TITLEPIC partway through the melt into E1M1.
+   - Cause: `cap_tic_count()` returns `gametic` (platform/doomgeneric_wasm.c:82). D_Display's wipe loop (third_party/doomgeneric/d_main.c:308–326) runs the melt without advancing gametic.
+   - Conclusion: expected engine behaviour, not a port defect. I note it because a tic-stall check that spans the first ~6 s would flag it falsely. The prior report's 0 ms stall came from a window that ended at 4.9 s, before the wipe.
+3. **Steady demo:** tic 600→814 over 6.13 s is 34.89/s, with a maximum stall of 0 ms in 100 ms sampling. demo-steady.png was not viewed.
+4. **Escape menu** (after tic > 260 and a canvas click):
+   - menu-open.png (viewed): DOOM main menu with the skull cursor over the E1M1 demo, and correct HUD colours.
+   - menu-closed.png (viewed): the menu is gone and the demo continues (pistol firing).
+   - tic went 541→559→579, so the demo keeps running behind the menu, as in vanilla.
+5. **Resize:** at 800x600 the canvas is 800x500 at y=50, with scroll size 800x600 and no scrollbars (viewport-800x600.png).
+6. **Console** (console.log, 155 messages over all loads):
+   - 0 errors and 23 warnings. Every warning is "AudioContext was not allowed to start" (audio_web.js:27/:53), which is the autoplay policy before a gesture.
+   - The engine log shows `W_Init: adding /doom1.wad` and `I_InitGraphics … RGBA 8888, red_off 16`.
+7. **Network:** network.txt has all requests across 5 loads, and none is non-200.
+
+## Unresolved (owner)
+1. Cosmetic, coder (carried over, not blocking): the static `<title>` in web/index.html is "Doom (WASM)" for about 300 ms, until the engine sets "DOOM Shareware".
+2. Note for tester, not a defect: there is an expected ~1.2 s `gametic` freeze during the title→demo melt wipe, at about 5 s after load. Any stall or tic-rate check should exclude that window or measure frame progress instead of gametic.
+3. UNVERIFIED, tester/human (carried over): a clean rebuild, Firefox and Safari, real HiDPI, non-localhost latency, a real hidden tab, and audio by ear.
+4. No loading or startup defect to assign to coders.
+
+## Comparison with the prior reviewer_site report
+- Same source and dist hashes, and the same server process.
+- First frame: ≤340 ms now, 266 ms before (100 ms sampling granularity).
+- Steady tic rate: 34.89/s, the same as before.
+- New this run: the wipe pause, characterised above as expected.
+- The prior report's dropped-input anomaly was not re-examined because input depth is outside startup scope. I did not call `_cap_input_reset`.
+
+## Assumptions
+- The PASS criteria are agent-proposed, not student-approved, and unchanged:
+  - assets 200 on a cold load, with 0 page and console errors
+  - a non-blank, correctly coloured frame within 2 s
+  - a steady tic rate of 31.5–38.5/s, excluding the engine's wipe
+  - Escape opens and closes the menu
+  - the aspect ratio is kept
+- Autoplay warnings are not failures.
+- "Cold" means a CDP cache clear plus disable in the MCP profile, not a fresh profile.
+- Colours were judged by eye from screenshots.
+- Numbers are transcribed from tool results in this session.
+- Manual interventions: none. Token usage: not available.
+- Writes: only this OUTPUT_DIR, plus the Playwright console capture under artifacts/browser/. No source, test, loop or config edits, no result.json, and the existing server was not stopped.
+
+## Next action
+Nothing for coders. Tester: if a startup stall check exists, confirm it tolerates the melt-wipe pause, then rerun `tests/verify.sh` after any source change. Human: cross-browser, HiDPI, hidden-tab and audio-by-ear checks.
+
+-----
+browser
+logs
+README.md
+reports
+runs
+cat: artifacts/specification.md: No such file or directory
+cat: artifacts/acceptance-criteria.md: No such file or directory
+)
+PROGRESS: checking source identity, build freshness, and the port-8000 server.
+Calling Bash()
+
+Bash response → (
+Exit code 1
+e500c44
+92e25d7245a7dafd95654fdf4a5be51c69e9877cb1b2faeea0b516e33a94a67f  -
+platform c242d33fa1f89227
+web 6c3f745f02b90bc2
+tests ffb79e8a11b694d2
+loop 82b4baf48fb02e9c
+make: Nothing to be done for `all'.
+tests/faults.sh
+tests/playtest.mjs
+tests/README.md
+09969002dba66a000b5c427998ddd8ff1805262e4de58da25dcb5d6f6eb8c353  audio_web.js
+1d7d43be501e67d927e415e0b8f3e29c3bf33075e859721816f652a526cac771  doom.data
+0090630eeaf16a87c258ca960b7649e63a475c3e862196d873fd123b8fbcdc05  doom.js
+7afb94fa1ec64b5c67fe6bcec5310d8212bbe2ae241b30ff57202bd366010642  doom.wasm
+5905489e041214ce0ae5240ba4c8ab557b05ac919d2fd849529310d6528fad87  index.html
+cc5e94829d3893bfb7416df6e7d33614890ae76935b56f8c01457f36907b2bec  input_audio.js
+e4114e9951ad4ed1b189722e604847a3d83d5b22b98756abf7a0a8cb1740f40f  render_timing.js
+same index.html
+same audio_web.js
+same input_audio.js
+same render_timing.js
+ps: option requires an argument -- p
+usage: ps [-AaCcEefhjlMmrSTvwXx] [-O fmt | -o fmt] [-G gid[,gid...]]
+          [-g grp[,grp...]] [-u [uid,uid...]]
+          [-p pid[,pid...]] [-t tty[,tty...]] [-U user[,user...]]
+       ps [-L]
+lsof: illegal process ID: -d
+lsof 4.91
+ latest revision: ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/
+ latest FAQ: ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/FAQ
+ latest man page: ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/lsof_man
+ usage: [-?abhlnNoOPRtUvVX] [+|-c c] [+|-d s] [+D D] [+|-f[cgG]]
+ [-F [f]] [-g [s]] [-i [i]] [+|-L [l]] [+|-M] [-o [o]] [-p s]
+ [+|-r [t]] [-s [p:s]] [-S [t]] [-T [t]] [-u s] [+|-w] [-x [fl]] [--] [names]
+Use the ``-h'' option to get more help information.
+)
+No server is listening on 8000, so I'll start one on dist/ myself and stop it when I'm done. dist hashes match the prior report, and only tests/ files are newer than dist.
+Calling Bash()
+
+Bash response → (
+COMMAND   PID       USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+Python  31321 sarahtseng    3u  IPv4 0xbd33c5e9c2ac65ae      0t0  TCP 127.0.0.1:8000 (LISTEN)
+200 5905489e041214ce index.html
+200 0090630eeaf16a87 doom.js
+200 7afb94fa1ec64b5c doom.wasm
+200 1d7d43be501e67d9 doom.data
+200 09969002dba66a00 audio_web.js
+200 cc5e94829d3893bf input_audio.js
+200 e4114e9951ad4ed1 render_timing.js
+)
+PROGRESS: browser cold load via Playwright MCP.
+Calling ToolSearch()
+
+ToolSearch response → "Completed by external harness."
+
+Calling Bash()
+
+Bash response → (
+2:// DG_* callbacks forward to the cap_* functions declared in capstone_bridge.h.
+3:// Default (weak) cap_* implementations live in cap_fallback.c; specialist
+18:static int cap_started;
+22:    cap_render_init();
+23:    cap_input_init();
+24:    cap_audio_init();
+29:    cap_render_present(DG_ScreenBuffer);
+34:    cap_sleep_ms(ms);
+39:    return cap_time_ms();
+44:    return cap_input_poll(pressed, key);
+49:    cap_set_title(title);
+52:int cap_bridge_version(void)
+57:int cap_ready(void)
+59:    return cap_started;
+62:int cap_input_impl(void)
+64:    return cap_input_delivered != NULL;
+67:unsigned cap_input_delivered_count(void)
+69:    return cap_input_delivered ? cap_input_delivered() : 0;
+72:unsigned cap_input_dropped_count(void)
+74:    return cap_input_dropped ? cap_input_dropped() : 0;
+77:const void *cap_framebuffer_ptr(void)
+82:int cap_tic_count(void)
+89:int cap_player_valid(void)
+94:int cap_player_x(void)
+96:    return cap_player_valid() ? players[consoleplayer].mo->x >> 16 : 0;
+99:int cap_player_y(void)
+101:    return cap_player_valid() ? players[consoleplayer].mo->y >> 16 : 0;
+104:unsigned cap_player_angle(void)
+106:    return cap_player_valid() ? (unsigned)players[consoleplayer].mo->angle : 0;
+109:int cap_player_health(void)
+5:  <title>Doom (WASM)</title>
+15:  <canvas id="canvas" width="640" height="400"></canvas>
+)
+
+Calling mcp__playwright__browser_run_code_unsafe()
+
+mcp__playwright__browser_run_code_unsafe response → (
+### Result
+"{\"resp\":[\"200 http://localhost:8000/ fromCache=false\",\"200 http://localhost:8000/input_audio.js fromCache=false\",\"200 http://localhost:8000/audio_web.js fromCache=false\",\"200 http://localhost:8000/render_timing.js fromCache=false\",\"200 http://localhost:8000/doom.js fromCache=false\",\"200 http://localhost:8000/doom.data fromCache=false\",\"200 http://localhost:8000/doom.wasm fromCache=false\"],\"fails\":[],\"errs\":[],\"samples\":[{\"t\":36,\"title\":\"Doom (WASM)\",\"tic\":null,\"w\":640,\"h\":400,\"transparentFrac\":1,\"mean\":[0,0,0],\"buckets\":1},{\"t\":196,\"title\":\"Doom (WASM)\",\"tic\":0,\"w\":640,\"h\":400,\"transparentFrac\":1,\"mean\":[0,0,0],\"buckets\":1},{\"t\":307,\"title\":\"DOOM Shareware\",\"tic\":3,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":424,\"title\":\"DOOM Shareware\",\"tic\":7,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":539,\"title\":\"DOOM Shareware\",\"tic\":11,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":657,\"title\":\"DOOM Shareware\",\"tic\":15,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":779,\"title\":\"DOOM Shareware\",\"tic\":20,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":898,\"title\":\"DOOM Shareware\",\"tic\":24,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":1016,\"title\":\"DOOM Shareware\",\"tic\":28,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":1138,\"title\":\"DOOM Shareware\",\"tic\":32,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":1263,\"title\":\"DOOM Shareware\",\"tic\":36,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":1384,\"title\":\"DOOM Shareware\",\"tic\":41,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":1507,\"title\":\"DOOM Shareware\",\"tic\":45,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":1628,\"title\":\"DOOM Shareware\",\"tic\":49,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":1749,\"title\":\"DOOM Shareware\",\"tic\":53,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":1864,\"title\":\"DOOM Shareware\",\"tic\":58,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":1973,\"title\":\"DOOM Shareware\",\"tic\":62,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":2084,\"title\":\"DOOM Shareware\",\"tic\":66,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":2200,\"title\":\"DOOM Shareware\",\"tic\":69,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":2319,\"title\":\"DOOM Shareware\",\"tic\":73,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":2440,\"title\":\"DOOM Shareware\",\"tic\":78,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":2559,\"title\":\"DOOM Shareware\",\"tic\":82,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":2677,\"title\":\"DOOM Shareware\",\"tic\":86,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":2792,\"title\":\"DOOM Shareware\",\"tic\":90,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":2903,\"title\":\"DOOM Shareware\",\"tic\":94,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":3013,\"title\":\"DOOM Shareware\",\"tic\":98,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":3124,\"title\":\"DOOM Shareware\",\"tic\":102,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":3234,\"title\":\"DOOM Shareware\",\"tic\":106,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":3346,\"title\":\"DOOM Shareware\",\"tic\":110,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":3457,\"title\":\"DOOM Shareware\",\"tic\":113,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":3567,\"title\":\"DOOM Shareware\",\"tic\":117,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":3676,\"title\":\"DOOM Shareware\",\"tic\":121,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":3787,\"title\":\"DOOM Shareware\",\"tic\":125,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":3896,\"title\":\"DOOM Shareware\",\"tic\":129,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":4006,\"title\":\"DOOM Shareware\",\"tic\":133,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":4116,\"title\":\"DOOM Shareware\",\"tic\":137,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":4226,\"title\":\"DOOM Shareware\",\"tic\":141,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":4338,\"title\":\"DOOM Shareware\",\"tic\":144,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":4450,\"title\":\"DOOM Shareware\",\"tic\":148,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":4560,\"title\":\"DOOM Shareware\",\"tic\":152,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":4670,\"title\":\"DOOM Shareware\",\"tic\":156,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":4781,\"title\":\"DOOM Shareware\",\"tic\":160,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":4895,\"title\":\"DOOM Shareware\",\"tic\":164,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":5012,\"title\":\"DOOM Shareware\",\"tic\":168,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":5128,\"title\":\"DOOM Shareware\",\"tic\":172,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[111,52,31],\"buckets\":95},{\"t\":5243,\"title\":\"DOOM Shareware\",\"tic\":172,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[109,51,32],\"buckets\":95},{\"t\":5360,\"title\":\"DOOM Shareware\",\"tic\":172,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[99,48,33],\"buckets\":95},{\"t\":5479,\"title\":\"DOOM Shareware\",\"tic\":172,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[92,45,33],\"buckets\":94},{\"t\":5598,\"title\":\"DOOM Shareware\",\"tic\":172,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[77,39,30],\"buckets\":88},{\"t\":5719,\"title\":\"DOOM Shareware\",\"tic\":172,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[59,33,29],\"buckets\":74},{\"t\":5838,\"title\":\"DOOM Shareware\",\"tic\":172,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[51,35,31],\"buckets\":63},{\"t\":5959,\"title\":\"DOOM Shareware\",\"tic\":172,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[48,38,34],\"buckets\":54},{\"t\":6079,\"title\":\"DOOM Shareware\",\"tic\":172,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[47,40,34],\"buckets\":47},{\"t\":6200,\"title\":\"DOOM Shareware\",\"tic\":172,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[46,41,35],\"buckets\":35},{\"t\":6318,\"title\":\"DOOM Shareware\",\"tic\":177,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[46,41,35],\"buckets\":35},{\"t\":6438,\"title\":\"DOOM Shareware\",\"tic\":182,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[46,41,35],\"buckets\":34},{\"t\":6558,\"title\":\"DOOM Shareware\",\"tic\":186,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[45,41,34],\"buckets\":40},{\"t\":6679,\"title\":\"DOOM Shareware\",\"tic\":190,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[40,37,31],\"buckets\":40},{\"t\":6799,\"title\":\"DOOM Shareware\",\"tic\":194,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[36,35,30],\"buckets\":33},{\"t\":6920,\"title\":\"DOOM Shareware\",\"tic\":198,\"w\":640,\"h\":400,\"transparentFrac\":0,\"mean\":[38,37,32],\"buckets\":38}]}"
+### Ran Playwright code
+```js
+await (async (page) => {
+  await page.setViewportSize({width:1280,height:720});
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Network.enable'); await cdp.send('Network.clearBrowserCache'); await cdp.send('Network.setCacheDisabled',{cacheDisabled:true});
+  const resp=[]; page.on('response', r=>resp.push(`${r.status()} ${r.url()} fromCache=${r.fromServiceWorker()}`));
+  const fails=[]; page.on('requestfailed', r=>fails.push(r.url()));
+  const errs=[]; page.on('pageerror', e=>errs.push(String(e)));
+  const t0=Date.now();
+  await page.goto('http://localhost:8000/', {waitUntil:'commit'});
+  const samples=[];
+  for (let i=0;i<60;i++){
+    const s = await page.evaluate(()=>{
+      const c=document.querySelector('canvas'); let info={};
+      if(c){ try{ const tmp=document.createElement('canvas'); tmp.width=c.width; tmp.height=c.height; const x=tmp.getContext('2d'); x.drawImage(c,0,0); const d=x.getImageData(0,0,c.width,c.height).data; let tr=0,r=0,g=0,b=0,n=0; const buckets=new Set(); for(let k=0;k<d.length;k+=64){ if(d[k+3]===0)tr++; r+=d[k];g+=d[k+1];b+=d[k+2];n++; buckets.add((d[k]>>5)<<6|(d[k+1]>>5)<<3|(d[k+2]>>5)); } info={w:c.width,h:c.height,transparentFrac:+(tr/n).toFixed(3),mean:[r/n|0,g/n|0,b/n|0],buckets:buckets.size}; }catch(e){info.err=String(e)} }
+      const M=window.Module; let tic=null; try{ if(M&&M._cap_tic_count) tic=M._cap_tic_count(); }catch(e){}
+      return {title:document.title, tic, ...info};
+    });
+    samples.push({t:Date.now()-t0, ...s});
+    await page.waitForTimeout(100);
+  }
+  return JSON.stringify({resp,fails,errs,samples});
+})(page);
+```
+### Page
+- Page URL: http://localhost:8000/
+- Page Title: DOOM Shareware
+### Events
+- New console entries: artifacts/browser/console-2026-11-04T10-03-08-304Z.log#L1-L33
+)
+Cold load came up clean, with the first coloured frame at 307 ms and the expected pause at tic 172. Next I'm taking screenshots, measuring the steady tic rate, and checking the Escape menu and window resize.
+
+
+Calling mcp__playwright__browser_take_screenshot()
+
+mcp__playwright__browser_take_screenshot response → (
+### Result
+- [Screenshot of viewport](artifacts/logs/reviewer_site.GLdumE/demo-start.png)
+### Ran Playwright code
+```js
+// Screenshot viewport and save it as artifacts/logs/reviewer_site.GLdumE/demo-start.png
+await page.screenshot({
+  path: 'artifacts/logs/reviewer_site.GLdumE/demo-start.png',
+  scale: 'css',
+  type: 'png'
+});
+```
+)
+
+Calling mcp__playwright__browser_run_code_unsafe()
+
+mcp__playwright__browser_run_code_unsafe response → (
+### Result
+"{\"tic0\":478,\"tic1\":688,\"secs\":6.005200000017881,\"rate\":34.96969293268746,\"maxRafGapMs\":12.700000017881393,\"maxTicStallMs\":35.099999994039536,\"canvasRect\":[64,0,1152,720],\"scroll\":[1280,720]}"
+### Ran Playwright code
+```js
+await (async (page) => {
+  const r = await page.evaluate(async()=>{
+    const M=window.Module; const t0=performance.now(); const tic0=M._cap_tic_count();
+    let maxGap=0,last=t0,lastTic=tic0,lastTicT=t0,maxStall=0;
+    await new Promise(res=>{ function f(){ const n=performance.now(); maxGap=Math.max(maxGap,n-last); last=n; const t=M._cap_tic_count(); if(t!==lastTic){maxStall=Math.max(maxStall,n-lastTicT); lastTic=t; lastTicT=n;} if(n-t0<6000) requestAnimationFrame(f); else res(); } requestAnimationFrame(f); });
+    const t1=performance.now(), tic1=M._cap_tic_count();
+    const c=document.querySelector('canvas').getBoundingClientRect();
+    return {tic0,tic1,secs:(t1-t0)/1000,rate:(tic1-tic0)/((t1-t0)/1000),maxRafGapMs:maxGap,maxTicStallMs:maxStall,canvasRect:[c.x,c.y,c.width,c.height],scroll:[document.documentElement.scrollWidth,document.documentElement.scrollHeight]};
+  });
+  return JSON.stringify(r);
+})(page);
+```
+)
+
+Calling Read()
+
+Read response → "Completed by external harness."
+The E1M1 demo renders with correct colours (brown walls, red HUD numerals, skin tones). Next: a title screenshot, the Escape menu, and a resize.
+Calling mcp__playwright__browser_run_code_unsafe()
+
+mcp__playwright__browser_run_code_unsafe response → (
+### Result
+"{\"titleTic\":36,\"menuTics\":[277,296,312],\"geo800\":[0,50,800,500,800,600]}"
+### Ran Playwright code
+```js
+await (async (page) => {
+  const D='artifacts/logs/reviewer_site.GLdumE/';
+  await page.goto('http://localhost:8000/'); await page.waitForTimeout(1000);
+  await page.screenshot({path:D+'title-1s.png'});
+  const tt = await page.evaluate(()=>Module._cap_tic_count());
+  await page.waitForFunction(()=>Module._cap_tic_count()>260,null,{timeout:15000});
+  await page.locator('canvas').click();
+  await page.keyboard.press('Escape'); await page.waitForTimeout(400);
+  const a=await page.evaluate(()=>Module._cap_tic_count());
+  await page.screenshot({path:D+'menu-open.png'});
+  await page.waitForTimeout(500); const b=await page.evaluate(()=>Module._cap_tic_count());
+  await page.keyboard.press('Escape'); await page.waitForTimeout(400);
+  await page.screenshot({path:D+'menu-closed.png'});
+  const c=await page.evaluate(()=>Module._cap_tic_count());
+  await page.setViewportSize({width:800,height:600}); await page.waitForTimeout(400);
+  const geo=await page.evaluate(()=>{const r=document.querySelector('canvas').getBoundingClientRect();return [r.x,r.y,r.width,r.height,document.documentElement.scrollWidth,document.documentElement.scrollHeight]});
+  await page.screenshot({path:D+'viewport-800x600.png'});
+  await page.setViewportSize({width:1280,height:720});
+  return JSON.stringify({titleTic:tt, menuTics:[a,b,c], geo800:geo});
+})(page);
+```
+### Page
+- Page URL: http://localhost:8000/
+- Page Title: DOOM Shareware
+- Console: 0 errors, 2 warnings
+### Events
+- New console entries: artifacts/browser/console-2026-11-04T10-03-08-304Z.log#L34-L68
+)
+
+Calling Read()
+
+Calling Read()
+
+Read response → "Completed by external harness."
+
+Calling Read()
+
+Read response → "Completed by external harness."
+
+Read response → "Completed by external harness."
+Title, menu and demo all look right. Next I'll collect the console and network logs, then stop my server.
+Calling mcp__playwright__browser_console_messages()
+
+mcp__playwright__browser_console_messages response → "### Result\n- [Console](artifacts/logs/reviewer_site.GLdumE/console-warnings.log)"
+
+Calling mcp__playwright__browser_network_requests()
+
+mcp__playwright__browser_network_requests response → "### Result\n- [Network](artifacts/logs/reviewer_site.GLdumE/network.txt)"
+
+Calling Bash()
+
+Bash response → (
+--- warnings/errors:
+4
+0
+Total messages: 68 (Errors: 0, Warnings: 2)
+Returning 2 messages for level "warning"
+
+--- network:
+      13
+[      67ms] [LOG] W_Init: Init WADfiles. @ http://localhost:8000/:18
+[     224ms] [LOG] I_InitGraphics: framebuffer: x_res: 640, y_res: 400, x_virtual: 640, y_virtual: 400, bpp: 32 @ http://localhost:8000/:18
+[     224ms] [LOG] I_InitGraphics: framebuffer: RGBA: 8888, red_off: 16, green_off: 8, blue_off: 0, transp_off: 24 @ http://localhost:8000/:18
+port 8000 free (my server stopped)
+127.0.0.1 - - [04/Nov/2026 02:03:37] "GET /doom.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2026 02:03:37] "GET /doom.data HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2026 02:03:37] "GET /doom.wasm HTTP/1.1" 200 -
+)
+
+Calling Bash()
+
+Bash response → (
+Total messages: 68 (Errors: 0, Warnings: 2)
+Returning 2 messages for level "warning"
+
+[WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:27
+[WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:531. [GET] http://localhost:8000/ => [200] OK
+2. [GET] http://localhost:8000/input_audio.js => [200] OK
+3. [GET] http://localhost:8000/audio_web.js => [200] OK
+4. [GET] http://localhost:8000/render_timing.js => [200] OK
+5. [GET] http://localhost:8000/doom.js => [200] OK
+6. [GET] http://localhost:8000/doom.data => [200] OK
+7. [GET] http://localhost:8000/doom.wasm => [200] OK
+8. [GET] http://localhost:8000/ => [200] OK
+9. [GET] http://localhost:8000/input_audio.js => [200] OK
+10. [GET] http://localhost:8000/audio_web.js => [200] OK
+11. [GET] http://localhost:8000/render_timing.js => [200] OK
+12. [GET] http://localhost:8000/doom.js => [200] OK
+13. [GET] http://localhost:8000/doom.data => [200] OK
+14. [GET] http://localhost:8000/doom.wasm => [200] OK21
+0
+ tests/README.md             |  42 +++++++++++++
+ web/index.html              |  15 ++++-
+ 5 files changed, 272 insertions(+), 21 deletions(-)
+)
+PROGRESS: writing the report.
+Calling Write()
+
+Write response → "File created successfully at: /Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/reviewer_site.GLdumE/report.md (file state is current in your context — no need to Read it back)"
+**PASS:** loading and startup at localhost:8000 work correctly, and I have no new findings for the coders. The report is at `artifacts/logs/reviewer_site.GLdumE/report.md`.
+
+**What I observed** (loading the page with the browser cache cleared, in Playwright's Chromium):
+- **Loading:** all 7 files returned HTTP 200, with no failed requests and no page or console errors. The only warnings were the 2 expected "AudioContext was not allowed to start" messages, which the browser shows before the first click.
+- **First frame:** the title screen appeared with correct colours within 307 ms. I checked the screenshot by eye: red sky, blue and gold logo, green armour, no swapped colour channels.
+- **Speed:** the game ran at a steady 34.97 game ticks per second, within the expected 31.5–38.5 range. The longest pause between ticks was 35 ms.
+- **Title-to-demo fade:** the tick counter stops for about 1.1 s around 5 s after load. The canvas keeps changing the whole time, so this is the engine's screen-melt effect, as the prior report found, not a hang.
+- **Escape menu:** it opens and closes, and the demo keeps running behind it, as in the original game.
+- **Window size:** the game keeps its 16:10 shape at both 1280x720 and 800x600, with no scrollbars.
+
+**Which build was tested:**
+- The four built game files and the page are byte-identical to the build the prior report tested, and `make -n` showed nothing to rebuild.
+- The working-tree checksum is now `92e25d72…` instead of `320b73c4…`. The only files changed since the last build are under `tests/`, and none of them affects the build.
+- No server was running on port 8000 (the prior report's process was gone). I started one serving `dist/`, confirmed it served the current files, and stopped it at the end.
+
+**Still open:**
+- **Coder (cosmetic, not blocking):** the browser tab shows "Doom (WASM)" for about 300 ms before the engine changes it to "DOOM Shareware".
+- **Tester:** rerun `tests/verify.sh` so its results cite the current checksum, and make sure any stall check allows for the ~1.1 s fade pause.
+- **Human:** not yet checked: a clean rebuild, Firefox and Safari, high-DPI screens, a server other than localhost, a hidden tab, and listening to the audio.
+
+Screenshots, network and console logs, and file checksums are saved in the same folder as the report. I didn't update `artifacts/reports/reviewer_site.md`; it still holds the previous run's report.

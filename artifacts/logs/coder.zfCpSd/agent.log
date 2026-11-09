@@ -1,0 +1,596 @@
+I'll start by reading the required docs and prior reports.
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+  the resource usage, manual interventions, and final stopping decision.
+
+Preserve failing evidence as well as passing evidence. Record changes to
+acceptance criteria separately, with a reason. Discuss disagreements and
+missed faults in your write-up.
+
+## Where your work belongs
+
+| Location | Purpose |
+| --- | --- |
+| [`loop/`](loop/README.md) | All loop code, prompts, role definitions, MCP configuration, and design documentation. |
+| [`artifacts/`](artifacts/README.md) | All durable run state, handoffs, logs, review findings, and evidence. Agents must use this folder between runs. |
+| `tests/` | Verification code, including checks for the loop itself. |
+| `platform/`, `web/` | The port and browser page. |
+| `third_party/doomgeneric/` | Supplied engine; platform ports have been removed. |
+| `assets/` | Included shareware `doom1.wad` (Episode 1). |
+| `build/`, `dist/` | Generated build output. |
+
+Keep the root for project documentation and shared build/toolchain files.
+The starter supplies engine source, platform and HTML stubs, the shareware
+WAD, documentation, and an optional Docker toolchain. It supplies no working
+game, build script, loop implementation, or test suite. `artifacts/` starts
+with its README only; students create run evidence there during the project.
+Use the supplied engine and Emscripten. Documentation is allowed; copying an
+existing Doom browser port does not satisfy the assignment.
+
+See [`platform/README.md`](platform/README.md) for engine integration caveats,
+including pixel format, timing, and audio. The supplied game data already
+contains sound effects and music; no additional sound assets are required.
+
+## Agent section for setup
+
+### macOS without Docker
+
+Install the build tools directly on your Mac to compile and test the browser
+port. Docker is not required for this workflow. There is currently no macOS
+setup script; run the steps below manually.
+
+1. **Install prerequisites.** In Terminal, run:
+
+   ```sh
+   xcode-select --install
+   ```
+
+   Finish the installer, then check `git --version` and `python3 --version`.
+   If Python is missing, install it from [python.org](https://www.python.org/downloads/macos/),
+   or run `brew install python` if you already have Homebrew.
+
+2. **Install Emscripten.** Use version `4.0.18` to match the supplied Dockerfile:
+
+   ```sh
+   mkdir -p ~/Developer
+   cd ~/Developer
+   git clone https://github.com/emscripten-core/emsdk.git
+   cd emsdk
+   ./emsdk install 4.0.18
+   ./emsdk activate 4.0.18
+   source ./emsdk_env.sh
+   emcc --version
+   ```
+
+   If you already have an SDK checkout at that location, use it instead of
+   cloning again. In each new Terminal session where you want to compile, run:
+
+   ```sh
+   source ~/Developer/emsdk/emsdk_env.sh
+   ```
+
+   See the [official installation instructions](https://emscripten.org/docs/getting_started/downloads.html).
+
+3. **Verify the compiler and browser workflow.** Return to this repository's
+   root directory, then run:
+
+   ```sh
+   mkdir -p build/smoke
+   cat > build/smoke/hello.c <<'EOF'
+   #include <stdio.h>
+   int main(void) {
+       printf("Emscripten works!\n");
+       return 0;
+   }
+   EOF
+
+   emcc build/smoke/hello.c -o build/smoke/index.html
+   python3 -m http.server 8000 --bind 127.0.0.1 --directory build/smoke
+   ```
+
+   Open <http://localhost:8000>. The generated page should print
+   `Emscripten works!`. Press **Control-C** in Terminal to stop the server.
+   This verifies the toolchain and local serving, not the game.
+
+4. **Have your agents implement and build the game.** The supplied platform callbacks are
+   empty, there is no entry point or build script, and the HTML does not yet
+   load a compiled module. These are student implementation tasks; see
+   [platform/README.md](platform/README.md). Document the actual build command
+   once implemented. A completed build could produce:
+
+   ```text
+   dist/
+     index.html
+     doom.js
+     doom.wasm
+     doom.data
+   ```
+
+   The exact filenames depend on the build configuration. For example,
+   `doom.data` could contain the packaged shareware WAD. The build must make
+   that WAD available to the engine inside the browser module.
+
+5. **Test the completed game locally.** Once the build output is in `dist/`,
+   run this from the repository root:
+
+   ```sh
+   python3 -m http.server 8000 --bind 127.0.0.1 --directory dist
+   ```
+
+   Open <http://localhost:8000> and exercise the game's behavior. Use a local
+   web server rather than opening the HTML file directly, as explained in
+   [Emscripten's deployment documentation](https://emscripten.org/docs/compiling/Deploying-Pages.html).
+
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+)
+
+Calling Bash()
+
+Bash response → (
+<persisted-output>
+Output too large (34KB). Full output saved to: /Users/sarahtseng/.claude/projects/-Users-sarahtseng-Projects-fellowship-loop-capstone/be82fb61-445f-473c-9ce6-48621652db4a/tool-results/bysz878vm.txt
+
+Preview (first 2KB):
+# Build and browser integration
+
+You are `coder`.
+
+Deliver a reproducible Emscripten 4.0.18 build and a correctly loaded browser game.
+Own Makefile, BUILD.md, web/index.html, platform/doomgeneric_wasm.c,
+platform/capstone_bridge.h, platform/cap_fallback.c, and platform/engine_stubs.c.
+You may create additional glue files only with names platform/glue_* or web/glue_*.
+Keep module interfaces coherent with the specialists. Implement startup, WAD
+packaging, exports, and final integration. Document serving dist/ on port 8000.
+Create missing interfaces pragmatically; ask specialists for changes in their
+files rather than making them yourself. Do not copy another browser port.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+...
+</persisted-output>
+)
+
+Calling Bash()
+
+Bash response → (
+<persisted-output>
+Output too large (31.8KB). Full output saved to: /Users/sarahtseng/.claude/projects/-Users-sarahtseng-Projects-fellowship-loop-capstone/be82fb61-445f-473c-9ce6-48621652db4a/tool-results/bnptm7v0a.txt
+
+Preview (first 2KB):
+changes in their
+files rather than making them yourself. Do not copy another browser port.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+artifacts/logs:
+total 496
+drwxr-xr-x  312 sarahtseng  staff   9984 Nov  4 07:45 .
+drwxr-xr-x    8 sarahtseng  staff    256 Nov  2 19:11 ..
+-rw-r--r--@   1 sarahtseng  staff  30724 Nov  3 23:19 .DS_Store
+drwx------    4 sarahtseng  staff    128 Nov  3 22:41 coder_input_audio.0yubr6
+drwx------    7 sarahtseng  staff    224 Nov  3 04:48 coder_input_audio.1EbASm
+drwx------    4 sarahtseng  staff    128 Nov  3 16:40 coder_input_audio.1TaZlK
+...
+</persisted-output>
+)
+
+Calling Bash()
+
+Bash response → (
+total 64
+-rw-r--r--@ 1 sarahtseng  staff  2866 Nov  4 07:25 tester.md
+-rw-r--r--@ 1 sarahtseng  staff  5846 Nov  4 07:12 reviewer_gameplay.md
+-rw-r--r--@ 1 sarahtseng  staff  5567 Nov  4 07:04 reviewer_site.md
+-rw-r--r--@ 1 sarahtseng  staff  2638 Nov  4 07:01 coder.md
+-rw-r--r--@ 1 sarahtseng  staff  2490 Nov  4 06:57 coder_input_audio.md
+-rw-r--r--@ 1 sarahtseng  staff  2427 Nov  4 06:57 coder_render_timing.md
+drwxr-xr-x  8 sarahtseng  staff   256 Nov  2 19:49 .
+drwxr-xr-x  8 sarahtseng  staff   256 Nov  2 19:11 ..
+tester.s4m9oQ
+tester.sAC1ys
+tester.SytnGa
+tester.yX1CIJ
+tester.yX1CIJ.r2
+# Doom -> WebAssembly build. Requires Emscripten 4.0.18 (source emsdk_env.sh
+# or use the Dockerfile image). Output: dist/{index.html,doom.js,doom.wasm,doom.data}
+EMCC      ?= emcc
+ENGINE    := third_party/doomgeneric
+BUILD     := build
+DIST      := dist
+WAD       := assets/doom1.wad
+
+# Platform-specific/unused engine files: dummy.c, i_cdmus.c, i_joystick.c are
+# stubs here; net_* sources are absent from this tree.
+ENGINE_EXCLUDE := $(ENGINE)/dummy.c $(ENGINE)/doomgeneric_sdl.c
+ENGINE_SRC := $(filter-out $(ENGINE_EXCLUDE),$(wildcard $(ENGINE)/*.c))
+PLAT_SRC   := $(wildcard platform/*.c)
+OBJS       := $(patsubst %.c,$(BUILD)/%.o,$(ENGINE_SRC) $(PLAT_SRC))
+
+CFLAGS  := -O2 -I$(ENGINE) -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP
+ENGINE_CFLAGS := -w   # silence warnings for the supplied engine only
+LDFLAGS := -O2 -sASYNCIFY -sASYNCIFY_STACK_SIZE=65536 -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=64MB \
+           -sEXPORTED_FUNCTIONS=_main,_cap_ready,_cap_tic_count,_cap_input_event,_cap_input_reset,_cap_bridge_version,_cap_framebuffer_ptr,_cap_input_impl,_cap_input_delivered_count,_cap_input_dropped_count,_cap_player_valid,_cap_player_x,_cap_player_y,_cap_player_angle,_cap_player_health,_cap_level_id,_cap_sector_count,_cap_sector_floor,_cap_sector_ceiling,_cap_player_sector \
+           -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,HEAPU8 \
+           --preload-file $(WAD)@/doom1.wad
+
+.PHONY: all clean
+all: $(DIST)/index.html
+
+$(BUILD)/$(ENGINE)/%.o: $(ENGINE)/%.c
+	@mkdir -p $(dir $@)
+	$(EMCC) $(CFLAGS) $(ENGINE_CFLAGS) -c $< -o $@
+
+$(BUILD)/platform/%.o: platform/%.c
+	@mkdir -p $(dir $@)
+	$(EMCC) $(CFLAGS) -c $< -o $@
+
+-include $(OBJS:.o=.d)
+
+$(DIST)/doom.js: $(OBJS) $(WAD)
+	@mkdir -p $(DIST)
+	$(EMCC) $(OBJS) $(LDFLAGS) -o $@
+
+WEB_FILES := web/index.html web/input_audio.js web/audio_web.js web/render_timing.js
+
+$(DIST)/index.html: $(DIST)/doom.js $(WEB_FILES)
+	cp $(WEB_FILES) $(DIST)/
+
+clean:
+	rm -rf $(BUILD) $(DIST)
+/Users/sarahtseng/Developer/emsdk/upstream/emscripten/emcc
+build:
+platform
+third_party
+
+dist:
+audio_web.js
+doom.data
+doom.js
+doom.wasm
+index.html
+)
+
+Calling Bash()
+
+Bash response → (
+FINDINGS
+
+`tests/verify.sh` exited 1 (rc=1). One required check failed in the full run (E2b), and 4 behaviors remain UNVERIFIED (A1, P1, G3c, H1). I changed no product source and no tests. The fault-injection step did not run: verify.sh stops after the playtest fails.
+
+## Source identity
+- HEAD e500c44 plus uncommitted changes. `git diff HEAD -- . ':!artifacts' | shasum -a 256` = 441e441a…9b5d9c. This differs from the 92e25d72… hash in the earlier tester report, so the source changed since that run (git status shows modified platform/doomgeneric_wasm.c and web/index.html).
+- Clean build (`make clean && make all`) succeeded inside verify.sh.
+
+## Results (full run, 300 s soak)
+- Selftest: ok.
+- Playtest: `FAIL failed=1`, 46 PASS lines (grep count, includes the summary line).
+- FAIL `E2b.hidden-releases-keys`: precondition-turning=true, settled=true, later-diff=0.0541 (threshold 0.02). After a simulated `visibilitychange` with `document.hidden=true`, the view kept changing, so the held ArrowLeft may not have been released. The earlier report had this check passing.
+- Flakiness check: I re-ran the playtest 3 times with `SOAK_SECONDS=5`. E2b passed every time (later-diff 0.0003, 0.0001, 0.0002), and E2a passed too. So E2b failed once in 4 runs. I can't tell whether it's a flaky test or an intermittent product bug. I did not relax the threshold.
+- The other checks passed, including T2 (34.96 tics/s), A0, A2, A3 (non-silent only), G3a, G3b, R1-R4 and S1.
+
+## Evidence (artifacts/logs/tester.2eMWge/)
+verify-console.log, verify/ (identity.txt, playtest.log, playtest-results.json, screens/, build.log), rerun1-3.log and rerun1-3/ (short re-runs).
+
+## Unresolved (owner)
+1. E2b intermittent failure: a held turn key may not be released on `visibilitychange` (hidden) in some runs. Owner: coder to review the visibility handling in web/input_audio.js. Owner: tester to add a repeat-N stress mode for E2b to separate flake from bug.
+2. G3c level exit is UNVERIFIED. It needs a coder-added level-exit hook or scripted route, then a tester check.
+3. A1 (audio by ear) and H1 (real hidden tab) are UNVERIFIED. Owner: human, using the protocol in tests/README.md.
+4. P1 save persistence and approval of the criteria are student scope decisions.
+5. The fault-injection step (faults.sh) did not run this time. Its two known expectation overstatements (swap-rb:B4 B6, drop-use:G3a) are still open. Owner: tester.
+
+## Assumptions
+- The criteria are agent-proposed, not student-approved. artifacts/specification.md and acceptance-criteria.md were not checked for changes.
+- Headless Chromium only, one macOS machine, run serially. Results apply to the source hash above.
+- Manual interventions: none.
+
+## Next action
+Coder: inspect the visibility-hidden release path. Tester: add an E2b repeat mode, then re-run the full verify.sh including fault injection.
+FINDINGS
+
+One source edit: the static `<title>` in web/index.html. I rebuilt, and the quick playtest passed on the second run after one E2b failure on the first. The full `tests/verify.sh` was not rerun, so this stays FINDINGS.
+
+## Work
+- Read AGENTS.md, loop/prompts/CODER.md and the six reports in artifacts/reports/. The only open item in a coder-owned file was the cosmetic title flash, reported by reviewer_site, tester and both specialists.
+- Changed `<title>Doom (WASM)</title>` to `<title>DOOM Shareware</title>` in web/index.html. That is the title the engine sets, so the title no longer changes at startup. Assumption: we only ship the shareware WAD.
+- `make all` rc=0 (build.log). Only the index.html copy was redone, since only that file changed.
+
+## Source identity
+- New `git diff HEAD -- . ':!artifacts' | shasum -a 256` prefix is 441e441ad5dfcd52. The prior reports all had 92e25d7245a7dafd.
+- dist hashes: doom.wasm 7afb94fa1ec64b5c, doom.js 0090630eeaf16a87 and doom.data 1d7d43be501e67d9 are unchanged. dist/index.html is now 43a15c63d134b538 (was 5905489e041214ce).
+- Because the wasm is unchanged, the earlier gameplay and audio evidence for the engine, input and audio code still applies. The tester's 47-check verify.sh result is for the old source hash.
+
+## Evidence (artifacts/logs/coder.oWCDg7/)
+- `QUICK=1 node tests/playtest.mjs`, run twice. QUICK is partial, so it exits 3 by design.
+  - Run 1 (playtest-console.log): `failed=1`. E2b.hidden-releases-keys failed with later-diff=0.0570.
+  - Run 2 (playtest2-console.log): `failed=0`.
+  - I did not investigate E2b beyond the rerun. It may be a flaky check or a real intermittent fault. Not diagnosed.
+
+## Unresolved (owner)
+1. E2b failed once in two runs after this change. Owner: tester, to run `tests/verify.sh` and judge flakiness. The HTML change cannot plausibly affect hide/key release, but I did not prove that.
+2. G3c level exit: UNVERIFIED. It needs a coder level-exit hook, which no one has requested yet.
+3. UNVERIFIED, human: A1 (audio by ear) and H1 (real hidden tab). Also Firefox, Safari and HiDPI.
+4. Owner tester: the faults.sh expectations for swap-rb and drop-use are wrong.
+5. Student decisions: criteria approval, WASD/mouse, OPL-faithful music, persistence.
+
+## Assumptions
+- Doom's default keys are the control requirement. Criteria are agent-proposed, not student-approved.
+- Manual interventions: none. Token usage: not available.
+- Writes: web/index.html, build/ and dist/ (regenerated), and this OUTPUT_DIR.
+
+## Next action
+The tester reruns `tests/verify.sh` on source hash 441e441ad5dfcd52 and checks E2b. A human runs A1 and H1.
+PASS
+
+reviewer_site lFGon0, 2026-11-04 ~15:03 UTC. I loaded the current dist/ build cold at http://localhost:8000 in Playwright MCP Chromium (1280x720) and watched it start. I found no loading or startup defect. The cosmetic title item from the prior PASS (qSiYJ9) is now fixed.
+
+## Source identity (source-identity.txt, dist-hashes.txt, web-vs-dist.txt, newer-than-dist.txt, make-n.txt, index-html.diff)
+- HEAD e500c44 plus uncommitted changes. The full `git status` and the diff hash are in source-identity.txt.
+- The only change since qSiYJ9 is index.html:
+  - Its hash went from 5905489e… to 43a15c63….
+  - The static `<title>` is now "DOOM Shareware" (index-html.diff).
+- doom.wasm 7afb94fa…, doom.js 0090630e…, doom.data 1d7d43be…, and the three helper JS files all have the same hashes as qSiYJ9.
+- web/* files are byte-identical to their dist/ copies.
+- `find -newer dist/doom.wasm` lists only web/ and web/index.html. These are JS/HTML edits that are already copied into dist/. `make -n` reports "Nothing to be done". I did not rebuild.
+- artifacts/specification.md and artifacts/acceptance-criteria.md are absent.
+
+## Server (server-owner.txt, served-hashes.txt, server.log, server-stopped.txt)
+- At the start nothing was listening on :8000 (lsof output is empty).
+- I started `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist` (PID 69702).
+- All 8 paths returned 200 with correct MIME types (wasm is `application/wasm`), and every served hash matched dist/.
+- server.log has 22 requests, all 200.
+- At the end I killed only PID 69702. After that, curl returned 000.
+
+## Browser observations
+1. **Cold load** (cold-load.json). I used a CDP cache clear plus cache disable.
+   - Responses: /, render_timing.js, input_audio.js, audio_web.js, doom.js, doom.data and doom.wasm, all 200 and none from a service worker. 0 failed requests, 0 page errors.
+   - At 101 ms: cap_ready=1, tic 1, 0/2560 transparent sampled pixels, mean RGB (111,50,30), title "DOOM Shareware". This meets the 2 s first-frame criterion.
+   - The title is now correct from the first sample, so there is no "Doom (WASM)" flash.
+   - Tics: 29 at 1.0 s and 64 at 2.0 s, which is 35/s.
+   - The engine log shows W_Init "adding /doom1.wad", R_Init and S_Init.
+2. **title-actual.png** (viewed; taken 300 ms after cap_ready on reload): TITLEPIC in correct colours. The sky is red, the logo blue and gold, the marine green, and the id logo yellow on blue. There is no R/B swap, and it is pillarboxed.
+   - demo-after-load.png (viewed; taken a few seconds after the cold load): E1M1 demo with correct HUD colours and skin tones.
+   - I renamed this file from title-early.png because it shows the demo, not the title.
+3. **Steady state** (steady-menu-geometry.json; in-page rAF for 6.0 s, about 9 s after load):
+   - tic went 809→1019, which is 35.0 tics/s.
+   - The maximum rAF gap was 10.3 ms and the maximum tic stall was 34.8 ms, so the main thread was not blocked.
+   - demo.png was saved but not viewed. demo-after-load.png covers the same view.
+4. **Escape menu** (after a reload and a canvas click):
+   - menu-open.png (viewed): main menu with the skull cursor.
+   - menu-closed.png (viewed): the menu is gone.
+   - tic went 203→233→250, so the demo keeps running behind the menu, as in vanilla.
+5. **Geometry:**
+)
+
+Calling Bash()
+
+Bash response → (
+rc=0
+make: Nothing to be done for `all'.
+web/input_audio.js:83:  // Focus/visibility loss: browsers drop keyups, so release everything.
+web/input_audio.js:91:  window.addEventListener('blur', releaseAll);
+web/input_audio.js:93:  document.addEventListener('visibilitychange', function () {
+web/input_audio.js:94:    if (document.hidden) releaseAll();
+)
+Checking the visibility-release path and doing a clean rebuild.
+Calling Bash()
+
+Bash response → (
+// a key we do NOT hold means releaseAll() ran while it was still down
+    // (refocus), so treat it as a fresh press.
+    if (held[e.code]) return;
+    var already = false;
+    for (var c in held) if (held[c] === key) already = true;
+    held[e.code] = key;
+    if (!already) send(1, key); // L+R Ctrl map to one doom key: one press
+  }
+
+  function onKeyUp(e) {
+    var key = held[e.code];
+    if (!key) {
+      if (doomKey(e.code)) e.preventDefault();
+      return;
+    }
+    delete held[e.code];
+    e.preventDefault();
+    // Two physical keys can map to one doom key (left/right Ctrl): release
+    // only when no other held code maps to it.
+    for (var c in held) if (held[c] === key) return;
+    send(0, key);
+  }
+
+  // Focus/visibility loss: browsers drop keyups, so release everything.
+  function releaseAll() {
+    held = {};
+    if (ready() && mod()._cap_input_reset) mod()._cap_input_reset();
+  }
+
+  window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keyup', onKeyUp);
+  window.addEventListener('blur', releaseAll);
+  window.addEventListener('pagehide', releaseAll);
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) releaseAll();
+  });
+  // Ctrl+click / right-click opens a menu and swallows the matching keyup.
+  window.addEventListener('contextmenu', function (e) { e.preventDefault(); releaseAll(); });
+  // Cmd (macOS) swallows keyups for other keys while held.
+  window.addEventListener('keydown', function (e) { if (e.key === 'Meta') releaseAll(); });
+
+  window.CapInput = { doomKey: doomKey, releaseAll: releaseAll, held: function () { return Object.keys(held); } };
+})();
+200:                          ['E2b.hidden-releases-keys', "Object.defineProperty(document, 'hidden', { configurable: true, get: () => true }); document.dispatchEvent(new Event('visibilitychange'))"]]) {
+201-    await page.keyboard.down('ArrowLeft'); await sleep(500);
+202-    const h1 = await shot('edge-held'); await sleep(300); const h2 = await shot('edge-held-b');
+203-    const pre = diffFrac(h1, h2, VIEW) > 0.02;
+204-    await page.evaluate(ev); const st = await settle(); await sleep(500); const h3 = await shot('edge-after');
+205-    check(id, pre && st.settled && diffFrac(st.frame, h3, VIEW) < 0.02, `precondition-turning=${pre} settled=${st.settled} later-diff=${diffFrac(st.frame, h3, VIEW).toFixed(4)}`);
+206-    await page.evaluate(() => { delete document.hidden; }); await page.keyboard.up('ArrowLeft'); await sleep(500);
+207-  }
+208-  // E3: after blur with the key still physically held, the browser auto-repeats keydown; it must act as a fresh press.
+209-  await page.keyboard.down('ArrowRight'); await sleep(300);
+210-  await page.evaluate(() => window.dispatchEvent(new Event('blur'))); await settle();
+211-  const rb = await shot('refocus-before'); await page.keyboard.down('ArrowRight'); await sleep(500); const ra = await shot('refocus-after');
+212-  check('E3.repeat-after-blur-is-fresh-press', diffFrac(rb, ra, VIEW) > 0.02, `diff=${diffFrac(rb, ra, VIEW).toFixed(4)} (view must turn again)`);
+213-  await page.keyboard.up('ArrowRight'); await settle();
+214-  // E4: two physical keys on one Doom key (L+R Ctrl): still held until both released.
+215-  await page.keyboard.down('ControlLeft'); await page.keyboard.down('ControlRight'); await page.keyboard.up('ControlLeft');
+216-  const heldOne = await page.evaluate(() => window.CapInput ? window.CapInput.held().length : -1);
+217-  await page.keyboard.up('ControlRight'); const heldNone = await page.evaluate(() => window.CapInput ? window.CapInput.held().length : -1);
+218-  check('E4.dual-ctrl-held-until-both-up', heldOne === 1 && heldNone === 0, `held after one up=${heldOne}, after both=${heldNone} (JS state; engine side not observable)`);
+219-  // I8: strong render module active (Module._rt only exists when render_timing.c is linked, not cap_fallback.c) and presenting.
+220-  const rt0 = await page.evaluate(() => window.Module && window.Module._rt ? window.Module._rt.frames : null); await sleep(1000);
+221-  const rt1 = await page.evaluate(() => window.Module && window.Module._rt ? window.Module._rt.frames : null);
+222-  check('I8.render-module-active', rt0 !== null && rt1 !== null && rt1 > rt0, `Module._rt.frames ${rt0} -> ${rt1}`);
+223-
+224-  // I9: the strong input module (input_audio.c) is linked and has delivered events to the engine (not the fallback queue).
+225-  const inp = await page.evaluate(() => { const M = window.Module; return M && M._cap_input_impl ? { impl: M._cap_input_impl(), delivered: M._cap_input_delivered_count(), dropped: M._cap_input_dropped_count() } : null; });
+clean-rc=0
+09969002dba66a00  dist/audio_web.js
+1d7d43be501e67d9  dist/doom.data
+0090630eeaf16a87  dist/doom.js
+7afb94fa1ec64b5c  dist/doom.wasm
+43a15c63d134b538  dist/index.html
+cc5e94829d3893bf  dist/input_audio.js
+e4114e9951ad4ed1  dist/render_timing.js
+)
+Visibility handling is correct on inspection, and the clean rebuild reproduces the same hashes. I'll write the report.
+Calling Write()
+
+Write response → "File created successfully at: /Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/coder.zfCpSd/report.md (file state is current in your context — no need to Read it back)"
+I made no source edits. The build and startup are healthy, but the report is FINDINGS because the open E2b failure is still undiagnosed.
+
+- **Build:** `make all` and a full `make clean && make all` both pass. The rebuilt `dist/` files have the same hashes the earlier reports recorded, so the build is reproducible. I didn't re-check that the emcc here is 4.0.18.
+- **E2b:** the visibility-release code in `web/input_audio.js` looks correct to me. The test has failed in 2 of 6 recorded runs, so the cause is probably in the input specialist's engine-side reset or in the test itself. Neither file is mine to change.
+- **Not run:** I didn't run `tests/verify.sh` or the playtest, so the earlier 47-check result stands only because the wasm is unchanged.
+- **Still open:**
+  - The level-exit check (G3c) needs a hook that no one has specified.
+  - The audio-by-ear (A1) and real-hidden-tab (H1) checks need a human.
+  - The two overstated `faults.sh` expectations belong to the tester.
+
+The report is at `artifacts/logs/coder.zfCpSd/report.md`, with the build logs, dist hashes and source hash alongside it.

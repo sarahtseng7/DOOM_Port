@@ -1,0 +1,37 @@
+PASS A.ctx-running-after-gesture before=suspended after=running
+PASS A.title-music-nonsilent musicStarted=2 maxPeak=0.22034457325935364
+PASS A.menu-nav-sfx sfxPlayed 0->2 (2 cursor moves)
+PASS G.level-entered-E1M1 {"tic":432,"valid":1,"x":1056,"y":-3616,"ang":1073741824,"hp":100,"lvl":101,"sec":38}
+PASS A.level-music-switched {"musicStarted":3,"playing":true}
+PASS T.tic-rate 34.7 tics/s
+PASS M.idle-no-drift {"d":0,"dAng":0}
+PASS M.forward-moves {"walkUnits":76,"ticks":17}
+PASS M.forward-coasts-then-stops {"coastUnits":73,"stoppedAfterTics":43,"stepsPerSample":"6 6 0 9 0 8 4 3 3 3 2 2 2"}
+PASS M.forward-along-facing {"cosToFacing":1}
+PASS M.backward-opposite-facing {"units":116,"cosToFacing":-1}
+PASS M.turn-ArrowRight {"degWhileHeld":-36.91,"ticksHeld":14,"moved":0}
+PASS M.turn-ArrowRight-stops-on-release {"degAfterRelease":-3.52,"lastChangeTicAfterRelease":0}
+PASS M.turn-ArrowLeft {"degWhileHeld":40.43,"ticksHeld":14,"moved":0}
+PASS M.turn-ArrowLeft-stops-on-release {"degAfterRelease":0,"lastChangeTicAfterRelease":0}
+PASS M.strafe-right-period {"d":112,"cosF":0,"cosR":1,"dAng":0}
+PASS M.strafe-left-comma {"d":112,"cosF":0,"cosR":-1,"dAng":0}
+PASS M.alt-arrow-strafes {"d":112,"cosR":1,"dAng":0}
+PASS M.shift-run-faster {"walkUnitsPerTic":2.46,"runUnitsPerTic":6.6}
+PASS C.fire-ammo-and-sfx {"ammoDiff":0.14,"sfx":"11->12"}
+PASS C.held-fire-repeats-and-stops {"during":5,"after1200ms":0}
+NOTE C.use-sfx-at-wall {"sfxDelta":1,"at":{"tic":1421,"valid":1,"x":1155,"y":-2897,"ang":1073741824,"hp":100,"lvl":101,"sec":38}}
+PASS P.menu-pauses-world {"dPos":0,"dTic":56}
+PASS A.audio-clock-advances 2.000 s per 2.003 s wall
+NOTE A.music-in-menu {"musicPlaying":true,"voices":13,"lastPeak":0.01303083822131157}
+PASS A.ingame-menu-nav-sfx 19->20
+PASS F.no-stuck-key-after-menu {"dPos":0,"dAng":0,"dTic":42}
+PASS F.blur-stops-held-turn {"degBlurLatency":3.52,"degAfterBlur1s":0}
+PASS F.input-works-after-blur {"deg":29.88}
+PASS F.blur-stops-held-forward {"movedBeforeBlur":32,"coastAfterBlur":43,"movedLast800ms":0}
+PASS P.pause-key-toggles {"ticsPaused1s":38,"ticsResumed1s":35}
+PASS G.automap-toggle-no-move {"dPos":0}
+final audio {"sfxRequested":22,"sfxPlayed":22,"sfxSuppressed":0,"sfxBad":0,"musicRequested":3,"musicStarted":3,"notesScheduled":1194,"musicErrors":0,"maxPeak":0.46148985624313354,"lastPeak":0.06727390736341476,"ctxState":"running","sampleRate":48000,"sfxChannelsActive":0,"musicPlaying":true,"musicVoices":19}
+errors []
+PASS E.no-page-errors []
+PASS A.no-bad-sfx-or-music-errors {"sfxPlayed":22,"sfxRequested":22,"sfxSuppressed":0,"sfxBad":0,"musicErrors":0,"maxPeak":0.46148985624313354}
+SUMMARY pass=32 fail=0 note=2

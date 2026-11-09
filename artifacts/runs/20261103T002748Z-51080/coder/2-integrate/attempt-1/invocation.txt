@@ -1,0 +1,8 @@
+Role=coder RUN_ID=20261103T002748Z-51080 TASK_ID=2-integrate ATTEMPT_ID=attempt-1.
+OUTPUT_DIR=artifacts/runs/20261103T002748Z-51080/coder/2-integrate/attempt-1. Manifest: artifacts/runs/20261103T002748Z-51080/manifest.txt. Task: Integrate specialist handoffs through owned files.
+Follow your configured role prompt. Read earlier findings under artifacts/runs/.
+Use artifacts/specification.md, artifacts/acceptance-criteria.md and
+artifacts/interface-contract.md if present. Otherwise use proposals under
+artifacts/runs/20261103T002748Z-51080/coder/plan/attempt-1/ and artifacts/runs/20261103T002748Z-51080/tester/prepare/attempt-1/.
+Record reasonable assumptions if optional documents are absent; do not invent approval.
+Save report.md and result.json in OUTPUT_DIR. Partial work is FINDINGS, not PASS.

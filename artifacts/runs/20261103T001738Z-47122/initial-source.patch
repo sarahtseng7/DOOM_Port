@@ -1,0 +1,370 @@
+diff --git a/loop/agents.yaml b/loop/agents.yaml
+index e69de29..c9fc6f1 100644
+--- a/loop/agents.yaml
++++ b/loop/agents.yaml
+@@ -0,0 +1,55 @@
++agents:
++  coder:
++    description: "Build, startup, and integration"
++    harness:
++      type: claude-code
++      model: sonnet
++      effort: medium
++    instruction: |
++      You are coder. Read loop/prompts/CODER.md and follow the task in your invocation.
++      Missing optional planning documents should lead to documented proposals, not repeated inactivity.
++  coder_render_timing:
++    description: "Rendering and timing"
++    harness:
++      type: claude-code
++      model: sonnet
++      effort: medium
++    instruction: |
++      You are coder_render_timing. Read loop/prompts/CODER_RENDER_TIMING.md and follow the task in your invocation.
++      Missing optional planning documents should lead to documented proposals, not repeated inactivity.
++  coder_input_audio:
++    description: "Controls and audio"
++    harness:
++      type: claude-code
++      model: sonnet
++      effort: medium
++    instruction: |
++      You are coder_input_audio. Read loop/prompts/CODER_INPUT_AUDIO.md and follow the task in your invocation.
++      Missing optional planning documents should lead to documented proposals, not repeated inactivity.
++  reviewer:
++    description: "Technical review"
++    harness:
++      type: claude-code
++      model: sonnet
++      effort: medium
++    instruction: |
++      You are reviewer. Read loop/prompts/REVIEWER.md and follow the task in your invocation.
++      Missing optional planning documents should lead to documented proposals, not repeated inactivity.
++  reviewer_requirements:
++    description: "Requirements and evidence review"
++    harness:
++      type: claude-code
++      model: sonnet
++      effort: medium
++    instruction: |
++      You are reviewer_requirements. Read loop/prompts/REVIEWER_REQUIREMENTS.md and follow the task in your invocation.
++      Missing optional planning documents should lead to documented proposals, not repeated inactivity.
++  tester:
++    description: "Test preparation and independent verification"
++    harness:
++      type: claude-code
++      model: sonnet
++      effort: medium
++    instruction: |
++      You are tester. Read loop/prompts/TESTER.md and follow the task in your invocation.
++      Missing optional planning documents should lead to documented proposals, not repeated inactivity.
+diff --git a/loop/loop.sh b/loop/loop.sh
+old mode 100644
+new mode 100755
+index 40c0cf4..50139e2
+--- a/loop/loop.sh
++++ b/loop/loop.sh
+@@ -1,3 +1,116 @@
+-#!/bin/bash
++#!/usr/bin/env bash
++# Run from any directory: bash /path/to/repository/loop/loop.sh
++set -euo pipefail
++cd "$(dirname "${BASH_SOURCE[0]}")/.."
++MAX_ITERATIONS="${MAX_ITERATIONS:-10}"
++[[ "$MAX_ITERATIONS" =~ ^[1-9][0-9]*$ ]] || exit 2
++CONFIG="loop/agents.yaml"
++RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)-$$"
++RUN="artifacts/runs/$RUN_ID"
++mkdir -p "$RUN"
++trap 'echo ERROR_OR_INTERRUPTED > "$RUN/status.txt"' INT TERM
++printf 'RUNNING\n' > "$RUN/status.txt"
++# The harness uses Claude Code subscription login, not ANTHROPIC_API_KEY.
++if ! claude auth status --text || ! docker agent doctor "$CONFIG"; then
++  echo ERROR_AUTH_OR_CONFIGURATION > "$RUN/status.txt"
++  exit 2
++fi
++{
++  echo "run_id: $RUN_ID"
++  echo "source_commit: $(git rev-parse HEAD)"
++  echo "max_iterations: $MAX_ITERATIONS"
++  echo "AI-assisted runner and prompts; permission isolation is not implemented by this script."
++} > "$RUN/manifest.txt"
++git diff --binary HEAD > "$RUN/initial-source.patch"
++git status --short > "$RUN/initial-source-status.txt"
+ 
+-set -eu
+\ No newline at end of file
++run_agent() {
++  local agent="$1" stage="$2" task="$3"
++  local dir="$RUN/$agent/$stage/attempt-1"
++  mkdir -p "$dir"
++  LAST_RESULT="$dir/result.json"
++  local message="Role=$agent RUN_ID=$RUN_ID TASK_ID=$stage ATTEMPT_ID=attempt-1.
++OUTPUT_DIR=$dir. Run manifest: $RUN/manifest.txt. Task: $task
++Read current reports under $RUN and prior runs for unresolved findings.
++Student inputs, if present: artifacts/specification.md, artifacts/acceptance-criteria.md,
++artifacts/interface-contract.md. Fallback spec: $RUN/coder/plan/attempt-1/proposed-spec.md.
++Fallback contract: $RUN/coder/plan/attempt-1/interface-contract.md.
++Fallback criteria: $RUN/tester/prepare/attempt-1/proposed-criteria.md.
++Missing optional inputs: propose sensible requirements, record assumptions, and proceed.
++Do not invent student approval or modify approved/frozen criteria.
++Save report.md and result.json with status and summary in OUTPUT_DIR.
++Use exactly READY, PASS, FINDINGS, ERROR, or NEEDS_INPUT. Partial work uses FINDINGS, never PASS."
++  printf '%s\n' "$message" > "$dir/invocation.txt"
++  echo "Running $agent ($stage); log: $dir/agent.log"
++  if ! docker agent run "$CONFIG" --agent "$agent" --exec "$message" > "$dir/agent.log" 2>&1; then
++    echo ERROR_AGENT_PROCESS > "$RUN/status.txt"
++    echo "Agent command failed. Inspect $dir/agent.log" >&2
++    exit 2
++  fi
++  STATUS="$(python3 - "$LAST_RESULT" <<'PY'
++import json, sys
++path = sys.argv[1]
++allowed = {'READY', 'PASS', 'FINDINGS', 'ERROR', 'NEEDS_INPUT'}
++try:
++    with open(path) as stream:
++        data = json.load(stream)
++    if not isinstance(data, dict):
++        raise ValueError('expected a JSON object')
++    raw = data.get('status')
++    if not isinstance(raw, str) or not raw.strip():
++        raise ValueError(f'status must be a nonempty string; got {raw!r}')
++    status = raw.strip().upper()
++    # Partial work is repairable, never a passing outcome. Preserve raw evidence.
++    if status == 'PARTIAL':
++        print(f'{path}: interpreting status {raw!r} as FINDINGS', file=sys.stderr)
++        status = 'FINDINGS'
++    if status not in allowed:
++        raise ValueError(f'unsupported status {raw!r}; expected {", ".join(sorted(allowed))}')
++    summary = data.get('summary')
++    if not isinstance(summary, str) or not summary.strip():
++        raise ValueError('summary must be a nonempty string')
++    print(status)
++except (OSError, ValueError, TypeError) as error:
++    print(f'Invalid/missing result file {path}: {error}', file=sys.stderr)
++    sys.exit(2)
++PY
++)" || { echo ERROR_INVALID_RESULT > "$RUN/status.txt"; exit 2; }
++  echo "$agent: $STATUS"
++  if [[ "$STATUS" == ERROR || "$STATUS" == NEEDS_INPUT ]]; then
++    echo "$STATUS" > "$RUN/status.txt"
++    echo "Read $dir/report.md for the exact unresolved problem." >&2
++    exit 2
++  fi
++}
++
++# Draft missing inputs and prepare verification BEFORE implementing the port.
++run_agent coder plan "Plan only: write missing proposed spec/contract, establish the bridge header, and document interfaces. Do not implement the game yet."
++run_agent tester prepare "Write missing proposed criteria and actual verification scripts before implementation. Do not wait for a Makefile or playable game to write tests."
++
++for ((i=1; i<=MAX_ITERATIONS; i++)); do
++  echo "Iteration $i/$MAX_ITERATIONS"
++  run_agent coder "$i-build" "Implement/repair owned startup, Makefile and WAD packaging; address existing findings."
++  run_agent coder_render_timing "$i-render" "Implement/repair owned rendering and timing against the saved shared contract."
++  run_agent coder_input_audio "$i-input" "Implement/repair owned controls and documented audio/storage scope."
++  run_agent coder "$i-integrate" "Integrate specialist handoffs through owned files; run development build; do not edit tests."
++  run_agent reviewer "$i-review" "Review integrated technical correctness; route concrete findings to file owners."
++  REVIEW_STATUS="$STATUS"
++  run_agent tester "$i-test" "Run the existing protected suite; preserve failures; report genuine results without weakening checks."
++  TEST_STATUS="$STATUS"
++  run_agent reviewer_requirements "$i-audit" "Audit product/evaluation evidence; distinguish missing student approvals and homework demonstrations from implementation failures."
++  AUDIT_STATUS="$STATUS"
++  # Require both independent reports and an actual verification exit code.
++  # No production edits occur between tester execution and this final rerun.
++  if [[ "$REVIEW_STATUS" == PASS && "$TEST_STATUS" == PASS && -f tests/verify.sh ]]; then
++    if bash tests/verify.sh > "$RUN/verification-$i.log" 2>&1; then
++      echo CANDIDATE_PASSED_PENDING_STUDENT_ACCEPTANCE > "$RUN/status.txt"
++      echo "Product checks passed. Audit status: $AUDIT_STATUS. Evidence: $RUN"
++      echo "This does not certify missing student approvals, isolation, regression or resumption demonstrations."
++      exit 0
++    fi
++  fi
++  echo "Not verified yet; next iteration will address saved findings."
++done
++printf 'ITERATION_LIMIT\n' > "$RUN/status.txt"
++echo "Iteration limit reached. Read reports under $RUN."
++exit 1
+diff --git a/platform/doomgeneric_wasm.c b/platform/doomgeneric_wasm.c
+index 7879ff5..8fd0331 100644
+--- a/platform/doomgeneric_wasm.c
++++ b/platform/doomgeneric_wasm.c
+@@ -1,44 +1,90 @@
+-// Your WebAssembly platform layer for doomgeneric.
+-//
+-// These are the functions doomgeneric expects a platform to provide
+-// (see third_party/doomgeneric/doomgeneric.h). Right now they do nothing,
+-// so the engine links but shows nothing and takes no input.
+-//
+-// There is also no main() yet. How the engine gets started and kept
+-// running in a browser is yours to design.
+-//
+-// Making this behave like Doom in a browser is the project.
++// WebAssembly platform layer for doomgeneric (coder-owned).
++// DG_* callbacks forward to the cap_* functions declared in capstone_bridge.h.
++// Default (weak) cap_* implementations live in cap_fallback.c; specialist
++// modules override them with strong definitions.
+ 
+ #include <stdint.h>
+ 
+-#include "doomgeneric.h"
++#include <emscripten.h>
++
++#include "capstone_bridge.h"
++
++extern int gametic;
++
++static int cap_started;
+ 
+ void DG_Init()
+ {
++    cap_render_init();
++    cap_input_init();
++    cap_audio_init();
+ }
+ 
+ void DG_DrawFrame()
+ {
++    cap_render_present(DG_ScreenBuffer);
+ }
+ 
+ void DG_SleepMs(uint32_t ms)
+ {
+-    (void)ms;
++    cap_sleep_ms(ms);
+ }
+ 
+ uint32_t DG_GetTicksMs()
+ {
+-    return 0;
++    return cap_time_ms();
+ }
+ 
+ int DG_GetKey(int *pressed, unsigned char *key)
+ {
+-    (void)pressed;
+-    (void)key;
+-    return 0;
++    return cap_input_poll(pressed, key);
+ }
+ 
+ void DG_SetWindowTitle(const char *title)
+ {
+-    (void)title;
++    cap_set_title(title);
++}
++
++int cap_bridge_version(void)
++{
++    return CAP_BRIDGE_VERSION;
++}
++
++int cap_ready(void)
++{
++    return cap_started;
++}
++
++const void *cap_framebuffer_ptr(void)
++{
++    return DG_ScreenBuffer;
++}
++
++int cap_tic_count(void)
++{
++    return gametic;
++}
++
++void cap_frame(void)
++{
++    if (cap_started)
++        doomgeneric_Tick();
++}
++
++int main(int argc, char **argv)
++{
++    static char *args[] = { "doom", "-iwad", CAP_WAD_PATH, NULL };
++    (void)argc;
++    (void)argv;
++
++    doomgeneric_Create(3, args);
++    cap_started = 1;
++
++    // ASYNCIFY build: cap_sleep_ms yields to the browser inside the engine's
++    // tic waits; the explicit sleep(0) yields once per frame otherwise.
++    for (;;) {
++        doomgeneric_Tick();
++        emscripten_sleep(0);
++    }
++    return 0;
+ }
+diff --git a/tests/README.md b/tests/README.md
+index f02cafa..5207b33 100644
+--- a/tests/README.md
++++ b/tests/README.md
+@@ -9,3 +9,20 @@ Document how to run your checks and what each one establishes.
+ Save test results, logs, screenshots, and recordings in `artifacts/`.
+ Keep acceptance checks outside the coder's write permissions using your
+ sandbox/tool configuration; a folder name alone does not enforce access.
++
++## Suite (tester-owned; criteria are AGENT-PROPOSED, not student-approved)
++
++Run: `source ~/Developer/emsdk/emsdk_env.sh && tests/verify.sh` (RUN_ID, SOAK_SECONDS, QUICK=1 optional).
++Evidence goes to `artifacts/runs/$RUN_ID/tester/verify-*/` (identity.txt, logs, screenshots, playtest-results.json).
++Exit 0 only when tooling, build, selftest and every required playtest check pass; `QUICK=1` never exits 0.
++
++| File | Establishes |
++| --- | --- |
++| `verify.sh` | tooling check, source identity, selftest, `make clean && make all`, playtest |
++| `selftest.mjs` | pixel helpers FAIL on black, channel-swapped, transparent, static, wrongly shifted frames (no build needed) |
++| `playtest.mjs` | Chromium: load/console errors, boot frame, colors, rAF liveness, menu -> E1M1, turn/move/fire/release, blur, automap, Esc menu, soak |
++| `lib/frames.mjs` | region diff / color stats / horizontal-shift estimation on canvas screenshots |
++
++Limits: outcomes are inferred from pixels (no engine state hook); audio, persistence, door/level-exit and the
++35 tics/s rate are listed as UNVERIFIED in every result. Ammo/status regions assume the stock 320x200 layout.
++Test deps: `npm ci` in `tests/` (network needed once; Playwright 1.49.1, pngjs 7.0.0).
+diff --git a/web/index.html b/web/index.html
+index a894330..db971da 100644
+--- a/web/index.html
++++ b/web/index.html
+@@ -12,6 +12,41 @@
+ </head>
+ <body>
+   <canvas id="canvas" width="640" height="400"></canvas>
+-  <!-- Wire your build output in here. -->
++  <script>
++    // Browser KeyboardEvent.code -> Doom key code (doomkeys.h).
++    var KEYS = {
++      ArrowLeft: 0xac, ArrowRight: 0xae, ArrowUp: 0xad, ArrowDown: 0xaf,
++      ControlLeft: 0xa3, ControlRight: 0xa3, Space: 0xa2,
++      ShiftLeft: 0xb6, ShiftRight: 0xb6, AltLeft: 0xb8, AltRight: 0xb8,
++      Comma: 0xa0, Period: 0xa1, Enter: 13, NumpadEnter: 13, Escape: 27,
++      Tab: 9, Backspace: 0x7f, Pause: 0xff, Minus: 0x2d, Equal: 0x3d,
++      F1: 0xbb, F2: 0xbc, F3: 0xbd, F4: 0xbe, F5: 0xbf, F6: 0xc0,
++      F7: 0xc1, F8: 0xc2, F9: 0xc3, F10: 0xc4, F11: 0xd7, F12: 0xd8
++    };
++    function doomKey(e) {
++      if (KEYS[e.code]) return KEYS[e.code];
++      var m = /^Key([A-Z])$/.exec(e.code);
++      if (m) return m[1].toLowerCase().charCodeAt(0);
++      m = /^Digit(\d)$/.exec(e.code);
++      return m ? m[1].charCodeAt(0) : 0;
++    }
++    function send(pressed, e) {
++      var k = doomKey(e);
++      if (!k || !Module.calledRun) return;
++      Module._cap_input_event(pressed, k);
++      e.preventDefault();
++    }
++    window.addEventListener('keydown', function (e) { if (!e.repeat) send(1, e); else e.preventDefault(); });
++    window.addEventListener('keyup', function (e) { send(0, e); });
++    function release() { if (Module.calledRun) Module._cap_input_reset(); }
++    window.addEventListener('blur', release);
++    document.addEventListener('visibilitychange', function () { if (document.hidden) release(); });
++    var Module = {
++      canvas: document.getElementById('canvas'),
++      print: function (t) { console.log(t); },
++      printErr: function (t) { console.warn(t); }
++    };
++  </script>
++  <script src="doom.js"></script>
+ </body>
+ </html>

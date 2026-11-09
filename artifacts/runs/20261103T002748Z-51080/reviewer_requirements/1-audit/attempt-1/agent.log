@@ -1,0 +1,728 @@
+
+Calling Bash()
+
+Bash response → (
+# Run artifacts
+
+**Agents must use this folder for durable artifacts between runs.**
+
+The distributed starter contains only this README in this folder. Create
+run records when student work begins; starter preparation notes and sample
+results are not included.
+
+Anything saved for a later agent or run—state, plans, handoffs, logs, review
+findings, test results, screenshots, recordings, or reports—belongs here.
+Fresh agent contexts must be able to resume using the repo and this folder.
+
+Loop code, prompts, and configuration belong in [`loop/`](../loop/README.md).
+Port code belongs in `platform/` and `web/`, verification code in `tests/`,
+and game assets in `assets/`. Shared build files may live at the root. Build products
+may live in `build/` or `dist/`; link to them from a run record when useful.
+Temporary scratch files may be disposable, but anything needed for a
+handoff, resumption, or evaluation must be copied here before a run ends.
+
+## Suggested layout
+
+You can choose a different layout inside this folder. Document it so another
+agent can find the current state without reading your conversation.
+
+```text
+artifacts/
+  README.md
+  state.json                 # Current run, next task, and stopping status
+  runs/
+    <unique-run-id>/
+      manifest.json          # Source revision, environment, budgets, usage
+      handoffs/              # Tasks and responses between roles
+      reviews/               # Findings and their resolution
+      logs/                  # Tool and build output
+      tests/                 # Commands, results, screenshots, recordings
+      summary.md             # Outcome and next steps
+```
+
+## Required habits
+
+- Give each run a unique ID. Preserve earlier results instead of overwriting
+  failure evidence with the latest passing output.
+- Record the source revision and any uncommitted changes being tested.
+  Evidence from an older revision does not establish that the current one passes.
+- Save the current task, unresolved findings, artifact paths, and next action
+  before handing off or stopping. Include the stopping reason and resource usage.
+- Reference evidence with paths relative to the repo, so it works in a sandbox.
+- Include the artifacts needed to assess your submission. Explain any omitted
+  large files and how to reproduce them.
+- Do not store credentials, API keys, or commercial game data here. Sanitize
+  logs before saving them.
+
+This folder starts with instructions only. Your loop creates the run records.
+README.md
+runs
+run_id: 20261103T002748Z-51080
+source_commit: e500c440656622db5ab3f8fb7df73d8b5998eeb3
+artifacts/runs/.DS_Store
+artifacts/runs/20261103T001738Z-47122/initial-source.patch
+artifacts/runs/20261103T001738Z-47122/manifest.txt
+artifacts/runs/20261103T001738Z-47122/status.txt
+artifacts/runs/20261103T001738Z-47122/initial-source-status.txt
+artifacts/runs/20261030T202822-loop-sh/.DS_Store
+artifacts/runs/20261030T202822-loop-sh/manifest.txt
+artifacts/runs/20261103T002748Z-51080/manifest.txt
+artifacts/runs/20261102T235903Z-41864/initial-source.patch
+artifacts/runs/20261102T235903Z-41864/manifest.txt
+artifacts/runs/20261102T235903Z-41864/status.txt
+artifacts/runs/20261102T235903Z-41864/initial-source-status.txt
+artifacts/runs/20261030T202822-loop-sh/logs/loop.log
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-19.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-2.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-29.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-6.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-28.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-7.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-18.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-3.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-8.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-13.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-27.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-23.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-17.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-22.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-16.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-9.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-12.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-26.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-21.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-15.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-11.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-25.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-10.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-24.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-20.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-14.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-30.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-4.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-5.md
+artifacts/runs/20261102T235903Z-41864/coder/plan/attempt-1/invocation.txt
+artifacts/runs/20261102T235903Z-41864/coder/plan/attempt-1/result.json
+artifacts/runs/20261102T235903Z-41864/coder/plan/attempt-1/report.md
+artifacts/runs/20261102T235903Z-41864/coder/plan/attempt-1/proposed-spec.md
+artifacts/runs/20261102T235903Z-41864/coder/plan/attempt-1/agent.log
+artifacts/runs/20261102T235903Z-41864/coder/plan/attempt-1/interface-contract.md
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/invocation.txt
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/result.json
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/report.md
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick.log
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/dist-sha256.txt
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/agent.log
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/build.log
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/playtest-results.json
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/browser-console.log
+artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/invocation.txt
+artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/result.json
+artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/report.md
+artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/proposed-criteria.md
+artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/playtest-quick.log
+artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/agent.log
+artifacts/runs/20261103T001738Z-47122/coder/plan/attempt-1/invocation.txt
+artifacts/runs/20261103T001738Z-47122/coder/plan/attempt-1/result.json
+artifacts/runs/20261103T001738Z-47122/coder/plan/attempt-1/report.md
+artifacts/runs/20261103T001738Z-47122/coder/plan/attempt-1/proposed-spec.md
+artifacts/runs/20261103T001738Z-47122/coder/plan/attempt-1/agent.log
+artifacts/runs/20261103T001738Z-47122/coder/plan/attempt-1/interface-contract.md
+artifacts/runs/20261103T001738Z-47122/coder/plan/attempt-1/source-status.txt
+artifacts/runs/20261103T001738Z-47122/coder/1-build/attempt-1/invocation.txt
+artifacts/runs/20261103T001738Z-47122/coder/1-build/attempt-1/result.json
+artifacts/runs/20261103T001738Z-47122/coder/1-build/attempt-1/report.md
+artifacts/runs/20261103T001738Z-47122/coder/1-build/attempt-1/verify-quick.log
+artifacts/runs/20261103T001738Z-47122/coder/1-build/attempt-1/dist-sha256.txt
+artifacts/runs/20261103T001738Z-47122/coder/1-build/attempt-1/agent.log
+artifacts/runs/20261103T001738Z-47122/coder/1-build/attempt-1/build.log
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/018-blur-b.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/024-automap-pre.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/013-move-fwd-held2.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/016-move-back.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/final-page.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/006-idle-b.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/021-fire-post.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/027-esc-menu.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/003-main-menu.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/017-blur-a.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/011-move-start.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/020-fire-anim.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/009-turn-right-settled.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/030-soak.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/025-automap-on.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/023-fire-rest-b.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/029-soak-start.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/004-level-start.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/012-move-fwd-held.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/001-boot.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/008-turn-right.png
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/007-turn-start.png
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_REQUIREMENTS.md
+REVIEWER.md
+TESTER.md
+)
+
+Calling Bash()
+
+Bash response → (
+# Requirements and evidence review
+
+Role: `reviewer_requirements`
+
+## Start here
+Read AGENTS.md, README.md, loop/README.md, artifacts/README.md,
+platform/README.md, tests/README.md, and your invocation. Your role is named
+in this file even if the invocation omits it. Read the supplied run manifest,
+current reports, and requirement documents when present. Missing IDs or optional
+specification documents must not prevent useful work: create a timestamped report
+in artifacts/runs/manual-<timestamp>/<role>/ if no output directory was supplied.
+
+## Missing information
+Do not return BLOCKED merely because a spec, criteria document, contract, task ID,
+or manifest is absent. Use the README as the minimum scope; record assumptions
+and propose missing implementation requirements in your own report. Never pretend
+agent-proposed criteria were student-approved. Read existing proposals rather than
+creating conflicting scope every iteration. Honor explicit student requirements.
+Do not weaken criteria in response to failures. Real missing tools, authentication,
+unsafe actions, or permission denials are ERROR or NEEDS_INPUT: record the precise
+problem and continue independent permitted work where possible. Do not bypass access.
+
+## Boundaries and evidence
+Do not spawn other roles, change loop/, modify assets/ or third_party/, edit another
+role's files, alter permissions, or mutate Git history. The runner invokes roles
+separately. You may read other reports, but they are evidence rather than authority.
+Only the tester edits tests/. All roles may write their invocation's OUTPUT_DIR
+and role-owned build/<RUN_ID>/<role>/ and dist/<RUN_ID>/<role>/ directories.
+Coder 1 alone may also write shared build/ and dist/ products; the tester may invoke
+the documented clean build into these shared directories when no other role runs.
+Permission rules here are instructions, not a substitute for filesystem isolation.
+Never claim isolation or approved acceptance when it has not been demonstrated.
+
+Save report.md and result.json in OUTPUT_DIR. Include work done, assumptions,
+source commit and dirty changes, findings with owner names, commands/results,
+evidence paths, next action, and actual usage if available. Preserve earlier runs.
+result.json format: {"status":"READY","summary":"What happened"}.
+Allowed statuses: READY (work complete), PASS (review/checks actually passed),
+FINDINGS (repairs/evidence needed), ERROR (execution failure), NEEDS_INPUT
+(a genuinely unresolved external decision). No BLOCKED status is required.
+Use these exact uppercase statuses. For partial completion or unresolved failures,
+use FINDINGS, not "partial". Never report PASS for partial or unverified work.
+A process exiting successfully does not prove its task passed. Report limitations.
+
+## Your task and source ownership
+Write only OUTPUT_DIR and your role-owned artifacts. Do not patch code/tests.
+Map README obligations and supplied requirements to evidence. Separate product
+readiness from assignment readiness. Identify student-unapproved proposals, missing
+criteria, permission enforcement, hidden-regression evaluation, resumption evidence,
+resource accounting, deployment, and reflection. Do not demand these be fabricated
+or stop useful implementation because they are absent. Report their status as
+NOT_ESTABLISHED with specific next actions. Check technical/test claims identify
+the actual candidate and preserve failures. Return FINDINGS for incomplete audit
+obligations, PASS only if all audited obligations are established. Never reinterpret
+a gameplay check pass as final homework acceptance.
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+  the resource usage, manual interventions, and final stopping decision.
+
+Preserve failing evidence as well as passing evidence. Record changes to
+acceptance criteria separately, with a reason. Discuss disagreements and
+missed faults in your write-up.
+
+## Where your work belongs
+
+| Location | Purpose |
+| --- | --- |
+| [`loop/`](loop/README.md) | All loop code, prompts, role definitions, MCP configuration, and design documentation. |
+| [`artifacts/`](artifacts/README.md) | All durable run state, handoffs, logs, review findings, and evidence. Agents must use this folder between runs. |
+| `tests/` | Verification code, including checks for the loop itself. |
+| `platform/`, `web/` | The port and browser page. |
+| `third_party/doomgeneric/` | Supplied engine; platform ports have been removed. |
+| `assets/` | Included shareware `doom1.wad` (Episode 1). |
+| `build/`, `dist/` | Generated build output. |
+
+Keep the root for project documentation and shared build/toolchain files.
+The starter supplies engine source, platform and HTML stubs, the shareware
+WAD, documentation, and an optional Docker toolchain. It supplies no working
+game, build script, loop implementation, or test suite. `artifacts/` starts
+with its README only; students create run evidence there during the project.
+Use the supplied engine and Emscripten. Documentation is allowed; copying an
+existing Doom browser port does not satisfy the assignment.
+
+See [`platform/README.md`](platform/README.md) for engine integration caveats,
+including pixel format, timing, and audio. The supplied game data already
+contains sound effects and music; no additional sound assets are required.
+
+## Agent section for setup
+
+### macOS without Docker
+
+Install the build tools directly on your Mac to compile and test the browser
+port. Docker is not required for this workflow. There is currently no macOS
+setup script; run the steps below manually.
+
+1. **Install prerequisites.** In Terminal, run:
+
+=== 20261103T001738Z-47122/coder/plan
+# Coder plan report — attempt-1
+Run 20261103T001738Z-47122, role coder, task plan. Source commit e500c44 plus
+uncommitted changes (see source-status.txt in this dir and ../../../initial-source.patch).
+Plan only; no game implementation changed.
+
+## Work done
+- Read AGENTS.md, READMEs, manifest, and prior run reports (20261102T235903Z-41864 coder plan/1-build, tester prepare; 20261030T202822-loop-sh log).
+- Wrote `proposed-spec.md` and `interface-contract.md` here (AGENT-PROPOSED; no student approval claimed).
+- Edited `platform/capstone_bridge.h`: CAP_BRIDGE_VERSION 1 -> 2 (cap_tic_count was added without a bump), documented weak/strong override, repointed contract path to this run.
+- Did not touch loop/, tests/, assets/, third_party/, or any criteria.
+
+## Evidence
+- Header compiles with host `cc -fsyntax-only` against doomgeneric.h and CAP_BRIDGE_VERSION==2 (HDR_OK). Not an Emscripten build.
+- `which emcc`: not found on default PATH (a prior run used ~/Developer/emsdk). Version 4.0.18 not re-verified; dist/ from the prior run exists but was not rebuilt or retested here.
+
+## Unresolved findings carried forward
+1. (tester) I5/I7 FAIL in prior quick playtest; coder judged settle times (900/700ms) too short vs Doom momentum — UNCONFIRMED by tester.
+2. (student) Audio, persistence, mouse, non-Chromium, "faithful play" definition undecided.
+3. Full 300s soak never run; A1, P1, G3, T2 were UNVERIFIED in the quick run.
+4. (coder, later) Specialist modules render_timing/input_audio don't exist; weak fallbacks in use.
+5. (coder, later) BUILD.md not written.
+6. (runner) Earlier loop run failed for missing ANTHROPIC_API_KEY; not reproduced here.
+7. This run has no tester/prepare output; fallback criteria exist only in the prior run. Roles are instruction-enforced only.
+
+## Next action
+Tester: re-evaluate I5/I7 timing, add a cap_tic_count hook for T2, run full tests/verify.sh on a rebuilt tree. Coder: write BUILD.md, rebuild, integrate specialist modules when delivered. Student: decide the undecided scope items.
+Usage: not available. Manual interventions: none.
+{"status":"READY","summary":"Plan only: wrote agent-proposed spec and interface contract (bridge v2) and bumped platform/capstone_bridge.h to version 2 for cap_tic_count. Header syntax-checked on host; no build run, emcc not on PATH. Open: audio/persistence/mouse undecided, prior I5/I7 test-timing finding unconfirmed, no student approval."}
+=== 20261103T001738Z-47122/tester/prepare
+# Tester prepare report (attempt-1, run 20261103T001738Z-47122)
+Source: commit e500c44 + uncommitted changes (see ../../../initial-source.patch). Criteria remain AGENT-PROPOSED, not student-approved; no student inputs existed.
+
+## Work done
+- Read prior reports (run 20261102T235903Z-41864 tester/coder, this run's coder plan). Existing suite already in tests/; reviewed, not rewritten.
+- `tests/playtest.mjs` updated:
+  - added `settle()` polling; I5, I6 and I7 no longer use fixed delays (prior coder-reported I5/I7 failures were short settle times vs Doom momentum).
+  - I7 now holds a turn key (ArrowRight) so a wall cannot mask a stuck key; new precondition I7a.
+  - T2 (35 tics/s +/-10%) now checked via `Module._cap_tic_count`; UNVERIFIED if export is missing.
+- `proposed-criteria.md` (rev 2, with change log) saved here.
+
+## Evidence
+- `node tests/selftest.mjs`: all ok, exit 0.
+- `playtest-quick.log`, `playtest-quick/` (results json, console log, screens): QUICK=1 against the EXISTING dist/ (built in run 20261102T235903Z-41864; NOT rebuilt here, emcc not on PATH): 0 FAIL, 32 PASS, 3 UNVERIFIED (A1, P1, G3). I5 settled in ~2.1s, I7 settled in ~0.5s, T2 = 34.98 tics/s. Exit 3 by design (QUICK never passes).
+- This supports the earlier hypothesis that I5/I7 were test timing issues, in one run only; flakiness not assessed (single run).
+
+## Not done / open findings
+1. Full `tests/verify.sh` (clean rebuild + 300s soak) not run; needs `source ~/Developer/emsdk/emsdk_env.sh`.
+2. dist/ identity vs the current working tree not verified.
+3. Student: audio, persistence, mouse, other browsers, "faithful play" definition undecided; A1/P1/G3 remain UNVERIFIED.
+4. Roles isolation is instruction-only; tests/ edits by tester only.
+Manual interventions: none. Usage: not available.
+{"status":"READY","summary":"Verification scripts ready (tests/playtest.mjs updated: settle-polling for I5/I6/I7, wall-proof blur test, T2 tic-rate check via cap_tic_count). Selftest passes; QUICK playtest on existing dist: 0 FAIL, A1/P1/G3 UNVERIFIED. Full verify.sh (rebuild + 300s soak) not run; criteria are agent-proposed, not student-approved."}
+=== 20261103T001738Z-47122/coder/1-build
+# Coder 1-build report (attempt-1, run 20261103T001738Z-47122)
+Source: commit e500c44 + uncommitted changes (dist hashes: dist-sha256.txt).
+
+## Work done
+- Reviewed the existing Makefile, startup (platform/doomgeneric_wasm.c) and WAD packaging; no code changes were needed.
+- Wrote `BUILD.md` (previously carried-forward finding #5).
+- Did not touch loop/, tests/, assets/, third_party/.
+
+## Evidence
+- emcc 4.0.18 after sourcing emsdk; `make clean && make all` exit 0 (build.log, 0 failures).
+- `QUICK=1 tests/verify.sh` against that fresh build (verify-quick.log, verify-quick/): 0 FAIL, A1/P1/G3 UNVERIFIED. I5 settled 2.08s, I7 0.48s, T2 34.97 tics/s. Exit 3 by design.
+
+## Findings addressed
+- Prior I5/I7 failures: not reproduced on a fresh build (second run supporting test-timing hypothesis; flakiness still unassessed).
+- Prior "dist not identical to tree": now rebuilt from the current tree.
+- BUILD.md: written.
+
+## Open
+1. Full verify.sh (300s soak) not run — only QUICK.
+2. verify.sh breaks with a relative OUT_DIR (it cd's into tests/); tester-owned, not changed. Use an absolute OUT_DIR.
+3. A1 audio, P1 persistence, G3 door/exit, other browsers: student scope/undecided; specialist modules still absent.
+Status is FINDINGS because the full acceptance run has not been done.
+Usage: not available. Manual interventions: none.
+{"status":"FINDINGS","summary":"Clean emcc 4.0.18 build OK, BUILD.md added, QUICK playtest 0 FAIL; full 300s verify and A1/P1/G3 still unverified."}
+# Proposed specification (AGENT-PROPOSED, not student-approved)
+
+Source: commit e500c44 + uncommitted working tree (see initial-source-status.txt).
+No student-authored artifacts/specification.md exists; this is a fallback. It
+carries forward run 20261102T235903Z-41864's proposed spec, updated for the
+state of the tree (a build already exists from that run's 1-build attempt).
+
+## Scope
+- Port supplied doomgeneric (C) to WebAssembly with Emscripten 4.0.18.
+  Browser target: current stable Chromium (Playwright).
+- Only assets/doom1.wad, packaged with `--preload-file` at `/doom1.wad`,
+  launched with `-iwad /doom1.wad`.
+- Output dist/{index.html,doom.js,doom.wasm,doom.data}; served by
+  `python3 -m http.server --bind 127.0.0.1 --directory dist`.
+- Build: root `Makefile` (`make clean all`), documented in BUILD.md (not yet written).
+
+## Functional requirements (proposed)
+- R1 Boot: no console errors; title/menu appear.
+- R2 Display: 640x400 `#canvas`; B,G,R,0 memory order converted to opaque RGBA.
+- R3 Timing: ~35 tics/s real time; loop yields to the browser; wipe/tic waits do not freeze the tab.
+- R4 Input: keyboard (arrows, Ctrl fire, Space use, Shift run, Alt strafe, Enter/Esc,
+  digits, Tab automap, Y/N). Releases delivered; blur/visibility releases all keys.
+- R5 Gameplay: New Game -> E1M1; move, shoot, use doors, state visibly changes.
+- R6 Robustness: no crash/abort in a >= 5 minute scripted session.
+
+## UNDECIDED (student decision needed; not claimed done)
+- Audio (SFX/music), save/config persistence (IDBFS), mouse input,
+  non-Chromium browsers, mobile/touch, hosting headers, and the definition of
+  "faithful play" beyond R1-R6 (e.g. demo/determinism checks).
+Faithful-play acceptance MUST NOT be reported complete while these are open.
+
+## Assumptions
+- emcc is not on the default PATH; a previous run found it by sourcing
+  ~/Developer/emsdk/emsdk_env.sh. Version pin 4.0.18 must be confirmed with
+  `emcc --version` at build time (not checked in this plan task).
+- Single-threaded, ASYNCIFY build (no SharedArrayBuffer; no COOP/COEP needed).
+- Fallback criteria live at tester/prepare/attempt-1/proposed-criteria.md in
+  run 20261102T235903Z-41864 (tester-owned; this run has none). I did not
+  create or edit criteria.
+- Role isolation is instruction-only (manifest.txt); nothing here is enforced.
+# Interface contract (AGENT-PROPOSED, not student-approved)
+
+Authoritative declarations: `platform/capstone_bridge.h`, **version 2**.
+Change from v1: added `cap_tic_count()` (already implemented in
+platform/doomgeneric_wasm.c by the prior 1-build attempt, but the version had
+not been bumped).
+
+## Ownership
+| File | Owner |
+|---|---|
+| platform/doomgeneric_wasm.c, platform/cap_fallback.c, platform/engine_stubs.c, platform/capstone_bridge.h, web/index.html, Makefile, BUILD.md | coder |
+| platform/render_timing.{c,h}, web/render_timing.js | coder_render_timing (not yet delivered) |
+| platform/input_audio.{c,h}, web/input_audio.js | coder_input_audio (not yet delivered) |
+| tests/ | tester |
+
+## Symbol table
+| Symbol | Direction | Defined by | Notes |
+|---|---|---|---|
+| cap_bridge_version, cap_frame, cap_framebuffer_ptr, cap_tic_count, cap_ready | JS -> C (exported) | doomgeneric_wasm.c | cap_frame = one doomgeneric_Tick() |
+| cap_render_init / cap_render_present(fb) / cap_time_ms / cap_sleep_ms / cap_set_title | C -> module | weak in cap_fallback.c; strong override in render_timing.c | present must not retain fb; time must be nonzero at first call |
+| cap_input_init / cap_input_poll / cap_audio_init | C -> module | weak in cap_fallback.c; override in input_audio.c | poll returns 1 = event, 0 = empty |
+| cap_input_event(pressed, doom_key), cap_input_reset() | JS -> C (exported) | weak in cap_fallback.c; override in input_audio.c | bounded queue; reset releases all keys |
+
+## DG adapter mapping (doomgeneric_wasm.c)
+DG_Init -> cap_render_init, cap_input_init, cap_audio_init; DG_DrawFrame ->
+cap_render_present(DG_ScreenBuffer); DG_SleepMs -> cap_sleep_ms; DG_GetTicksMs
+-> cap_time_ms; DG_GetKey -> cap_input_poll; DG_SetWindowTitle -> cap_set_title.
+
+## Engine facts relied on
+- DG_ScreenBuffer is 640x400 uint32 pixels, bytes B,G,R,0; alpha must be forced to 255.
+- i_timer.c treats basetime==0 as unset, so DG_GetTicksMs must be nonzero on first call.
+- Engine waits (d_main.c wipe loop, d_loop.c TryRunTics) call I_Sleep(1); real time
+  must advance during them and the tab must not hang (current build: ASYNCIFY).
+- Key codes are already Doom codes (doomkeys.h); I_GetEvent processes one release
+  per call, so the queue must tolerate repeated polling.
+- doomgeneric_Create() runs D_DoomMain and returns; main() calls it once and then
+  drives doomgeneric_Tick() per frame.
+
+## Weak/strong override rule
+Specialist modules define the same symbols non-weak in their own platform/*.c;
+the linker prefers them over cap_fallback.c. Makefile compiles platform/*.c.
+Only the coder edits capstone_bridge.h; changes are requested via report.md and
+require a CAP_BRIDGE_VERSION bump plus an update to this file.
+
+## Build interface
+`make clean all` -> dist/index.html, doom.js, doom.wasm, doom.data. Flags: -O2
+-sASYNCIFY, --preload-file assets/doom1.wad@/doom1.wad (per prior build report).
+
+## Open
+Audio (`cap_audio_init` is a placeholder), persistence, mouse: UNDECIDED.
+# Proposed acceptance criteria (AGENT-PROPOSED by tester; NOT student-approved) - revision 2, run 20261103T001738Z-47122
+
+Basis: README.md, coder's proposed-spec.md (R1-R6) and interface-contract.md. No student
+artifacts/acceptance-criteria.md existed. Student may replace/freeze these; until then they are provisional.
+Implemented in `tests/playtest.mjs` (IDs match). Browser: Playwright Chromium 1.49.1 (131), viewport 800x600.
+
+| ID | Criterion (observable) | Spec |
+|---|---|---|
+| B0 | `make clean && make all` succeeds from clean tree; dist/index.html + doom.wasm exist | build |
+| B1 | `canvas#canvas` is 640x400 | R2 |
+| B2 | Non-black frame with >16 colors within 60s of load | R1 |
+| B3 | Canvas pixels opaque (alpha 255) | R2 |
+| B4/B6 | Mean R >= mean B on title/menu and E1M1 (catches BGR swap) | R2 |
+| B5 | No console errors, page errors, failed requests, or 404s | R1 |
+| T1 | >=20 rAF/s over 3s (main loop yields) | R3 |
+| M1 | Enter on title changes the display (menu opens) | R4/R5 |
+| G1 | Enter x4 reaches a level: big change from menu and populated status bar | R5 |
+| G2 | Idle frames stable (<2% pixels differ) | R5 |
+| I1/I3 | Hold Right/Left turns the view: scene shifts >=8px in the correct direction | R4 |
+| I2,I5,C3 | Motion/fire ceases after key release: I5 polls until settled (two consecutive 300ms steps <2%) within 4s, since Doom momentum decays ~1.5-2s | R4 |
+| I4/I6 | Forward changes view and keeps changing while held; Backward returns closer to start | R4 |
+| I7a/I7 | Holds ArrowRight (turn; wall-proof): I7a precondition view keeps changing; after blur the view settles within 4s and stays stable | R4 |
+| T2 | `Module._cap_tic_count()` advances 35 tics/s +/-10% over 4s; missing export => UNVERIFIED | R3 |
+| C1/C2 | Ctrl fire animates the view; ammo-counter region changes persistently | R5 |
+| U1-U4 | Tab toggles automap and back; Esc opens/closes menu | R4 |
+| R1-R4 | 300s scripted random-input soak: no errors/aborts, rAF >=20/s, last frame visible, frames changed, no longtask >=1.5s | R6 |
+| selftest | Pixel helpers reject black / channel-swapped / transparent / static / mis-shifted frames | meta |
+
+## Explicitly UNVERIFIED (reported every run; completion must not be claimed while open)
+A1 audio (scope undecided; active AudioContext proves nothing), P1 save persistence, G3 door use /
+level exit.
+Also not covered: other browsers, mouse, touch, "faithful play" vs. original (e.g. demo/determinism checks).
+
+## Known weaknesses of these checks
+Pixel heuristics can false-fail on legit layout variation (e.g., canvas scaled with different aspect/letterbox,
+HUD region assumptions) and can false-pass on identical-looking wrong gameplay. Backward-return check depends on
+E1M1 geometry. Soak input is seeded pseudo-random; the player may die, so soak proves stability, not progress.
+
+## Assumptions
+Page serves from dist/ via any static server (test uses its own, no special headers); canvas has id `canvas`;
+default menu path is Enter x4 with defaults; keyboard bindings are the Doom defaults in proposed-spec R4.
+Change control: any later change to these criteria is recorded separately with a reason.
+
+## Change log (rev 2, reason)
+- I5/I6/I7: fixed settle delays replaced by polling (prior run's I5/I7 failures; coder measured momentum 1.2-1.5s). I7 now uses a turn key so walls cannot mask a stuck key.
+- T2 moved from UNVERIFIED to checked now that cap_tic_count is exported (bridge v2).
+)
+
+Calling Bash()
+
+Bash response → (
+ls: artifacts/state.json: No such file or directory
+artifacts/README.md
+loop:
+agents.yaml
+DESIGN_DECISION_QUESTIONS.md
+loop.sh
+prompts
+README.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_REQUIREMENTS.md
+REVIEWER.md
+TESTER.md
+# Design Decision Questions
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+	The broad goal is to run and play the supplied DOOM engine in a browser using Emscripten. Agents break it into tasks small enough to implement and verify independently. Each task records an ID, requirement, source revision, owner, dependencies, permitted files, expected result, verification method, and remaining budget.
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+	Every role reads the repository instructions, relevant README files, its own prompt, the approved specification and acceptance criteria, the current task, interface contract, and relevant prior findings. It does not need the complete conversation history. Hidden regression causes remain unavailable to repair agents.
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+	All roles may read relevant source and published evidence. 
+  - Coders edit only their assigned source/build files and isolated outputs.
+  - Reviewer 1 and Reviewer 2 write only their own review reports.
+  - The tester edits authorized verification code under `tests/` and writes isolated
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+	Success is compilation, screenshots, plausible explanations, measurable gameplay, rendering, timing, input, audio, etc
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+	The runner must track individual process outcomes and clean up only processes and outputs belonging to the current attempt. Avoid unlimited loops or implicit retries that obscure failures. Failed attempts count against the budget.
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+	I have 1 week, with 1 week worth of Claude tokens, and not much retry budget. 
+run_id: 20261103T002748Z-51080
+source_commit: e500c440656622db5ab3f8fb7df73d8b5998eeb3
+coder
+initial-source-status.txt
+initial-source.patch
+manifest.txt
+status.txt
+tester
+run_id: 20261103T001738Z-47122
+source_commit: e500c440656622db5ab3f8fb7df73d8b5998eeb3
+max_iterations: 10
+AI-assisted runner and prompts; permission isolation is not implemented by this script.
+e500c440656622db5ab3f8fb7df73d8b5998eeb3
+      24
+build:
+platform
+third_party
+
+dist:
+doom.data
+doom.js
+doom.wasm
+index.html
+input_audio.js
+BUILD.md
+27
+loop/DESIGN_DECISION_QUESTIONS.md
+loop/README.md
+)
+
+Calling Bash()
+
+Bash response → (
+dist:
+total 9520
+drwxr-xr-x@  7 sarahtseng  staff      224 Nov  2 16:52 .
+drwxr-xr-x@ 22 sarahtseng  staff      704 Nov  2 16:51 ..
+-rw-r--r--@  1 sarahtseng  staff  4196020 Nov  2 16:52 doom.data
+-rw-r--r--@  1 sarahtseng  staff    74385 Nov  2 16:52 doom.js
+-rwxr-xr-x@  1 sarahtseng  staff   539739 Nov  2 16:52 doom.wasm
+-rw-r--r--@  1 sarahtseng  staff      713 Nov  2 16:52 index.html
+-rw-r--r--@  1 sarahtseng  staff     3491 Nov  2 16:52 input_audio.js
+
+platform:
+total 72
+drwxr-xr-x  11 sarahtseng  staff   352 Nov  2 16:40 .
+drwxr-xr-x@ 22 sarahtseng  staff   704 Nov  2 16:51 ..
+-rw-r--r--@  1 sarahtseng  staff  2340 Nov  2 16:05 cap_fallback.c
+-rw-r--r--@  1 sarahtseng  staff  3495 Nov  2 16:28 capstone_bridge.h
+-rw-r--r--@  1 sarahtseng  staff  1564 Nov  2 16:07 doomgeneric_wasm.c
+-rw-r--r--@  1 sarahtseng  staff   225 Nov  2 16:05 engine_stubs.c
+-rw-r--r--@  1 sarahtseng  staff  2423 Nov  2 16:40 input_audio.c
+-rw-r--r--@  1 sarahtseng  staff   480 Nov  2 16:40 input_audio.h
+-rw-r--r--@  1 sarahtseng  staff  2325 Oct 28 18:56 README.md
+-rw-r--r--@  1 sarahtseng  staff  2756 Nov  2 16:37 render_timing.c
+-rw-r--r--@  1 sarahtseng  staff   358 Nov  2 16:37 render_timing.h
+
+tests:
+total 72
+drwxr-xr-x  10 sarahtseng  staff    320 Nov  2 16:02 .
+drwxr-xr-x@ 22 sarahtseng  staff    704 Nov  2 16:51 ..
+drwxr-xr-x@  3 sarahtseng  staff     96 Nov  2 16:01 lib
+drwxr-xr-x@  8 sarahtseng  staff    256 Nov  2 16:51 node_modules
+-rw-r--r--@  1 sarahtseng  staff   2009 Nov  2 16:01 package-lock.json
+-rw-r--r--@  1 sarahtseng  staff    256 Nov  2 16:01 package.json
+-rw-r--r--@  1 sarahtseng  staff  14736 Nov  2 16:19 playtest.mjs
+-rw-r--r--@  1 sarahtseng  staff   1775 Nov  2 16:04 README.md
+-rw-r--r--@  1 sarahtseng  staff   1768 Nov  2 16:01 selftest.mjs
+-rwxr-xr-x@  1 sarahtseng  staff   2312 Nov  2 16:02 verify.sh
+
+web:
+total 16
+drwxr-xr-x   4 sarahtseng  staff   128 Nov  2 16:40 .
+drwxr-xr-x@ 22 sarahtseng  staff   704 Nov  2 16:51 ..
+-rw-r--r--@  1 sarahtseng  staff   713 Nov  2 16:43 index.html
+-rw-r--r--@  1 sarahtseng  staff  3491 Nov  2 16:40 input_audio.js
+ M loop/agents.yaml
+ M loop/loop.sh
+ M platform/doomgeneric_wasm.c
+ M tests/README.md
+ M web/index.html
+?? BUILD.md
+?? Makefile
+?? artifacts/runs/
+?? loop/DESIGN_DECISION_QUESTIONS.md
+?? loop/prompts/
+?? platform/cap_fallback.c
+?? platform/capstone_bridge.h
+?? platform/engine_stubs.c
+?? platform/input_audio.c
+?? platform/input_audio.h
+?? platform/render_timing.c
+?? platform/render_timing.h
+?? tests/lib/
+?? tests/package-lock.json
+?? tests/package.json
+?? tests/playtest.mjs
+?? tests/selftest.mjs
+?? tests/verify.sh
+?? web/input_audio.js
+33:WEB_FILES := web/index.html web/input_audio.js
+)
+
+Calling Bash()
+
+Bash response → "(Bash completed with no output)"
+Status: the audit is finished and both files are written, so I'm just confirming what I saved.
+
+I saved `report.md` and `result.json` in `artifacts/runs/20261103T002748Z-51080/reviewer_requirements/1-audit/attempt-1/`. The result is **FINDINGS**, not PASS.
+
+I only read files and wrote the two output files. I didn't build or run any tests, so every technical claim comes from earlier roles' reports.
+
+- **No approved criteria:** There is no student-approved spec or acceptance criteria. The only ones are the agent-proposed fallbacks, and the tester wrote its criteria after the build already existed.
+- **Quick playtest only:** The quick playtest passed with 0 failures, but audio, save persistence and door/level-exit checks are still unverified. The full 300-second `tests/verify.sh` has never been run.
+- **Loosened timing checks:** The I5 and I7 failures were fixed by loosening the test timing. That has only two passing runs, so it isn't evidence the port was right.
+- **Unclear module status:** `platform/render_timing.c`, `platform/input_audio.c` and `web/input_audio.js` exist, but earlier reports say those modules were never delivered. I couldn't tell whether the current `dist/` includes them.
+- **No evidence yet for most assignment obligations:**
+  - Permission enforcement, MCP configuration and fault-injection of broken builds.
+  - Regression repair and resumption with fresh contexts.
+  - Resource accounting, deployment and the reflection write-up.
+- **This run has no candidate evidence:** The current run folder contained only its manifest when I audited.
+
+Next steps: the student freezes the criteria, the tester runs the full verify on the current tree, and the coder clarifies which modules are in `dist/`.

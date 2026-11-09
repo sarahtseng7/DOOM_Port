@@ -1,0 +1,1 @@
+{"status":"FINDINGS","summary":"Fixed R2-8 (reuse ImageData in rt_js_put; rebuilt with emcc 4.0.18 in role-owned dirs; two 60s playtests failed=0). No gameplay claim. Hidden-tab timing, memory-growth rendering, A1/P1/G3 unverified; full verify.sh not run by this role."}

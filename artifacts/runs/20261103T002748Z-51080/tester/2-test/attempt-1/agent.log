@@ -1,0 +1,526 @@
+
+Calling Bash()
+
+Bash response → (
+run_id: 20261103T002748Z-51080
+source_commit: e500c440656622db5ab3f8fb7df73d8b5998eeb3
+artifacts/runs/20261103T002748Z-51080/tester/verify-005841Z/identity.txt
+artifacts/runs/20261103T002748Z-51080/tester/verify-005841Z/verify.log
+
+artifacts:
+README.md
+runs
+
+artifacts/runs/20261103T002748Z-51080/coder_input_audio/1-input/attempt-1:
+agent.log
+build.log
+dist-sha256.txt
+invocation.txt
+playtest
+playtest.log
+qtest.log
+report.md
+result.json
+source-commit.txt
+source-status.txt
+
+artifacts/runs/20261103T002748Z-51080/coder_input_audio/2-input/attempt-1:
+agent.log
+dist-sha256.txt
+input_audio.js.snapshot
+invocation.txt
+playtest
+playtest.log
+report.md
+result.json
+source-commit.txt
+source-status.txt
+
+artifacts/runs/20261103T002748Z-51080/coder_render_timing/1-render/attempt-1:
+agent.log
+dist-sha256.txt
+invocation.txt
+playtest
+playtest.log
+report.md
+result.json
+source-status.txt
+
+artifacts/runs/20261103T002748Z-51080/coder_render_timing/2-render/attempt-1:
+agent.log
+build.log
+dist-sha256.txt
+invocation.txt
+playtest
+playtest.log
+report.md
+result.json
+source-commit.txt
+source-diff-sha256.txt
+source-status.txt
+
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1:
+agent.log
+build.log
+dist-sha256.txt
+invocation.txt
+report.md
+result.json
+verify-full
+verify-full.log
+
+artifacts/runs/20261103T002748Z-51080/coder/1-integrate/attempt-1:
+agent.log
+dist-sha256.txt
+invocation.txt
+report.md
+result.json
+source-commit.txt
+source-status.txt
+verify-full
+verify-full.log
+
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1:
+agent.log
+invocation.txt
+report.md
+result.json
+source-commit.txt
+source-dirty.patch
+source-status.txt
+verify-exit.txt
+verify-full
+verify-full.log
+
+artifacts/runs/20261103T002748Z-51080/coder/2-integrate/attempt-1:
+agent.log
+dist-sha256.txt
+invocation.txt
+report.md
+rerun-1
+rerun-1.log
+rerun-2
+rerun-2.log
+rerun-3
+rerun-3.log
+result.json
+source-commit.txt
+source-dirty.patch
+source-status.txt
+verify-exit-2.txt
+verify-exit.txt
+verify-full
+verify-full-2
+verify-full-2.log
+verify-full.log
+
+artifacts/runs/20261103T002748Z-51080/coder/plan/attempt-1:
+agent.log
+interface-contract.md
+invocation.txt
+proposed-spec.md
+report.md
+result.json
+source-status.txt
+
+artifacts/runs/20261103T002748Z-51080/reviewer_requirements/1-audit/attempt-1:
+agent.log
+invocation.txt
+report.md
+result.json
+
+artifacts/runs/20261103T002748Z-51080/reviewer/1-review/attempt-1:
+agent.log
+invocation.txt
+report.md
+result.json
+
+artifacts/runs/20261103T002748Z-51080/reviewer/2-review/attempt-1:
+agent.log
+dist-sha256-at-review.txt
+invocation.txt
+quick-1
+quick-1.log
+quick-2
+quick-2.log
+quick-3
+quick-3.log
+report.md
+result.json
+
+artifacts/runs/20261103T002748Z-51080/tester/1-test/attempt-1:
+agent.log
+invocation.txt
+report.md
+result.json
+source-commit.txt
+source-dirty.patch
+source-status.txt
+verify
+verify-exit.txt
+verify-run0-exit.txt
+verify-run0-relpath-invocation-error
+verify-run0-stdout.log
+verify-stdout.log
+
+artifacts/runs/20261103T002748Z-51080/tester/2-test/attempt-1:
+agent.log
+invocation.txt
+
+artifacts/runs/20261103T002748Z-51080/tester/prepare/attempt-1:
+agent.log
+dist-sha256.txt
+invocation.txt
+playtest-quick
+playtest-quick.log
+proposed-criteria.md
+report.md
+result.json
+source-status.txt
+# Verification
+
+Keep verification code here, including browser checks, fixtures, and tests
+for the loop itself. You design the checks; no test suite is provided.
+
+See [the acceptance criteria and evidence requirements](../README.md#evaluate-the-system-you-built).
+Document how to run your checks and what each one establishes.
+
+Save test results, logs, screenshots, and recordings in `artifacts/`.
+Keep acceptance checks outside the coder's write permissions using your
+sandbox/tool configuration; a folder name alone does not enforce access.
+
+## Suite (tester-owned; criteria are AGENT-PROPOSED, not student-approved)
+
+Run: `source ~/Developer/emsdk/emsdk_env.sh && tests/verify.sh` (RUN_ID, SOAK_SECONDS, QUICK=1 optional).
+Evidence goes to `artifacts/runs/$RUN_ID/tester/verify-*/` (identity.txt, logs, screenshots, playtest-results.json).
+Exit 0 only when tooling, build, selftest and every required playtest check pass; `QUICK=1` never exits 0.
+
+| File | Establishes |
+| --- | --- |
+| `verify.sh` | tooling check, source identity, selftest, `make clean && make all`, playtest |
+| `selftest.mjs` | pixel helpers FAIL on black, channel-swapped, transparent, static, wrongly shifted frames (no build needed) |
+| `playtest.mjs` | Chromium: load/console errors, boot frame, colors, rAF liveness, menu -> E1M1, turn/move/fire/release, blur, automap, Esc menu, soak |
+| `lib/frames.mjs` | region diff / color stats / horizontal-shift estimation on canvas screenshots |
+
+Limits: outcomes are inferred from pixels (no engine state hook); audio, persistence, door/level-exit and the
+35 tics/s rate are listed as UNVERIFIED in every result. Ammo/status regions assume the stock 320x200 layout.
+Test deps: `npm ci` in `tests/` (network needed once; Playwright 1.49.1, pngjs 7.0.0).
+#!/usr/bin/env bash
+# Acceptance entry point (tester-owned). Exit 0 only if build + every required check passes.
+# Env: RUN_ID (evidence dir name), SOAK_SECONDS (default 300), QUICK=1 (partial; never exits 0),
+#      SKIP_BUILD=1 is intentionally NOT supported.
+set -u
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+RUN_ID="${RUN_ID:-manual-$(date -u +%Y%m%dT%H%M%SZ)}"
+OUT_DIR="${OUT_DIR:-artifacts/runs/$RUN_ID/tester/verify-$(date -u +%H%M%SZ)}"
+mkdir -p "$OUT_DIR"
+export OUT_DIR
+fail() { echo "VERIFY FAIL: $1" | tee -a "$OUT_DIR/verify.log"; exit "${2:-1}"; }
+step() { echo "== $1" | tee -a "$OUT_DIR/verify.log"; }
+
+# Identity of what was tested.
+{
+  echo "commit: $(git rev-parse HEAD)"
+  echo "dirty_diff_sha256: $(git diff HEAD -- . ':!artifacts' | shasum -a 256 | cut -d' ' -f1)"
+  git status --short -- . ':!artifacts' | sed 's/^/status: /'
+  echo "tests_sha256: $(cat tests/verify.sh tests/playtest.mjs tests/selftest.mjs tests/lib/frames.mjs tests/package.json | shasum -a 256 | cut -d' ' -f1)"
+  echo "wad_sha256: $(shasum -a 256 assets/doom1.wad | cut -d' ' -f1)"
+  echo "emcc: $(emcc --version 2>/dev/null | head -1 || echo missing)"
+} > "$OUT_DIR/identity.txt"
+
+step "tooling"
+command -v node >/dev/null || fail "node missing" 2
+command -v make >/dev/null || fail "make missing" 2
+command -v emcc >/dev/null || fail "emcc missing (source emsdk 4.0.18 env)" 2
+(cd tests && npm ci --no-audit --no-fund >>"$OUT_DIR/verify.log" 2>&1) || fail "npm ci in tests/ failed" 2
+(cd tests && npx playwright install chromium >>"$OUT_DIR/verify.log" 2>&1) || fail "playwright chromium install failed" 2
+
+step "helper self-test (fault injection on pixel checks)"
+node tests/selftest.mjs 2>&1 | tee "$OUT_DIR/selftest.log"; [ "${PIPESTATUS[0]}" -eq 0 ] || fail "selftest failed"
+
+step "clean build"
+{ make clean && make all; } >"$OUT_DIR/build.log" 2>&1 || fail "make clean && make all failed (see $OUT_DIR/build.log)"
+[ -f dist/index.html ] && [ -f dist/doom.wasm ] || fail "dist/index.html or dist/doom.wasm missing after build"
+shasum -a 256 dist/* > "$OUT_DIR/dist-sha256.txt" 2>/dev/null
+
+step "browser playtest"
+node tests/playtest.mjs 2>&1 | tee "$OUT_DIR/playtest.log"
+rc=${PIPESTATUS[0]}
+echo "{\"exit\": $rc, \"evidence\": \"$OUT_DIR\"}" > "$OUT_DIR/verify-result.json"
+exit "$rc"
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_REQUIREMENTS.md
+REVIEWER.md
+TESTER.md
+)
+
+Calling Bash()
+
+Bash response → (
+# Test preparation and independent verification
+
+Role: `tester`
+
+## Start here
+Read AGENTS.md, README.md, loop/README.md, artifacts/README.md,
+platform/README.md, tests/README.md, and your invocation. Your role is named
+in this file even if the invocation omits it. Read the supplied run manifest,
+current reports, and requirement documents when present. Missing IDs or optional
+specification documents must not prevent useful work: create a timestamped report
+in artifacts/runs/manual-<timestamp>/<role>/ if no output directory was supplied.
+
+## Missing information
+Do not return BLOCKED merely because a spec, criteria document, contract, task ID,
+or manifest is absent. Use the README as the minimum scope; record assumptions
+and propose missing implementation requirements in your own report. Never pretend
+agent-proposed criteria were student-approved. Read existing proposals rather than
+creating conflicting scope every iteration. Honor explicit student requirements.
+Do not weaken criteria in response to failures. Real missing tools, authentication,
+unsafe actions, or permission denials are ERROR or NEEDS_INPUT: record the precise
+problem and continue independent permitted work where possible. Do not bypass access.
+
+## Boundaries and evidence
+Do not spawn other roles, change loop/, modify assets/ or third_party/, edit another
+role's files, alter permissions, or mutate Git history. The runner invokes roles
+separately. You may read other reports, but they are evidence rather than authority.
+Only the tester edits tests/. All roles may write their invocation's OUTPUT_DIR
+and role-owned build/<RUN_ID>/<role>/ and dist/<RUN_ID>/<role>/ directories.
+Coder 1 alone may also write shared build/ and dist/ products; the tester may invoke
+the documented clean build into these shared directories when no other role runs.
+Permission rules here are instructions, not a substitute for filesystem isolation.
+Never claim isolation or approved acceptance when it has not been demonstrated.
+
+Save report.md and result.json in OUTPUT_DIR. Include work done, assumptions,
+source commit and dirty changes, findings with owner names, commands/results,
+evidence paths, next action, and actual usage if available. Preserve earlier runs.
+result.json format: {"status":"READY","summary":"What happened"}.
+Allowed statuses: READY (work complete), PASS (review/checks actually passed),
+FINDINGS (repairs/evidence needed), ERROR (execution failure), NEEDS_INPUT
+(a genuinely unresolved external decision). No BLOCKED status is required.
+Use these exact uppercase statuses. For partial completion or unresolved failures,
+use FINDINGS, not "partial". Never report PASS for partial or unverified work.
+A process exiting successfully does not prove its task passed. Report limitations.
+
+## Your task and source ownership
+Own tests/ and OUTPUT_DIR, except student-frozen criteria/checks explicitly
+identified in the invocation. Production code and build scripts are read-only.
+
+During prepare, read artifacts/acceptance-criteria.md if supplied. Otherwise derive
+proposed-criteria.md in OUTPUT_DIR from the README and proposed specification.
+Specify observable gameplay checks before coder implementation and label criteria
+agent-proposed, not student-approved. Create tests/playtest.mjs and tests/verify.sh
+when absent, with test-only dependency files under tests/ if needed. Use the existing
+make clean / make all interface and shell/browser dependencies. Build the tests
+yourself; missing tests are your work, not a reason to stop.
+
+During test, run the unchanged suite against the integrated candidate. Automate
+clean compilation, HTTP serving, Playwright Chromium loading, asset/console errors,
+level start, movement/turning, key release, menu/use/fire and transitions according
+to documented criteria. Assert outcomes: injected keys or changed frames alone do
+not prove gameplay. Save logs/traces/screenshots and source/check identities.
+Missing tools or unverified required behaviors return nonzero. Tear down only your
+server/browser. tests/verify.sh exits 0 only when all configured required checks
+pass. Never create an unconditional pass or lower thresholds to match broken code.
+After preparation, do not rewrite checks without explicit student authorization;
+report proposed changes separately. Verify scope-limited audio honestly; an active
+audio context alone proves neither correct music nor sound. Preserve failing runs.
+On prepare return READY if the suite is written even if the game does not build.
+On test return PASS only with actual successful execution; otherwise FINDINGS/ERROR.
+# tester 1-test attempt-1 (run 20261103T002748Z-51080)
+
+Status: FINDINGS. The unchanged suite passed (exit 0, failed=0), but 3 required behaviors are UNVERIFIED and the criteria are agent-proposed, so I am not reporting PASS.
+
+## Source
+- Commit e500c440656622db5ab3f8fb7df73d8b5998eeb3 plus uncommitted changes. Status: source-status.txt. Full dirty diff: source-dirty.patch (the untracked files are not in this patch).
+- Identity, with tests_sha256, dirty_diff_sha256, wad_sha256, emcc 4.0.18: verify/identity.txt
+- Tests were not modified. No tests/ edits were made.
+
+## Assumptions
+- No artifacts/specification.md, acceptance-criteria.md or interface-contract.md exists. I used the agent-proposed tester/prepare/attempt-1/proposed-criteria.md and coder/plan/attempt-1/. None is student-approved.
+
+## Commands and results
+1. Run 0: `tests/verify.sh` with a relative OUT_DIR. It exited 2 at the "npm ci" step, because the script cd's into tests/ and could not write the log. This was my invocation error, not a product failure. Preserved in verify-run0-*.
+2. Run 1: `source ~/Developer/emsdk/emsdk_env.sh && RUN_ID=... OUT_DIR=<absolute> tests/verify.sh`. Exit 0. This ran the tooling check, selftest, `make clean && make all`, and the browser playtest. The playtest had 30 PASS, 0 FAIL, 3 UNVERIFIED, including the 300s soak (R1-R4) and 35.21 tics/s.
+   Evidence: verify/ (verify.log, selftest.log, build.log, dist-sha256.txt, playtest-results.json, screenshots), verify-stdout.log, verify-exit.txt.
+
+## Findings
+- UNVERIFIED (owner: student): A1 audio and P1 save persistence have no decided scope.
+- UNVERIFIED (owner: tester/student): G3 door use and level exit have no oracle.
+- Owner tester, proposed only (not applied; no authorization to change checks): the reviewer's F2 key edge-case coverage (visibilitychange, pagehide, dual Ctrl, auto-repeat, held-key refocus) and F5 implementation-identity check (strong vs weak fallback).
+- Owner student: approve or replace the proposed criteria.
+- Reviewer F1, F3, F4, F6 and F9 are coder-owned and not addressed by this run. I did not verify them.
+
+## Limits
+Headless Chromium only. Outcomes are inferred from pixels. Mouse is absent. Non-Chromium browsers and touch were not tested. Usage: not available.
+
+## Next action
+Student decides the criteria and the audio/persistence scope. Tester then adds the F2 and F5 checks once authorized. Coder addresses the reviewer findings.
+Role=tester RUN_ID=20261103T002748Z-51080 TASK_ID=2-test ATTEMPT_ID=attempt-1.
+OUTPUT_DIR=artifacts/runs/20261103T002748Z-51080/tester/2-test/attempt-1. Manifest: artifacts/runs/20261103T002748Z-51080/manifest.txt. Task: Run existing checks; preserve failures; do not weaken tests.
+Follow your configured role prompt. Read earlier findings under artifacts/runs/.
+Use artifacts/specification.md, artifacts/acceptance-criteria.md and
+artifacts/interface-contract.md if present. Otherwise use proposals under
+artifacts/runs/20261103T002748Z-51080/coder/plan/attempt-1/ and artifacts/runs/20261103T002748Z-51080/tester/prepare/attempt-1/.
+Record reasonable assumptions if optional documents are absent; do not invent approval.
+Save report.md and result.json in OUTPUT_DIR. Partial work is FINDINGS, not PASS.
+emcc not found
+/usr/local/bin/node
+bazel
+build
+docker
+)
+
+Calling Bash()
+
+Bash response → (
+- `QUICK=1 OUT_DIR=<abs> node tests/playtest.mjs` ×3 on that dist: exit 1, 1, 3. Failures only in I3, as above. Evidence: `quick-N.log`, `quick-N/` (screens, results json).
+- Read: platform/*, web/*, Makefile, tests/lib/frames.mjs, tests/playtest.mjs (lines 100-113), i_input.c, i_timer.c, doomfeatures.h, all role reports under this run.
+
+agent.log
+dist-sha256.txt
+invocation.txt
+report.md
+rerun-1
+rerun-1.log
+rerun-2
+rerun-2.log
+rerun-3
+rerun-3.log
+result.json
+source-commit.txt
+source-dirty.patch
+source-status.txt
+verify-exit-2.txt
+verify-exit.txt
+verify-full
+verify-full-2
+verify-full-2.log
+verify-full.log
+1
+== tooling
+== helper self-test (fault injection on pixel checks)
+ok   good frame: colourful, warm, opaque
+ok   black frame detected
+ok   R/B channel swap detected
+ok   alpha=0 (unfixed BGR0) detected
+ok   identical frames: diff 0
+ok   different frames: diff large
+ok   shift sign/size: right-moved content => +12
+ok   shift sign: left-moved => -12
+ok   static frames: no spurious shift improvement
+== clean build
+== browser playtest
+PASS       B0.dist-present 
+PASS       B1.canvas-640x400 canvas#canvas intrinsic size
+PASS       B2.boot-renders-frame after 158ms colors=240
+PASS       B3.opaque-pixels transparentFrac=0
+PASS       B4.channel-order meanR=109.9 meanB=30.8 (title/menu are warm; swap => blue)
+PASS       B5.no-load-errors 
+PASS       T1.main-thread-responsive 60.0 rAF/s over 3s (need >=20)
+PASS       M1.enter-opens-menu diff=0.234
+PASS       G1.level-started diff-from-menu=0.93 statusbarColors=82
+PASS       B6.level-colors E1M1 view not blue-biased
+PASS       G2.idle-stable diff=0.0000
+PASS       I1.turn-right shift=-200px err=3.5 err0=7.4
+PASS       I2.turn-stops-on-release diff=0.0000
+FAIL       I3.turn-left shift=-116px
+PASS       I4.forward-moves start-vs-mid=0.648 still-moving=0.592
+PASS       I5.forward-stops-on-release settled=true after 2102ms (momentum allowed up to 4s); later-diff=0.0002
+PASS       I6.backward-returns start-vs-back=0.317 start-vs-fwd=0.584
+PASS       I7a.turn-held-keeps-changing diff=0.3617 (precondition: key effective before blur)
+PASS       I7.blur-releases-keys settled=true after 481ms; later-diff=0.0000 (key still physically down)
+PASS       C1.fire-animates view-diff=0.0286
+PASS       C2.fire-decrements-ammo ammo-region-diff=0.140 (persisting after weapon returns to rest)
+PASS       C3.fire-stops-on-release diff=0.0001
+PASS       U1.automap-toggles diff=0.760
+PASS       U2.automap-returns diff=0.000
+PASS       U3.escape-opens-menu diff=0.240
+PASS       U4.escape-closes-menu diff=0.240
+PASS       T2.35-tics-per-second 34.96 tics/s over 4s (need 35 +/-10%)
+PASS       R1.soak-no-errors 300s; errors=
+PASS       R2.soak-still-rendering rAF/s=60.0 visibleFrame=true
+PASS       R3.no-long-stalls max longtask=0ms (must be <1500)
+PASS       R4.soak-frames-changed sampled frames that differed: 24
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3.door-use-and-level-exit no stable cross-build oracle; manual/protocol check
+playtest: FAIL failed=1 unverified(not-in-scope, listed)=3
+)
+
+Calling Bash()
+
+Bash response → (
+coder/2-integrate/attempt-1/report.md:2:Status: FINDINGS. The final full verify passed, but one earlier full run failed on I3, A1/P1/G3 are UNVERIFIED, and the criteria are agent-proposed.
+coder/2-integrate/attempt-1/report.md:19:- Run 1 `tests/verify.sh` (verify-full.log, verify-exit.txt = 1): clean build OK, **FAIL I3.turn-left shift=-116px**, all other checks passed, failed=1. Kept as is.
+coder/2-integrate/attempt-1/report.md:20:- 3 QUICK playtest reruns on the same dist (rerun-1..3.log): I3 passed each time, shift=204px. They exit 3 by design, so they are not a pass.
+coder/2-integrate/attempt-1/report.md:22:- Result: I3 failed 1 of 5 runs on an identical build. I have not found the cause. A guess is that bestShift aliases once the left-turn shift (~200 px) gets near the search range limit, or that turn timing varies. That is unconfirmed. The check lives in tests/ (tester-owned) and I did not change it.
+coder/2-integrate/attempt-1/report.md:29:- Do not report PASS while I3 is flaky and the criteria are unapproved.
+coder/2-integrate/attempt-1/report.md:32:1. tester: investigate the intermittent I3 failure (run 1 evidence in verify-full/playtest*); repeat runs to measure the rate; add F2/F3 and implementation-identity checks.
+coder/2-integrate/attempt-1/report.md:38:Tester triages I3 flakiness on the current tree. Manual interventions: none. Usage: not available.
+reviewer/2-review/attempt-1/report.md:21:### R2-1 (high, owner: tester) I3.turn-left is flaky because of the check, and the "PASS" gate is unreliable
+reviewer/2-review/attempt-1/report.md:22:- Evidence: three QUICK playtests on the identical current dist. Run 1 and 2: `FAIL I3.turn-left shift=-116px`, exit 1. Run 3: `PASS I3 shift=204px`. Logs: `quick-1.log`, `quick-2.log`, `quick-3.log`. Coder 2-integrate saw 1 failure in 5 runs; I saw 2 in 3. I1 was `-200px` every time.
+reviewer/2-review/attempt-1/report.md:56:- `QUICK=1 OUT_DIR=<abs> node tests/playtest.mjs` ×3 on that dist: exit 1, 1, 3. Failures only in I3, as above. Evidence: `quick-N.log`, `quick-N/` (screens, results json).
+reviewer/2-review/attempt-1/report.md:60:Tester: fix I3 (R2-1) and repeat 10 runs; add R2-3 and R2-4 checks. Student: decide audio/persistence scope (R2-2, R2-5) and approve criteria. Coder: preserve a full source snapshot (R2-7). Reviewer re-check after those land. Manual interventions: none. Usage: not available.
+PASS       I3.turn-left shift=204px
+PASS       I3.turn-left shift=204px
+PASS       I3.turn-left shift=204px
+PASS       I3.turn-left shift=204px
+FAIL       I3.turn-left shift=-116px
+PASS       I3.turn-left shift=198px
+110-  await page.keyboard.down('ArrowLeft'); await sleep(350); await page.keyboard.up('ArrowLeft'); await sleep(700);
+111-  const c = await shot('turn-left'); const sl = bestShift(b, c);
+112:  check('I3.turn-left', sl.shift >= 8 && sl.err < sl.err0, `shift=${sl.shift}px`);
+113-
+114-  // Movement: forward changes view; backward returns toward start; release halts motion.
+115-  const s0 = await shot('move-start');
+116-  await page.keyboard.down('ArrowUp'); await sleep(800); const mid = await shot('move-fwd-held'); await sleep(300); const mid2 = await shot('move-fwd-held2');
+117-  check('I4.forward-moves', diffFrac(s0, mid, VIEW) > 0.05 && diffFrac(mid, mid2, VIEW) > 0.01, `start-vs-mid=${diffFrac(s0, mid, VIEW).toFixed(3)} still-moving=${diffFrac(mid, mid2, VIEW).toFixed(3)}`);
+118-  await page.keyboard.up('ArrowUp');
+119-  const fs1 = await settle(); const f2 = fs1.frame; await sleep(500); const f3 = await shot('move-fwd-stopped');
+120-  check('I5.forward-stops-on-release', fs1.settled && diffFrac(f2, f3, VIEW) < 0.02, `settled=${fs1.settled} after ${fs1.ms}ms (momentum allowed up to 4s); later-diff=${diffFrac(f2, f3, VIEW).toFixed(4)}`);
+121-  await page.keyboard.down('ArrowDown'); await sleep(1100); await page.keyboard.up('ArrowDown');
+122-  const back = (await settle()).frame;
+123-  check('I6.backward-returns', diffFrac(s0, back, VIEW) < diffFrac(s0, f2, VIEW) * 0.7, `start-vs-back=${diffFrac(s0, back, VIEW).toFixed(3)} start-vs-fwd=${diffFrac(s0, f2, VIEW).toFixed(3)}`);
+124-
+commit: e500c440656622db5ab3f8fb7df73d8b5998eeb3
+dirty_diff_sha256: e216dde7205b9621f0bf4204c8c964ff54f6f5d566d32292acb117fba00966c3
+status:  M loop/agents.yaml
+)
+
+Calling Bash()
+
+Bash response → (
+agent.log
+invocation.txt
+report.md
+result.json
+source-commit.txt
+source-dirty.patch
+source-status.txt
+verify
+verify-exit.txt
+verify-stdout.log
+)
+The suite failed, so the status is FINDINGS. `tests/verify.sh` exited 1 because `I3.turn-left` failed with `shift=-116px`. That is the only failing check. Everything else in the playtest passed apart from three checks marked UNVERIFIED (no way to check them yet).
+
+- **Run:** the unchanged `tests/verify.sh` ran against commit `e500c44` plus the uncommitted changes. The tooling check, selftest and clean build passed.
+- **Playtest:** 29 passed and 1 failed, with 3 UNVERIFIED. The 300s soak passed, and the tic rate measured 34.96 tics/s.
+- **The `I3` failure:** the same build has now failed it in about 4 of roughly 10 runs. The passing runs show about +204px, and turning right gave -200px every time. My guess is the shift measurement is aliasing rather than the game ignoring the key, but I haven't confirmed that.
+- **UNVERIFIED:** audio (`A1`), save persistence (`P1`) and door use / level exit (`G3`). The first two have no decided scope, and `G3` has no way to check the outcome.
+- **Tests unchanged:** I didn't edit `tests/` or lower any threshold, since I have no authorization to rewrite checks after the prepare step. The failing run is preserved.
+- **Criteria:** they are agent-proposed, not student-approved.
+
+Next, someone with authority needs to approve a fix to the `I3` measurement. After that I'd run it about 10 times to get the failure rate. The student also needs to decide the audio and persistence scope and approve the criteria.
+
+Files are in `artifacts/runs/20261103T002748Z-51080/tester/2-test/attempt-1/`:
+- `report.md`
+- `result.json`
+- `verify/`
+- `verify-stdout.log`
+- `verify-exit.txt`
+- `source-commit.txt`
+- `source-status.txt`
+- `source-dirty.patch`

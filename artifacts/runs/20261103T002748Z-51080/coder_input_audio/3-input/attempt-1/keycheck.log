@@ -1,0 +1,8 @@
+PASS repeat dropped 
+PASS blur resets 
+PASS F2 repeat after blur re-presses 
+PASS F5 not prevented 
+PASS Ctrl+R not prevented 
+PASS ArrowUp prevented 
+PASS L+R ctrl release only at last [[1,163]][[0,163]]
+PASS hidden resets 

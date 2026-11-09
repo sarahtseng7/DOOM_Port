@@ -1,0 +1,498 @@
+I'll start by reading the project READMEs, the reviewer role prompt, and the prior reports.
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+  the resource usage, manual interventions, and final stopping decision.
+
+Preserve failing evidence as well as passing evidence. Record changes to
+acceptance criteria separately, with a reason. Discuss disagreements and
+missed faults in your write-up.
+
+## Where your work belongs
+
+| Location | Purpose |
+| --- | --- |
+| [`loop/`](loop/README.md) | All loop code, prompts, role definitions, MCP configuration, and design documentation. |
+| [`artifacts/`](artifacts/README.md) | All durable run state, handoffs, logs, review findings, and evidence. Agents must use this folder between runs. |
+| `tests/` | Verification code, including checks for the loop itself. |
+| `platform/`, `web/` | The port and browser page. |
+| `third_party/doomgeneric/` | Supplied engine; platform ports have been removed. |
+| `assets/` | Included shareware `doom1.wad` (Episode 1). |
+| `build/`, `dist/` | Generated build output. |
+
+Keep the root for project documentation and shared build/toolchain files.
+The starter supplies engine source, platform and HTML stubs, the shareware
+WAD, documentation, and an optional Docker toolchain. It supplies no working
+game, build script, loop implementation, or test suite. `artifacts/` starts
+with its README only; students create run evidence there during the project.
+Use the supplied engine and Emscripten. Documentation is allowed; copying an
+existing Doom browser port does not satisfy the assignment.
+
+See [`platform/README.md`](platform/README.md) for engine integration caveats,
+including pixel format, timing, and audio. The supplied game data already
+contains sound effects and music; no additional sound assets are required.
+
+## Agent section for setup
+
+### macOS without Docker
+
+Install the build tools directly on your Mac to compile and test the browser
+port. Docker is not required for this workflow. There is currently no macOS
+setup script; run the steps below manually.
+
+1. **Install prerequisites.** In Terminal, run:
+
+   ```sh
+   xcode-select --install
+   ```
+
+   Finish the installer, then check `git --version` and `python3 --version`.
+   If Python is missing, install it from [python.org](https://www.python.org/downloads/macos/),
+   or run `brew install python` if you already have Homebrew.
+
+2. **Install Emscripten.** Use version `4.0.18` to match the supplied Dockerfile:
+
+   ```sh
+   mkdir -p ~/Developer
+   cd ~/Developer
+   git clone https://github.com/emscripten-core/emsdk.git
+   cd emsdk
+   ./emsdk install 4.0.18
+   ./emsdk activate 4.0.18
+   source ./emsdk_env.sh
+   emcc --version
+   ```
+
+   If you already have an SDK checkout at that location, use it instead of
+   cloning again. In each new Terminal session where you want to compile, run:
+
+   ```sh
+   source ~/Developer/emsdk/emsdk_env.sh
+   ```
+
+   See the [official installation instructions](https://emscripten.org/docs/getting_started/downloads.html).
+
+artifacts/logs/reviewer_site.aZiFrh:
+agent.log
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+e500c440656622db5ab3f8fb7df73d8b5998eeb3
+)
+
+Calling Bash()
+
+Bash response → (
+Exit code 1
+# Site and startup review
+
+You are `reviewer_site`.
+
+Review build/startup and actual browser loading at http://localhost:8000.
+Write no source, tests, or build files. You may run the existing build and start a
+local HTTP server without modifying source; stop only a server you started.
+Use Playwright MCP (or existing browser scripts) to verify the page, canvas, fresh
+JS/WASM/WAD loading, console/network failures, initial image, colors, and startup
+responsiveness. Ensure an existing port-8000 server serves this project's current
+build; do not kill an unknown service or accept an unrelated page as evidence.
+Leave movement, combat, and audio depth to reviewer_gameplay. Report actionable
+faults to the relevant coder. PASS requires actual observed startup, not inspection
+alone. Keep evidence in OUTPUT_DIR; screenshots are supporting evidence, not all
+of acceptance. Browser tools do not grant permission to patch files.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+(eval):1: ===== not found
+)
+
+Calling Bash()
+
+Bash response → (
+Exit code 1
+FINDINGS
+
+Startup observed working on the current dist/ build at http://localhost:8000: no failed loads, no console errors, healthy render. FINDINGS (not PASS) because cold-cache load, time-to-first-frame/title screen, post-gesture audio and other browsers/viewports are unverified, and the first tic-rate sample after load was low (23/s) again.
+
+## Source identity
+HEAD e500c44 + uncommitted changes. `git diff HEAD` sha256 prefix fe88782d1c55d299; dist/doom.wasm prefix 7afb94fa1ec64b5c (both match the coder report). `make -n`: "Nothing to be done". web/{index.html,input_audio.js,audio_web.js,render_timing.js} cmp-identical to dist/. No rebuild by me.
+
+## Work
+- Read AGENTS.md, REVIEWER.md role prompt, artifacts/reports/{reviewer_site,reviewer_gameplay,tester,coder}.md, BUILD.md, Makefile. specification.md / acceptance-criteria.md do not exist.
+- Port 8000 had no listener (lsof empty), so I served this project's dist/ myself: `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist` (server.pid). Stopped it afterwards; port confirmed closed.
+- Playwright MCP (headless Chromium) loaded `/?r=site7RuKMK`: title "DOOM Shareware"; canvas 640x400 shown at 1152x720 CSS; `_cap_ready()`=1.
+- Network: 6 subresources, all HTTP 200 (input_audio.js, audio_web.js, render_timing.js, doom.js, doom.data 4.2 MB, doom.wasm 556 KB); all done by 25 ms, DOMContentLoaded 25 ms. server.log has no non-200 responses.
+- Console: 0 errors, 2 warnings (AudioContext autoplay before gesture; see console.txt).
+- Canvas: 81 distinct sampled colours (not blank). startup.png (viewed): clean render, no red/blue swap, HUD (48 ammo, 100% health/armor, face, arms, ammo table), "PICKED UP THE ARMOR.", muzzle flash, an enemy and a medikit: gameplay/demo running.
+- Tic rate: first 3 s window 23/s; then three 3 s windows 35.0, 35.0, 35.3/s.
+
+## Evidence (this directory)
+startup.png, console.txt, server.log, server.pid. Playwright captures also in artifacts/browser/.
+
+## Findings
+1. Low, owner coder_render_timing: the first tic-rate window after load read low (17/s in the previous reviewer_site run, 23/s now), then 35/s steadily. Reproduced twice, so probably real warm-up (wasm compile/asyncify, or the evaluate/headless throttle) rather than noise, but I did not isolate it. Not user-visible as a failure in the screenshot; worth a look if startup smoothness is a criterion.
+2. Minor, owner coder_input_audio: AudioContext autoplay warning before gesture (browser policy, expected). Post-gesture audio is reviewer_gameplay/human territory.
+3. Cosmetic, owner coder: static title in web/index.html is "Doom (WASM)", runtime title is "DOOM Shareware" (set by the engine/Emscripten per coder report). Not rechecked in source by me.
+4. No blocking loading or startup defect.
+
+## Not verified
+Cold cache (query string busts only the HTML URL; transferSize nonzero suggests network fetches but unproven), time to first frame and title screen (I sampled after load, demo already running), clean rebuild (tester ran one), Firefox/Safari, other viewports/HiDPI, audio after a gesture.
+
+## Assumptions
+- Headless Playwright Chromium; pass criteria: page loads, no required asset fails, canvas draws plausible colours, tic count advances ~35/s.
+- Criteria are agent-proposed, not student-approved.
+- I wrote only into this OUTPUT_DIR plus Playwright captures in artifacts/browser/. No source/tests/loop/config edits; no result.json. Manual interventions: none.
+
+## Next action
+coder_render_timing: look at the low first-window tic rate. Tester/human: cold-cache, first-frame timing and cross-browser checks.
+(eval):1: ==== not found
+)
+
+Calling Bash()
+
+Bash response → (
+FINDINGS
+
+`tests/verify.sh` exited 0 (verify.out, last line `exit=0`): tooling, selftest, clean `make clean && make all`, playtest (0 FAIL) and 6/6 fault injections caught. FINDINGS, not PASS, because 4 required behaviors remain UNVERIFIED. No product source or tests were edited this run, and nothing was weakened.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes; `git diff HEAD` sha256 prefix fe88782d1c55d299 (same as prior reports). Full identity (tests hash, WAD hash, emcc 4.0.18) is in verify/identity.txt; dist hashes in verify/dist-sha256.txt. Command: `RUN_ID=tester.98BZhM OUT_DIR=<abs>/verify bash tests/verify.sh` with emsdk sourced.
+
+## Results
+- Playtest: failed=0. Examples: G1b (E1M1, health 100), I6 (start-to-fwd 401 vs start-to-back 85 units), T2 35.21 tics/s, R2/R3/R4 soak clean (rAF 60/s, no long tasks, 24 changed frames), G3a door opens (sector 4 ceiling 0->16 in 93 steps).
+- Faults caught: drop-keyup (I2 I5 I6 C3 I7), drop-blur (I7), ignore-left (I3 E2a E2b), swap-rb (B4), bad-aspect (S1), drop-use (G3a).
+- Prior reports read (artifacts/reports/*): no reproducible failure to convert into a new regression check; every open item there is an UNVERIFIED item below.
+
+## Evidence (this directory)
+verify.out, verify/ (identity.txt, build.log, selftest.log, playtest.log, playtest-results.json, faults.log, per-fault logs, browser-console.log, screens/).
+
+## Unresolved (owner)
+1. UNVERIFIED A1 audio correctness (human): nobody has listened. A0/A2/A3 only show a non-silent context.
+2. UNVERIFIED P1 save persistence (student scope decision).
+3. UNVERIFIED G3b walk through the door / level exit (tester, needs a scripted route or a coder level-exit hook).
+4. UNVERIFIED H1 real hidden-tab timing (human; protocol in tests/README.md).
+Also unverified or uncovered: pickups, damage/death, Firefox, Safari, HiDPI. WASD and mouse unmapped (coder_input_audio). U5 and A0-A3 have no injected fault. G3a steering is greedy, so it may flake on a slow machine (93 of 100 steps used this run, versus 46 and 69 earlier, which is close to the limit).
+
+## Assumptions
+- Criteria are agent-proposed, not student-approved; artifacts/specification.md and acceptance-criteria.md do not exist.
+- Headless Chromium only. Door/sector 4 data comes from the reviewer's WAD cross-check.
+- Manual interventions: none.
+
+## Next action
+Human: listen to audio, run H1. Tester: G3b, and consider raising the G3a step limit if it flakes (93/100 used). Student: decide P1 scope and approve or replace the proposed criteria.
+I'll start by reading the project READMEs, the reviewer role prompt, and the prior reports.
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+build:
+platform
+third_party
+
+dist:
+audio_web.js
+doom.data
+doom.js
+doom.wasm
+index.html
+input_audio.js
+render_timing.js
+# Doom -> WebAssembly build. Requires Emscripten 4.0.18 (source emsdk_env.sh
+# or use the Dockerfile image). Output: dist/{index.html,doom.js,doom.wasm,doom.data}
+EMCC      ?= emcc
+ENGINE    := third_party/doomgeneric
+BUILD     := build
+DIST      := dist
+WAD       := assets/doom1.wad
+
+# Platform-specific/unused engine files: dummy.c, i_cdmus.c, i_joystick.c are
+# stubs here; net_* sources are absent from this tree.
+ENGINE_EXCLUDE := $(ENGINE)/dummy.c $(ENGINE)/doomgeneric_sdl.c
+ENGINE_SRC := $(filter-out $(ENGINE_EXCLUDE),$(wildcard $(ENGINE)/*.c))
+PLAT_SRC   := $(wildcard platform/*.c)
+OBJS       := $(patsubst %.c,$(BUILD)/%.o,$(ENGINE_SRC) $(PLAT_SRC))
+
+CFLAGS  := -O2 -I$(ENGINE) -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP
+ENGINE_CFLAGS := -w   # silence warnings for the supplied engine only
+LDFLAGS := -O2 -sASYNCIFY -sASYNCIFY_STACK_SIZE=65536 -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=64MB \
+           -sEXPORTED_FUNCTIONS=_main,_cap_ready,_cap_tic_count,_cap_input_event,_cap_input_reset,_cap_bridge_version,_cap_framebuffer_ptr,_cap_input_impl,_cap_input_delivered_count,_cap_input_dropped_count,_cap_player_valid,_cap_player_x,_cap_player_y,_cap_player_angle,_cap_player_health,_cap_level_id,_cap_sector_count,_cap_sector_floor,_cap_sector_ceiling,_cap_player_sector \
+           -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,HEAPU8 \
+           --preload-file $(WAD)@/doom1.wad
+
+.PHONY: all clean
+all: $(DIST)/index.html
+
+$(BUILD)/$(ENGINE)/%.o: $(ENGINE)/%.c
+	@mkdir -p $(dir $@)
+	$(EMCC) $(CFLAGS) $(ENGINE_CFLAGS) -c $< -o $@
+
+$(BUILD)/platform/%.o: platform/%.c
+	@mkdir -p $(dir $@)
+	$(EMCC) $(CFLAGS) -c $< -o $@
+
+-include $(OBJS:.o=.d)
+
+$(DIST)/doom.js: $(OBJS) $(WAD)
+	@mkdir -p $(DIST)
+	$(EMCC) $(OBJS) $(LDFLAGS) -o $@
+
+WEB_FILES := web/index.html web/input_audio.js web/audio_web.js web/render_timing.js
+fe88782d1c55d299
+7afb94fa1ec64b5c
+make: Nothing to be done for `all'.
+)
+Port 8000 has no listener, and the source and dist hashes match the prior reports. I'll serve `dist/` myself and observe startup in a browser.
+Calling Bash()
+
+Calling ToolSearch()
+
+Bash response → "200\n23666"
+
+ToolSearch response → "Completed by external harness."
+
+Calling mcp__playwright__browser_navigate()
+
+mcp__playwright__browser_navigate response → (
+### Ran Playwright code
+```js
+await page.goto('http://localhost:8000/?r=site2');
+```
+### Page
+- Page URL: http://localhost:8000/?r=site2
+- Page Title: DOOM Shareware
+- Console: 0 errors, 2 warnings
+### Snapshot
+- [Snapshot](artifacts/browser/page-2026-11-03T20-29-52-837Z.yml)
+### Events
+- New console entries: artifacts/browser/console-2026-11-03T20-29-52-473Z.log#L1-L35
+)
+
+Calling mcp__playwright__browser_evaluate()
+
+Calling mcp__playwright__browser_take_screenshot()
+
+Calling mcp__playwright__browser_console_messages()
+
+mcp__playwright__browser_evaluate response → (
+### Result
+{
+  "ready": 1,
+  "w": 640,
+  "h": 400,
+  "tics3s": 23,
+  "colors": 90,
+  "res": [
+    [
+      "input_audio.js",
+      200,
+      4448
+    ],
+    [
+      "audio_web.js",
+      200,
+      18871
+    ],
+    [
+      "render_timing.js",
+      200,
+      1489
+    ],
+    [
+      "doom.js",
+      200,
+      76884
+    ],
+    [
+      "doom.data",
+      200,
+      4196320
+    ],
+    [
+      "doom.wasm",
+      200,
+      555931
+    ]
+  ]
+}
+### Ran Playwright code
+```js
+await page.evaluate('async () => { const c=document.querySelector(\'canvas\'); const t=()=>Module&&Module.ccall?Module.ccall(\'cap_tic_count\',\'number\',[],[]):-1; const out={ready:Module.ccall(\'cap_ready\',\'number\',[],[]),w:c.width,h:c.height}; const a=t(); await new Promise(r=>setTimeout(r,3000)); out.tics3s=(t()-a)/3; const d=c.getContext(\'2d\')?c.getContext(\'2d\').getImageData(0,0,c.width,c.height).data:null; if(d){const s=new Set();for(let i=0;i<d.length;i+=4*97)s.add(d[i]+\',\'+d[i+1]+\',\'+d[i+2]);out.colors=s.size;} out.res=performance.getEntriesByType(\'resource\').map(r=>[r.name.split(\'/\').pop(),r.responseStatus,r.transferSize]); return out;}');
+```
+)
+
+mcp__playwright__browser_take_screenshot response → (
+### Result
+- [Screenshot of viewport](artifacts/logs/reviewer_site.aZiFrh/startup.png)
+### Ran Playwright code
+```js
+// Screenshot viewport and save it as artifacts/logs/reviewer_site.aZiFrh/startup.png
+await page.screenshot({
+  path: 'artifacts/logs/reviewer_site.aZiFrh/startup.png',
+  scale: 'css',
+  type: 'png'
+});
+```
+)
+
+mcp__playwright__browser_console_messages response → "### Result\n- [Console](artifacts/logs/reviewer_site.aZiFrh/console.txt)"
+
+Calling Read()
+
+Calling mcp__playwright__browser_evaluate()
+
+Read response → "Completed by external harness."
+
+Calling Bash()
+
+mcp__playwright__browser_evaluate response → (
+### Result
+[
+  35,
+  35.333333333333336
+]
+### Ran Playwright code
+```js
+await page.evaluate('async () => { const t=()=>Module.ccall(\'cap_tic_count\',\'number\',[],[]); const r=[]; for(let i=0;i<2;i++){const a=t(); await new Promise(s=>setTimeout(s,3000)); r.push((t()-a)/3);} return r;}');
+```
+)
+
+Bash response → (
+8
+1
+Total messages: 35 (Errors: 0, Warnings: 2)
+Returning 2 messages for level "warning"
+
+[WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:27
+[WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:53
+)
+
+Calling Bash()
+
+Bash response → (0)
+
+Calling Write()
+
+Write response → "File created successfully at: /Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/reviewer_site.aZiFrh/report.md (file state is current in your context — no need to Read it back)"
+I've finished the review and saved the report to `artifacts/logs/reviewer_site.aZiFrh/report.md`. The verdict is FINDINGS, not PASS.
+
+- **Loading and startup:** nothing was listening on port 8000, so I served this project's `dist/` myself and then stopped that server. The page loaded in headless Chromium. All 6 assets returned HTTP 200 and there were no console errors. The only console warnings were two AudioContext autoplay warnings before a user gesture, which is expected. The canvas rendered correct colours with the HUD, an enemy and a pickup visible, so the game was already running when I looked.
+- **Source identity:** the git diff and `dist/doom.wasm` hashes match the prior reports, and `make -n` reports nothing to rebuild.
+- **Open finding:** the first 3-second tic-rate window after load was low again, at 23 tics/s. Later windows ran at about 35/s. This is the third run in a row with a low first window (17/s, 23/s, 23/s). I assigned it to `coder_render_timing` and didn't isolate the cause.
+- **Not verified:** cold cache, time to first frame, audio after a gesture, Firefox, Safari, other viewports and HiDPI. Because of these gaps I didn't call it PASS.
+
+I only wrote to the output directory and to `artifacts/browser/`, which Playwright writes to.

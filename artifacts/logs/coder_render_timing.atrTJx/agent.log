@@ -1,0 +1,777 @@
+I'll start by reading the project docs and prior reports.
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+  the resource usage, manual interventions, and final stopping decision.
+
+Preserve failing evidence as well as passing evidence. Record changes to
+acceptance criteria separately, with a reason. Discuss disagreements and
+missed faults in your write-up.
+
+## Where your work belongs
+
+| Location | Purpose |
+| --- | --- |
+| [`loop/`](loop/README.md) | All loop code, prompts, role definitions, MCP configuration, and design documentation. |
+| [`artifacts/`](artifacts/README.md) | All durable run state, handoffs, logs, review findings, and evidence. Agents must use this folder between runs. |
+| `tests/` | Verification code, including checks for the loop itself. |
+| `platform/`, `web/` | The port and browser page. |
+| `third_party/doomgeneric/` | Supplied engine; platform ports have been removed. |
+| `assets/` | Included shareware `doom1.wad` (Episode 1). |
+| `build/`, `dist/` | Generated build output. |
+
+Keep the root for project documentation and shared build/toolchain files.
+The starter supplies engine source, platform and HTML stubs, the shareware
+WAD, documentation, and an optional Docker toolchain. It supplies no working
+game, build script, loop implementation, or test suite. `artifacts/` starts
+with its README only; students create run evidence there during the project.
+Use the supplied engine and Emscripten. Documentation is allowed; copying an
+existing Doom browser port does not satisfy the assignment.
+
+See [`platform/README.md`](platform/README.md) for engine integration caveats,
+including pixel format, timing, and audio. The supplied game data already
+contains sound effects and music; no additional sound assets are required.
+
+## Agent section for setup
+
+### macOS without Docker
+
+Install the build tools directly on your Mac to compile and test the browser
+port. Docker is not required for this workflow. There is currently no macOS
+setup script; run the steps below manually.
+
+1. **Install prerequisites.** In Terminal, run:
+
+   ```sh
+   xcode-select --install
+   ```
+
+   Finish the installer, then check `git --version` and `python3 --version`.
+   If Python is missing, install it from [python.org](https://www.python.org/downloads/macos/),
+   or run `brew install python` if you already have Homebrew.
+
+2. **Install Emscripten.** Use version `4.0.18` to match the supplied Dockerfile:
+
+   ```sh
+   mkdir -p ~/Developer
+   cd ~/Developer
+   git clone https://github.com/emscripten-core/emsdk.git
+   cd emsdk
+   ./emsdk install 4.0.18
+   ./emsdk activate 4.0.18
+   source ./emsdk_env.sh
+   emcc --version
+   ```
+
+   If you already have an SDK checkout at that location, use it instead of
+   cloning again. In each new Terminal session where you want to compile, run:
+
+   ```sh
+   source ~/Developer/emsdk/emsdk_env.sh
+   ```
+
+   See the [official installation instructions](https://emscripten.org/docs/getting_started/downloads.html).
+
+artifacts/logs:
+coder_input_audio.0yubr6
+coder_input_audio.1EbASm
+coder_input_audio.1TaZlK
+coder_input_audio.3fWNbv
+coder_input_audio.3MXh6A
+coder_input_audio.5wrkFk
+coder_input_audio.6WSU74
+coder_input_audio.6zHSnA
+coder_input_audio.7uDQyJ
+coder_input_audio.9u4tS4
+coder_input_audio.a8DgOL
+coder_input_audio.DUI82V
+coder_input_audio.Ew3ETW
+coder_input_audio.g90qsB
+coder_input_audio.gRFlNu
+coder_input_audio.GUXhIX
+coder_input_audio.gVnY6U
+coder_input_audio.hlDobF
+coder_input_audio.kjW35H
+coder_input_audio.KqlYco
+coder_input_audio.KWBVgQ
+coder_input_audio.N0e4K8
+coder_input_audio.niQiMB
+coder_input_audio.OKDYKj
+coder_input_audio.OwOtK6
+coder_input_audio.PrVlSe
+coder_input_audio.RB2acD
+coder_input_audio.rdvBFz
+coder_input_audio.RfUwSi
+coder_input_audio.SEwuBm
+coder_input_audio.vSI2GO
+coder_input_audio.XJqG3c
+coder_input_audio.XSXPrI
+coder_input_audio.YCG1J3
+coder_input_audio.yleZko
+coder_input_audio.YoKls9
+coder_input_audio.zZGUhu
+coder_render_timing.0MFb7w
+coder_render_timing.1ZyeYK
+coder_render_timing.6XCJuY
+coder_render_timing.6ZxIHL
+coder_render_timing.8nHQTI
+coder_render_timing.atrTJx
+coder_render_timing.cK29OS
+coder_render_timing.Dy4Q1i
+coder_render_timing.EEYKNe
+coder_render_timing.EjeWNb
+coder_render_timing.El3oAP
+coder_render_timing.EqHAI4
+coder_render_timing.Fwzc9q
+coder_render_timing.HgDIMK
+coder_render_timing.HwUXVM
+coder_render_timing.i3pFKE
+coder_render_timing.iIikTI
+coder_render_timing.j49cjx
+coder_render_timing.kFsAu7
+coder_render_timing.KuIme0
+coder_render_timing.licfez
+coder_render_timing.lpNQaR
+coder_render_timing.mobiWy
+coder_render_timing.mpRUkR
+coder_render_timing.Pct78q
+coder_render_timing.sbbbAi
+coder_render_timing.T2WY45
+coder_render_timing.TqIUTQ
+coder_render_timing.vhFGrK
+coder_render_timing.vyC811
+coder_render_timing.WB04Nu
+coder_render_timing.wbiVKQ
+coder_render_timing.Wkpv1o
+coder_render_timing.xSCZrJ
+coder_render_timing.Xt27oG
+coder_render_timing.y2E5IZ
+coder_render_timing.yJ4J8e
+coder_render_timing.zWYUzc
+coder.03woB7
+coder.1Bi21x
+coder.4nrv6e
+coder.5cbI3A
+coder.72fg2O
+coder.7cXMRV
+coder.7RfYKW
+coder.8JOBA4
+coder.8NI43t
+coder.9PHBOq
+coder.acGoDX
+coder.ACrcCc
+coder.b0xh2K
+coder.caQaH6
+coder.cRMV3j
+coder.cwCqji
+coder.CzMECd
+coder.diUW6i
+coder.f60Esm
+coder.FaD2R7
+coder.GhMtru
+coder.H58uUd
+coder.HgewO7
+coder.HPqFrt
+coder.Hq7OD9
+coder.HT7Mh0
+coder.i9iFY7
+coder.ICaI0g
+coder.J22PFD
+coder.Jk1TRZ
+coder.JMrJmA
+coder.joHsE4
+coder.kf3uJJ
+coder.KoXm1s
+coder.kpfpV0
+coder.KQZPBB
+coder.KvCoMT
+coder.l3P8AO
+coder.L6tVZi
+coder.lRueHg
+coder.MB4v9E
+coder.mfefCt
+coder.mtnqTz
+coder.n6GiEG
+coder.nTcUZh
+coder.nUFHev
+coder.NWKoK5
+coder.O0vxbS
+coder.OCtXnf
+coder.OPvVkW
+coder.pDUl9g
+coder.pLDPys
+coder.Q1melD
+coder.qdu038
+coder.rRdM6A
+coder.rRGfb0
+coder.s3mRzG
+coder.UAUPuD
+coder.UVP1dP
+coder.UWFAhI
+coder.UwvRwk
+coder.VDHNTr
+coder.VgF4Hv
+coder.vipQHN
+coder.vMC7jW
+coder.vtsyOC
+coder.X6XMnq
+coder.XbhNOg
+coder.XGU7Cd
+coder.xIoyo9
+coder.Xl0uaN
+coder.xM6chO
+coder.XTOgLt
+coder.yjG9kc
+coder.ZVJU9U
+reviewer_gameplay.3rXq3f
+reviewer_gameplay.6SoKWH
+reviewer_gameplay.6zun55
+reviewer_gameplay.9WUqPT
+reviewer_gameplay.Bt9KSs
+reviewer_gameplay.dAPDqY
+reviewer_gameplay.dMs6Vo
+reviewer_gameplay.E8OE8y
+reviewer_gameplay.EGn2Bb
+reviewer_gameplay.EqGhpV
+reviewer_gameplay.F2duYo
+reviewer_gameplay.facW3H
+reviewer_gameplay.GMLSL6
+reviewer_gameplay.GTAfxW
+reviewer_gameplay.GV2v4U
+reviewer_gameplay.HCHqDZ
+reviewer_gameplay.j2SZgT
+reviewer_gameplay.K8HORm
+reviewer_gameplay.ldSVVs
+reviewer_gameplay.LPg0t8
+reviewer_gameplay.Lw1bQv
+reviewer_gameplay.nRdKS9
+reviewer_gameplay.oH1nxw
+reviewer_gameplay.PEszG3
+reviewer_gameplay.q0AKMe
+reviewer_gameplay.rhBDEY
+reviewer_gameplay.Rw1fcA
+reviewer_gameplay.T486PX
+reviewer_gameplay.tJuPwN
+reviewer_gameplay.tVf5OL
+reviewer_gameplay.WeHatJ
+reviewer_gameplay.wHMOB2
+reviewer_gameplay.wQbJ7c
+reviewer_gameplay.WxVbWe
+reviewer_gameplay.Xy92jH
+reviewer_gameplay.ZIYPuo
+reviewer_gameplay.ZUZV8O
+reviewer_site.0fZGKo
+reviewer_site.32cQhq
+reviewer_site.7RuKMK
+reviewer_site.9wJ6HG
+reviewer_site.aZiFrh
+reviewer_site.B6IHWG
+reviewer_site.cdLCtG
+reviewer_site.f9dy0D
+reviewer_site.fC4DPq
+reviewer_site.FDoXaA
+reviewer_site.FMO0C9
+reviewer_site.FnUrtZ
+reviewer_site.GLdumE
+reviewer_site.GwiGfG
+reviewer_site.HSI496
+reviewer_site.Hwj708
+reviewer_site.inVZde
+reviewer_site.JBMgao
+reviewer_site.lWGySs
+reviewer_site.M9x4Dk
+reviewer_site.msvdXx
+reviewer_site.NOQPIi
+reviewer_site.nSpEMa
+reviewer_site.p97OZ1
+reviewer_site.pWAMB0
+reviewer_site.Q4XPrg
+reviewer_site.qchn1m
+reviewer_site.qSiYJ9
+reviewer_site.qWTvbw
+reviewer_site.RLrOVV
+reviewer_site.Rm0IxG
+reviewer_site.sFYP5z
+reviewer_site.sLn6b5
+reviewer_site.U8Ka1G
+reviewer_site.UpTuZG
+reviewer_site.w91AQ9
+reviewer_site.ZELzZH
+tester.06TdYY
+tester.1JMTzK
+tester.3P7z9H
+tester.3Pq6Xx
+tester.4fEyMa
+tester.4StVeO
+tester.6hWyX9
+tester.7sHdq1
+tester.8DASDy
+tester.8fsQdw
+tester.98BZhM
+tester.9SkuzA
+tester.aZlP2G
+tester.bajOBH
+tester.bj22dE
+tester.BNf9ts
+tester.byIkGV
+tester.clYVda
+tester.fIhcMO
+tester.gkbn63
+tester.I2eTl9
+tester.InaBUN
+tester.JAaNjg
+tester.jQ8WOj
+tester.l8juQD
+tester.nJZO5N
+tester.oPtvHA
+tester.PLOvPR
+tester.puK0iM
+tester.Q0YUP2
+tester.qBOVWc
+tester.QcBm5A
+tester.QSq2Uh
+tester.QT7YlR
+tester.rMyy2B
+tester.s4m9oQ
+tester.sAC1ys
+tester.SytnGa
+tester.w2Z6BS
+tester.WCxTyj
+tester.wO71Dk
+tester.yX1CIJ
+verify.2u2qnP
+verify.4qQKgm
+verify.69kwht
+verify.8rMyby
+verify.8SnUwc
+verify.B9OMLq
+verify.C0hQ9F
+verify.EYGmlB
+verify.f8X5Tq
+verify.fc6cQr
+verify.FdoEfO
+verify.Gjtb86
+verify.Gm8XQE
+verify.hDJeOV
+verify.ICvgiu
+verify.IyPdrJ
+verify.jfRFOF
+verify.KBbHyS
+verify.KEqrSN
+verify.kUtnpP
+verify.NNY4oS
+verify.oFQ3cu
+verify.pE5sQx
+verify.Px69Yu
+verify.Q4Cioh
+verify.ritpV3
+verify.RZPoxv
+verify.v7aj9s
+verify.WDjDxF
+verify.wkzlnA
+verify.XOoz2M
+verify.xskzsM
+verify.XSzOzq
+verify.za54Fq
+verify.ZC3dO1
+verify.ZS3tau
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+# Building the Doom WebAssembly port
+
+Toolchain: Emscripten **4.0.18** (`source ~/Developer/emsdk/emsdk_env.sh`), GNU make, Node (tests only).
+
+    make        # builds build/*.o and dist/{index.html,doom.js,doom.wasm,doom.data}
+    make clean  # removes build/ and dist/
+
+- Engine sources: all `third_party/doomgeneric/*.c` except `dummy.c`, `doomgeneric_sdl.c`; platform code: `platform/*.c`.
+- WAD packaging: `assets/doom1.wad` is embedded via `--preload-file` at `/doom1.wad` in `dist/doom.data`.
+- `web/index.html` is copied to `dist/index.html`. Serve `dist/` over HTTP (not `file://`).
+- Audio: built with `-DFEATURE_SOUND -Iplatform/audio_compat` (stub SDL_mixer.h); `web/audio_web.js` provides the Web Audio backend. Scripts load before doom.js: input_audio.js, audio_web.js, render_timing.js.
+- JS/C bridge exports are listed in the Makefile `EXPORTED_FUNCTIONS`; see `platform/capstone_bridge.h`.
+- Bridge v4 adds read-only player diagnostics (`_cap_player_valid/x/y/angle/health`, `_cap_level_id`) for position-based checks.
+- Bridge v5 adds read-only sector exports (`_cap_sector_count/floor/ceiling(i)`, `_cap_player_sector`) so a tester can detect a door opening (ceiling rises) or a lift moving.
+- Acceptance: `tests/verify.sh` (tester-owned); `QUICK=1` is partial and never exits 0.
+
+## Serving
+
+After `make`, serve `dist/` on port 8000 and open <http://localhost:8000/>:
+
+```sh
+python3 -m http.server 8000 --bind 127.0.0.1 --directory dist
+```
+)
+
+Calling Bash()
+
+Bash response → (
+Exit code 1
+# Rendering and timing
+
+You are `coder_render_timing`.
+
+Deliver correctly colored, opaque frames and smooth, responsive browser gameplay.
+Own platform/render_timing.c, platform/render_timing.h, and web/render_timing.js.
+Use the shared bridge header; request header/build changes from coder. Account for
+B,G,R,0 framebuffer bytes, real time, engine waits, and browser event processing.
+Choose the implementation; do not alter the supplied engine. Investigate rendering
+or timing findings from either reviewer and the tester.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+(eval):1: ===== not found
+)
+
+Calling Bash()
+
+Bash response → (
+Exit code 1
+FINDINGS
+
+No source edits this run. No report in artifacts/reports/ names a reproducible rendering or timing defect, and the source is unchanged since the last tested build. I ran no new browser probe, so this stays FINDINGS, not PASS.
+
+## Source identity (re-checked this session)
+- HEAD e500c44 plus uncommitted changes. `git diff HEAD -- . ':!artifacts' | shasum -a 256` prefix 92e25d7245a7dafd, same as the tester and reviewer reports.
+- render_timing.c af7995156cd24603, render_timing.h 524c31029de67e71, render_timing.js e4114e9951ad4ed1 (all unchanged).
+- dist/doom.wasm 7afb94fa1ec64b5c. `find platform web Makefile -newer dist/doom.wasm` is empty.
+- artifacts/specification.md and artifacts/acceptance-criteria.md do not exist.
+
+## Prior findings relied on (not rerun)
+- reviewer_site: correct colours, 0 transparent pixels, 34.97 tics/s, 16:10 kept, max rAF gap 10.3 ms.
+- reviewer_gameplay: input and timing probes pass; hidden-tab probe inconclusive because Playwright cannot hide a tab. No defect for this role.
+- tester: verify.sh rc=0, 47 playtest checks pass, 7/7 injected faults caught, T2 34.94 tics/s.
+
+## Work
+Confirmed the identity above and found nothing to repair. I changed nothing, because any edit would invalidate the evidence for wasm 7afb94fa1ec64b5c without a defect to justify it.
+
+## Unresolved (owner)
+1. UNVERIFIED, human: timing in a really hidden tab (H1, protocol in tests/README.md).
+2. UNVERIFIED, human/tester: Firefox, Safari, physical HiDPI.
+3. Cosmetic, owner coder: static `<title>` "Doom (WASM)" in web/index.html shows briefly before the engine sets the title. I don't own that file.
+4. Owner tester: B6 does not detect an R/B swap (only B4 does), so the faults.sh expectation overstates coverage; drop-use expectation omits G3b.
+5. Out of my scope: audio by ear, persistence, level exit, WASD/mouse.
+
+## Assumptions
+- A steady 35 tics/s (tester band 31.5-38.5) is correct, and 16:10 letterboxing is intended.
+- Criteria are agent-proposed, not student-approved.
+- Manual interventions: none. Token usage: not available.
+- Writes: this OUTPUT_DIR only.
+
+## Next action
+A human runs H1 and a HiDPI check. If either shows a defect, reopen this role with the reproduction.
+(eval):1: ==== not found
+)
+
+Calling Bash()
+
+Bash response → (
+92e25d7245a7dafd
+af7995156cd24603
+524c31029de67e71
+e4114e9951ad4ed1
+7afb94fa1ec64b5c
+ls: artifacts/acceptance-criteria.md: No such file or directory
+ls: artifacts/specification.md: No such file or directory
+--- tester
+FINDINGS
+
+`tests/verify.sh` exited 0 (rc=0) on the current build, and all 7 injected faults were caught. The result stays FINDINGS because 4 required behaviors are still UNVERIFIED (A1, P1, G3c, H1). I changed no product source and no tests.
+
+## Source identity
+- HEAD e500c44 plus uncommitted changes. `git diff HEAD -- . ':!artifacts' | shasum -a 256` = 92e25d7245a7dafd…, the same as every report in artifacts/reports/ (verify/identity.txt).
+- `make clean && make all` rebuilt dist/ (verify/build.log, dist-sha256.txt).
+
+## Work
+- Read AGENTS.md, loop/prompts/TESTER.md, tests/README.md and the reports in artifacts/reports/. None names a new reproducible defect, so I added no regression checks.
+- Ran `RUN_ID=tester.1JMTzK OUT_DIR=artifacts/logs/tester.1JMTzK/verify tests/verify.sh` with emsdk sourced. Steps: tooling, selftest, clean build, playtest with the soak, fault injection.
+
+## Results
+- Selftest: ok.
+- Playtest: `PASS failed=0`, 47 PASS lines. Examples: T2 34.97 tics/s, A3 peak 0.435 with audio clock advancing (2.01 s per 2 s), G3a door opens, G3b sector sequence 3>4>0.
+- Fault injection: 7/7 caught.
+  - drop-keyup: I2 I5 I6 C3 I7
+  - drop-blur: I7
+  - ignore-left: I3 E2a E2b
+  - swap-rb: B4
+  - bad-aspect: S1
+  - drop-use: G3a
+  - drop-visibility: E2b
+- Remaining check failures: none.
+
+## Evidence (artifacts/logs/tester.1JMTzK/)
+verify-console.log (ends `rc=0`) and verify/ (identity.txt, playtest.log, playtest-results.json, faults.log, per-fault logs, build.log, dist-sha256.txt, browser-console.log, screens/).
+
+## Unresolved (owner)
+1. G3c level exit: UNVERIFIED. Needs a coder-added level-exit hook or scripted route, then a tester check. Owner: coder, then tester.
+--- reviewer_gameplay
+FINDINGS
+
+reviewer_gameplay K8HORm, 2026-11-04. I found no defect in movement, playability or the audio pipeline, so there is nothing to assign to a coder.
+- All six inherited probes pass again on the unchanged binary.
+- A new damage/death/respawn probe passes 10/10 on its third run. Runs 1 and 2 failed because the probe was wrong, not the game; both runs are preserved and explained below.
+
+The result stays FINDINGS because audio by ear (A1), a real hidden tab (H1) and normal level exit (G3c) are still UNVERIFIED.
+
+## Source identity (source-identity.txt, dist-hashes.txt)
+- HEAD e500c44 plus uncommitted changes. `git diff HEAD -- . ':!artifacts' | shasum -a 256` = 92e25d7245a7dafd…, the same as every report in artifacts/reports/.
+- dist sha256 prefixes are unchanged: doom.wasm 7afb94fa1ec64b5c, doom.js 0090630eeaf16a87, doom.data 1d7d43be501e67d9, index.html 5905489e041214ce.
+- `find platform web Makefile -newer dist/doom.wasm` was empty, so I did not rebuild.
+- artifacts/specification.md and artifacts/acceptance-criteria.md are absent.
+
+## Work
+- Read AGENTS.md, the three READMEs, loop/prompts/REVIEWER_GAMEPLAY.md and all six reports in artifacts/reports/. No report names an open defect. reviewer_site is PASS for startup, so I did not repeat that review.
+- Started `python3 -m http.server 8199 --bind 127.0.0.1 --directory dist` (PID in server.pid). server.log shows 71 requests, all 200. At the end I killed only that PID, and curl then returned 000 (server-stopped.txt).
+- Copied six probes unchanged from reviewer_gameplay.WxVbWe and ran `node <probe>.mjs <OUT_DIR> 8199`. All exited 0.
+- New: damage_death.mjs (headless Chromium, read-only bridge v5 hooks plus CapAudio.stats()).
+
+## Results (all files in this directory)
+### Inherited probes: all pass
+| Probe | Result | Key evidence |
+| --- | --- | --- |
+| review_state | 32 PASS / 0 FAIL / 2 NOTE | Same results as WxVbWe: forward/back, coast and stop, turn stops at release, strafe, run, fire, menu, pause, blur, audio counters |
+| coast_pertic | pass | 0 multi-tic gaps; stopped 42 tics after release; peak 8 u/tic |
+| pause_check | 6 PASS | Pause and menu freeze the world; unpause moves 96 u; no stuck key |
+| visibility_release | pass=true | Turn while held; no turn during the hidden window; input works afterwards |
+| blur_open | pass=true | Blur coast 78 u, last move 42 tics after release, 0 in the final 1 s (control: 70 u / 44 tics) |
+| cheats_weapons | 12 PASS | IDKFA, shotgun/chaingun/rocket/plasma SFX and ammo, IDDQD, IDCLEV13 with music restart, movement in E1M3 |
+--- reviewer_site
+PASS
+
+reviewer_site qSiYJ9, 2026-11-04 ~13:56 UTC. I loaded the current dist/ build cold at http://localhost:8000 in Playwright MCP Chromium (1280x720) and watched it start. I found no loading or startup defect. This agrees with the prior reviewer_site PASS (0fZGKo) on the same binary.
+
+## Source identity (source-identity.txt, dist-hashes.txt, newer-than-dist.txt, make-n.txt, web-vs-dist.txt)
+- HEAD e500c44 plus uncommitted changes. `git diff HEAD -- . ':!artifacts' | shasum -a 256` = 92e25d7245a7dafd…, the same as the prior reports.
+- dist sha256 prefixes are unchanged from prior reports:
+  - doom.wasm 7afb94fa1ec64b5c
+  - doom.js 0090630eeaf16a87
+  - doom.data 1d7d43be501e67d9
+  - index.html 5905489e041214ce
+- web/* files are byte-identical to their dist/ copies.
+- `find platform web Makefile -newer dist/doom.wasm` is empty, and `make -n` prints "Nothing to be done". I did not rebuild.
+- artifacts/specification.md and artifacts/acceptance-criteria.md are absent.
+
+## Server (server-owner.txt, served-hashes.txt, server.log, server-stopped.txt)
+- At the start nothing was listening on :8000 (lsof rc=1).
+- I started `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist` (PID 60911).
+- All 7 files returned 200 with correct MIME types (wasm is `application/wasm`), and each served hash prefix matched dist/.
+- server.log has 14 requests, all 200.
+- At the end I killed only PID 60911. After that, curl returned 000.
+
+## Browser observations
+1. **Cold load** (cold-load.json). I used a CDP cache clear plus cache disable.
+   - Responses: /, render_timing.js, input_audio.js, audio_web.js, doom.js, doom.data and doom.wasm, all 200 and none from a service worker. 0 failed requests, 0 page errors.
+   - At 170 ms (before engine init) the canvas was blank and the title was the static "Doom (WASM)". This is the first run that has directly observed carry-over item 1.
+   - At 279 ms the sample showed cap_ready=1, tic 3, 0 transparent sampled pixels, mean RGB (110,50,30), and title "DOOM Shareware". This meets the 2 s first-frame criterion.
+   - The engine log shows W_Init "adding /doom1.wad", R_Init, S_Init, and I_InitGraphics at 640x400 RGBA8888.
+2. **title-early.png** (viewed): TITLEPIC in correct colours. The sky is red, the logo blue and gold, the marine green, and the id logo yellow on blue. There is no R/B swap, and it is pillarboxed.
+3. **Steady state** (steady-menu-geometry.json; in-page rAF for 6.0 s, about 9 s after load):
+)
+
+Calling Bash()
+
+Bash response → (
+16:Evidence goes to `artifacts/runs/$RUN_ID/tester/verify-*/` (identity.txt, logs, screenshots, playtest-results.json).
+17:Exit 0 only when tooling, build, selftest and every required playtest check pass; `QUICK=1` never exits 0.
+21:| `verify.sh` | tooling check, source identity, selftest, `make clean && make all`, playtest |
+23:| `playtest.mjs` | Chromium: load/console errors, boot frame, colors, rAF liveness, menu -> E1M1, turn/move/fire/release, blur, automap, Esc menu, soak |
+// Browser acceptance test for the Doom WASM port (AGENT-PROPOSED criteria; see
+// artifacts/runs/*/tester/prepare/attempt-1/proposed-criteria.md). Exit 0 only if every required
+// check passes. Env: DIST_DIR (default dist), OUT_DIR (evidence), SOAK_SECONDS (default 300),
+// QUICK=1 shortens the soak and forces a nonzero exit (3): partial runs never count as pass.
+import http from 'node:http'; import fs from 'node:fs'; import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { chromium } from 'playwright'; import { PNG } from 'pngjs';
+import { stats, diffFrac, bestShift, VIEW, STATUSBAR, AMMO } from './lib/frames.mjs';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const DIST = path.resolve(root, process.env.DIST_DIR || 'dist');
+const OUT = path.resolve(root, process.env.OUT_DIR || `artifacts/runs/manual-${Date.now()}/tester/playtest`);
+const QUICK = process.env.QUICK === '1';
+const SOAK = QUICK ? 15 : Number(process.env.SOAK_SECONDS || 300);
+fs.mkdirSync(path.join(OUT, 'screens'), { recursive: true });
+
+const results = []; const log = [];
+const rec = (id, status, detail = '') => { results.push({ id, status, detail }); console.log(`${status.padEnd(10)} ${id} ${detail}`); };
+const check = (id, cond, detail = '') => rec(id, cond ? 'PASS' : 'FAIL', detail);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+function finish(extra = {}) {
+  const failed = results.filter((r) => r.status === 'FAIL').length;
+  const unverified = results.filter((r) => r.status === 'UNVERIFIED').length;
+  let code = failed ? 1 : 0; if (!code && QUICK) code = 3;
+  const out = { status: code === 0 ? 'PASS' : 'FAIL', quick: QUICK, soak_seconds: SOAK, failed, unverified, results, ...extra };
+  fs.writeFileSync(path.join(OUT, 'playtest-results.json'), JSON.stringify(out, null, 2));
+  fs.writeFileSync(path.join(OUT, 'browser-console.log'), log.join('\n'));
+  console.log(`playtest: ${out.status} failed=${failed} unverified(not-in-scope, listed)=${unverified}${QUICK ? ' QUICK=partial' : ''}`);
+  process.exit(code);
+}
+
+// Missing dist is a hard failure, not a skip.
+for (const f of ['index.html', 'doom.wasm']) if (!fs.existsSync(path.join(DIST, f))) { rec('B0.dist-present', 'FAIL', `${path.join(DIST, f)} missing`); finish(); }
+rec('B0.dist-present', 'PASS');
+
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.wasm': 'application/wasm', '.data': 'application/octet-stream', '.css': 'text/css' };
+const badResponses = [];
+const server = http.createServer((req, res) => {
+  const p = path.join(DIST, decodeURIComponent(new URL(req.url, 'http://x').pathname).replace(/^\/$/, '/index.html'));
+  if (!p.startsWith(DIST) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) { badResponses.push(`404 ${req.url}`); res.writeHead(404).end(); return; }
+)
+Running a fresh QUICK playtest against the unchanged build to get new timing/colour evidence this session.
+Calling Bash()
+
+Bash response → (
+rc=3
+PASS       B0.dist-present 
+PASS       B1.canvas-640x400 canvas#canvas intrinsic size
+PASS       B2.boot-renders-frame after 222ms colors=240
+PASS       B3.opaque-pixels transparentFrac=0
+PASS       B4.channel-order meanR=109.8 meanB=30.7 (title/menu are warm; swap => blue)
+PASS       B5.no-load-errors 
+PASS       T1.main-thread-responsive 60.0 rAF/s over 3s (need >=20)
+PASS       B6.level-colors E1M1 view not blue-biased
+PASS       E1.browser-shortcuts-not-blocked {"f5":false,"ctrlR":false,"up":true}
+PASS       E2a.pagehide-releases-keys precondition-turning=true settled=true later-diff=0.0001
+PASS       E2b.hidden-releases-keys precondition-turning=true settled=true later-diff=0.0000
+PASS       E3.repeat-after-blur-is-fresh-press diff=0.3041 (view must turn again)
+PASS       E4.dual-ctrl-held-until-both-up held after one up=1, after both=0 (JS state; engine side not observable)
+PASS       S1.canvas-scales-16x10 viewports 1280x720, 500x300, 1000x700, 800x600 all 16:10 and fit
+PASS       T2.35-tics-per-second 34.93 tics/s over 4s (need 35 +/-10%)
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3c.level-exit walking through the door is checked (G3b); no route/oracle yet for finishing E1M1 (needs scripted route or coder level-exit hook)
+UNVERIFIED H1.hidden-tab-timing headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)
+playtest: FAIL failed=0 unverified(not-in-scope, listed)=4 QUICK=partial
+)
+
+Calling Bash()
+
+Bash response → "(Bash completed with no output)"
+FINDINGS. I changed no source: I found no rendering or timing defect, and editing would have invalidated the evidence for the current build.
+
+I ran the existing playtest in partial mode against the unchanged build. It reported no failures:
+- **First frame:** the first frame arrived at 222 ms.
+- **Colours:** there were 0 transparent pixels and no red/blue swap.
+- **Timing:** 34.93 tics/s, with 60 rAF/s on the main thread.
+- **Aspect:** the 16:10 shape held at four viewport sizes.
+- **Hide and blur:** keys release on tab hide and on page hide, and a repeat after blur counts as a fresh press.
+
+The partial run exits 3 by design.
+
+**Still unverified:**
+- **Hidden tab:** timing in a really hidden tab needs a human to run the H1 protocol in `tests/README.md`.
+- **Other browsers:** Firefox, Safari and a physical HiDPI display have not been checked.
+
+The report also lists two small items owned by others: the static `<title>` flash in `web/index.html`, and `faults.sh` overstating how much the B6 check catches.
+
+The source identity matches every prior report, and `artifacts/specification.md` and `artifacts/acceptance-criteria.md` still don't exist. The report is `artifacts/logs/coder_render_timing.atrTJx/report.md`, with the playtest output alongside it.

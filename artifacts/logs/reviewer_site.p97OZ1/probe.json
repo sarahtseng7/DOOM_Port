@@ -1,0 +1,19 @@
+{
+  "note": "Transcribed from Playwright MCP tool results (browser_run_code_unsafe) by reviewer_site, 2026-11-04T07:35Z. Timings are ms after goto commit.",
+  "run1_cold": {"cache": "CDP clearBrowserCache + setCacheDisabled", "viewport": [1280,720],
+    "responses": {"/?r=": 200, "/input_audio.js": 200, "/audio_web.js": 200, "/render_timing.js": 200, "/doom.js": 200, "/doom.data": 200, "/doom.wasm": 200},
+    "requestfailed": [], "pageerror": [], "console": {"log": 33, "warning": 0, "error": 0},
+    "first_sample": {"ms": 33, "tic": null, "transparent_px": 2560, "colours": 1, "title": "Doom (WASM)", "canvas": [640,400]},
+    "first_frame": {"ms": 266, "tic": 3, "transparent_px": 0, "colours": 150, "mean_rgb": [110,50,30], "title": "DOOM Shareware"},
+    "tic_rate": {"from": [3,266], "to": [165,4909], "per_s": 34.89, "stall_ms": 0, "samples": 51},
+    "geometry_1280x720": {"x":64,"y":0,"w":1152,"h":720,"scrollW":1280,"scrollH":720}},
+  "run2_escape_CONTAMINATED": {"note": "probe called every 0-arg _cap_* export incl. _cap_input_reset; dropped counts are probe artefacts",
+    "s0": {"tic":261,"delivered":0,"dropped":1}, "s1_after_esc": {"tic":277,"delivered":2,"dropped":2}, "s2_after_esc2": {"tic":293,"delivered":4,"dropped":3},
+    "geometry_800x600": {"x":0,"y":50,"w":800,"h":500,"scrollW":800,"scrollH":600}, "warnings": ["AudioContext not allowed to start x2 (autoplay policy)"]},
+  "run3_idle_12s": {"input_calls": 0, "dropped": 0, "delivered": 0, "focus": true, "hidden": false},
+  "run4_escape_clean": {"s0": {"tic":261,"dropped":0,"delivered":0}, "after_click": {"tic":262,"dropped":0,"delivered":0},
+    "after_esc1": {"tic":276,"dropped":0,"delivered":2}, "after_esc2": {"tic":291,"dropped":0,"delivered":4},
+    "js_calls": "Escape down->event(1,27) up->event(0,27), twice; 0 drops per call"},
+  "run5_reset_desync_demo": {"reset_with_nothing_down": [[0,0,0],[0,0,0],[0,0,0]], "esc_down_then_direct_C_reset": {"dropped_before":0,"after":0}, "after_esc_up": {"dropped":1,"delivered":0},
+    "explanation": "Direct Module._cap_input_reset bypasses JS releaseAll (which also clears `held`), so the later keyup is a stray release in C and is counted as dropped. Not reachable via the page's own handlers."}
+}

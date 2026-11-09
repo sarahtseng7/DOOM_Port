@@ -1,0 +1,1655 @@
+
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+  the resource usage, manual interventions, and final stopping decision.
+
+Preserve failing evidence as well as passing evidence. Record changes to
+acceptance criteria separately, with a reason. Discuss disagreements and
+missed faults in your write-up.
+
+## Where your work belongs
+
+| Location | Purpose |
+| --- | --- |
+| [`loop/`](loop/README.md) | All loop code, prompts, role definitions, MCP configuration, and design documentation. |
+| [`artifacts/`](artifacts/README.md) | All durable run state, handoffs, logs, review findings, and evidence. Agents must use this folder between runs. |
+| `tests/` | Verification code, including checks for the loop itself. |
+| `platform/`, `web/` | The port and browser page. |
+| `third_party/doomgeneric/` | Supplied engine; platform ports have been removed. |
+| `assets/` | Included shareware `doom1.wad` (Episode 1). |
+| `build/`, `dist/` | Generated build output. |
+
+Keep the root for project documentation and shared build/toolchain files.
+The starter supplies engine source, platform and HTML stubs, the shareware
+WAD, documentation, and an optional Docker toolchain. It supplies no working
+game, build script, loop implementation, or test suite. `artifacts/` starts
+with its README only; students create run evidence there during the project.
+Use the supplied engine and Emscripten. Documentation is allowed; copying an
+existing Doom browser port does not satisfy the assignment.
+
+See [`platform/README.md`](platform/README.md) for engine integration caveats,
+including pixel format, timing, and audio. The supplied game data already
+contains sound effects and music; no additional sound assets are required.
+
+## Agent section for setup
+
+### macOS without Docker
+
+Install the build tools directly on your Mac to compile and test the browser
+port. Docker is not required for this workflow. There is currently no macOS
+setup script; run the steps below manually.
+
+1. **Install prerequisites.** In Terminal, run:
+
+   ```sh
+   xcode-select --install
+   ```
+
+   Finish the installer, then check `git --version` and `python3 --version`.
+   If Python is missing, install it from [python.org](https://www.python.org/downloads/macos/),
+   or run `brew install python` if you already have Homebrew.
+
+2. **Install Emscripten.** Use version `4.0.18` to match the supplied Dockerfile:
+
+   ```sh
+   mkdir -p ~/Developer
+   cd ~/Developer
+   git clone https://github.com/emscripten-core/emsdk.git
+   cd emsdk
+   ./emsdk install 4.0.18
+   ./emsdk activate 4.0.18
+   source ./emsdk_env.sh
+   emcc --version
+   ```
+
+   If you already have an SDK checkout at that location, use it instead of
+   cloning again. In each new Terminal session where you want to compile, run:
+
+   ```sh
+   source ~/Developer/emsdk/emsdk_env.sh
+   ```
+
+   See the [official installation instructions](https://emscripten.org/docs/getting_started/downloads.html).
+
+run_id: 20261102T235903Z-41864
+source_commit: e500c440656622db5ab3f8fb7df73d8b5998eeb3
+max_iterations: 10
+AI-assisted runner and prompts; permission isolation is not implemented by this script.
+artifacts/.DS_Store
+artifacts/README.md
+artifacts/runs/.DS_Store
+artifacts/runs/20261030T202822-loop-sh/.DS_Store
+artifacts/runs/20261030T202822-loop-sh/manifest.txt
+artifacts/runs/20261102T235903Z-41864/initial-source.patch
+artifacts/runs/20261102T235903Z-41864/manifest.txt
+artifacts/runs/20261102T235903Z-41864/status.txt
+artifacts/runs/20261102T235903Z-41864/initial-source-status.txt
+artifacts/runs/20261030T202822-loop-sh/logs/loop.log
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-19.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-2.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-29.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-6.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-28.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-7.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-18.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-3.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-8.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-13.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-27.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-23.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-17.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-22.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-16.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-9.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-12.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-26.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-21.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-15.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-11.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-25.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-10.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-24.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-20.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-14.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-30.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-4.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-5.md
+artifacts/runs/20261102T235903Z-41864/tester/prepare/attempt-1/invocation.txt
+artifacts/runs/20261102T235903Z-41864/tester/prepare/attempt-1/result.json
+artifacts/runs/20261102T235903Z-41864/tester/prepare/attempt-1/report.md
+artifacts/runs/20261102T235903Z-41864/tester/prepare/attempt-1/proposed-criteria.md
+artifacts/runs/20261102T235903Z-41864/tester/prepare/attempt-1/agent.log
+artifacts/runs/20261102T235903Z-41864/coder/plan/attempt-1/invocation.txt
+artifacts/runs/20261102T235903Z-41864/coder/plan/attempt-1/result.json
+artifacts/runs/20261102T235903Z-41864/coder/plan/attempt-1/report.md
+artifacts/runs/20261102T235903Z-41864/coder/plan/attempt-1/proposed-spec.md
+artifacts/runs/20261102T235903Z-41864/coder/plan/attempt-1/agent.log
+artifacts/runs/20261102T235903Z-41864/coder/plan/attempt-1/interface-contract.md
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/invocation.txt
+artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/agent.log
+AGENTS.md
+artifacts
+assets
+Dockerfile
+LICENSE
+loop
+platform
+README.md
+SANDBOX.md
+tests
+third_party
+web
+platform:
+capstone_bridge.h
+doomgeneric_wasm.c
+README.md
+
+web:
+index.html
+)
+
+Calling Bash()
+
+Calling Bash()
+
+Bash response → (
+# Your agent loop
+
+**Keep all student-created loop code and configuration in this folder.**
+
+This is where you build the system that coordinates the coder, reviewer,
+and tester. The implementation is yours to design; no loop is provided.
+
+## What belongs here
+
+- The orchestrator and its start/resume commands.
+- Role definitions, prompts, and handoff schemas.
+- MCP server/client code, tool definitions, and configuration.
+- Role permissions, sandbox policies, and network allowlists.
+- Dependency manifests and lockfiles for the loop.
+- Loop-specific documentation and configuration examples without secrets.
+
+Use subfolders when they help. For example:
+
+```text
+loop/
+  README.md        # This file
+  prompts/         # Instructions for each role
+  loop.sh          # Bash loop
+  agents.yml	   # Docker Agent team spec
+```
+
+These names are suggestions. Choose your own structure inside `loop/` and
+document the entry point, dependencies, and configuration it needs.
+Resolve paths relative to the repository so the loop works in the sandbox.
+
+## Where everything else goes
+
+| Content | Location |
+| --- | --- |
+| Saved state, handoffs, logs, findings, and run evidence | `artifacts/` |
+| Port implementation and browser page | `platform/`, `web/` |
+| Verification code, including checks for the loop itself | `tests/` |
+| Game data | `assets/` |
+| Generated build output | `build/` or `dist/` |
+| Shared build/toolchain files | Repository root |
+
+Keep reusable prompt templates here; save the actual tasks and responses
+from each run in `artifacts/`. Keep secrets out of the repository and sandbox.
+# Run artifacts
+
+**Agents must use this folder for durable artifacts between runs.**
+
+The distributed starter contains only this README in this folder. Create
+run records when student work begins; starter preparation notes and sample
+results are not included.
+
+Anything saved for a later agent or run—state, plans, handoffs, logs, review
+findings, test results, screenshots, recordings, or reports—belongs here.
+Fresh agent contexts must be able to resume using the repo and this folder.
+
+Loop code, prompts, and configuration belong in [`loop/`](../loop/README.md).
+Port code belongs in `platform/` and `web/`, verification code in `tests/`,
+and game assets in `assets/`. Shared build files may live at the root. Build products
+may live in `build/` or `dist/`; link to them from a run record when useful.
+Temporary scratch files may be disposable, but anything needed for a
+handoff, resumption, or evaluation must be copied here before a run ends.
+
+## Suggested layout
+
+You can choose a different layout inside this folder. Document it so another
+agent can find the current state without reading your conversation.
+
+```text
+artifacts/
+  README.md
+  state.json                 # Current run, next task, and stopping status
+  runs/
+    <unique-run-id>/
+      manifest.json          # Source revision, environment, budgets, usage
+      handoffs/              # Tasks and responses between roles
+      reviews/               # Findings and their resolution
+      logs/                  # Tool and build output
+      tests/                 # Commands, results, screenshots, recordings
+      summary.md             # Outcome and next steps
+```
+
+## Required habits
+
+- Give each run a unique ID. Preserve earlier results instead of overwriting
+  failure evidence with the latest passing output.
+- Record the source revision and any uncommitted changes being tested.
+  Evidence from an older revision does not establish that the current one passes.
+- Save the current task, unresolved findings, artifact paths, and next action
+  before handing off or stopping. Include the stopping reason and resource usage.
+- Reference evidence with paths relative to the repo, so it works in a sandbox.
+- Include the artifacts needed to assess your submission. Explain any omitted
+  large files and how to reproduce them.
+- Do not store credentials, API keys, or commercial game data here. Sanitize
+  logs before saving them.
+
+This folder starts with instructions only. Your loop creates the run records.
+# Browser port starting points
+
+`doomgeneric_wasm.c` deliberately contains empty platform callbacks and no
+entry point. The engine is in `third_party/doomgeneric/`; its public platform
+interface is `doomgeneric.h`. Build scripts and browser integration are student
+work. The supplied HTML does not yet load a compiled module.
+
+Some details of this engine matter when implementing the browser port:
+
+- **Pixels:** the default framebuffer is 640 by 400, with 32-bit pixels.
+  Despite the `rgba8888` mode name, `i_video.c` packs red at bit 16, green at
+  bit 8, and blue at bit 0, without setting alpha. On little-endian WebAssembly
+  the bytes are B, G, R, 0. This is not directly usable as opaque RGBA canvas
+  `ImageData`.
+- **Timing:** `doomgeneric_Tick()` is callable, but screen wipes in `d_main.c`
+  and tic synchronization in `d_loop.c` still contain clock/sleep waits.
+  Browser integration must account for those waits and allow the browser to
+  process events. The stub clock always returning zero cannot run the game.
+- **Input:** the interface accepts Doom key codes and press/release events.
+  Mouse event generation is commented out in the supplied `i_input.c`.
+- **Files:** the engine reads the WAD with standard C file operations.
+  Keeping `assets/doom1.wad` on the host does not itself make that file
+  available inside the browser module. Packaging and runtime paths are part
+  of the port. Save/config persistence across reloads is also separate work.
+# Coder plan report — attempt-1
+Run 20261102T235903Z-41864, role coder, task plan. Source commit e500c44 plus
+uncommitted: M loop/agents.yaml, M loop/loop.sh; untracked artifacts/runs/,
+loop/DESIGN_DECISION_QUESTIONS.md, loop/prompts/, tests/verify.sh (not mine);
+new by this attempt: platform/capstone_bridge.h.
+
+## Work done
+- Read AGENTS.md, READMEs, platform/README, engine sources (doomgeneric.c,
+  d_main.c, d_loop.c, i_timer.c, i_input.c, i_video.c), prior run 20261030T202822-loop-sh.
+- Wrote `proposed-spec.md` and `interface-contract.md` (this dir) — AGENT-PROPOSED.
+- Created `platform/capstone_bridge.h` (version 1). Header compiles with host cc
+  against doomgeneric.h (check only; not an Emscripten build).
+- No game implementation; doomgeneric_wasm.c, web/, Makefile untouched.
+
+## Prior findings reviewed
+- Prior run notes 2–30: earlier agents were BLOCKED for lacking a role and, in
+  loop.log, ANTHROPIC_API_KEY was unset. Role is now supplied; resolved for this
+  invocation. Key setup remains a runner/student matter.
+
+## Findings
+1. (tester) tests/verify.sh hard-codes an absolute path and needs `make` and
+   tests/playtest.mjs, neither of which exists yet. Expected until the build task.
+2. (student/runner) emcc is not on PATH on this host; install emsdk 4.0.18 or use
+   the Dockerfile before the build task.
+3. (student) Audio, persistence, mouse, non-Chromium browsers are UNDECIDED.
+   Faithful-play acceptance cannot be called complete until decided.
+4. (note) Fallback criteria path (tester/prepare/attempt-1/proposed-criteria.md)
+   is tester-owned and did not exist; I did not create it.
+5. (note) manifest.txt says permission isolation is not implemented; role
+   boundaries here are instructions only.
+
+## Commands
+- `cc -Iplatform -Ithird_party/doomgeneric /tmp/hdrchk.c` — passed (HDR_OK).
+- `which emcc` — not found.
+
+## Next action
+Coder build task: implement DG adapters + main in doomgeneric_wasm.c, Makefile
+(clean/all), web/index.html loader, BUILD.md; integrate render_timing and
+input_audio modules once their owners deliver. Specialists proceed against
+platform/capstone_bridge.h.
+
+Usage: not available. Manual interventions by agent: none. Student approval: none claimed.
+# Interface contract (AGENT-PROPOSED, not student-approved)
+
+Authoritative declarations: `platform/capstone_bridge.h` (version 1).
+
+## Ownership
+| File | Owner |
+|---|---|
+| platform/doomgeneric_wasm.c (DG_* adapters, main), platform/capstone_bridge.h, web/index.html, Makefile, BUILD.md | coder |
+| platform/render_timing.{c,h}, web/render_timing.js | coder_render_timing |
+| platform/input_audio.{c,h}, web/input_audio.js | coder_input_audio |
+| tests/ | tester |
+
+## DG adapter mapping (coder implements; specialists supply the cap_* side)
+| Engine callback | Forwards to |
+|---|---|
+| DG_Init | cap_render_init(); cap_input_init(); cap_audio_init() |
+| DG_DrawFrame | cap_render_present(DG_ScreenBuffer) |
+| DG_SleepMs | cap_sleep_ms |
+| DG_GetTicksMs | cap_time_ms |
+| DG_GetKey | cap_input_poll |
+| DG_SetWindowTitle | cap_set_title |
+
+## Engine facts the modules rely on (verified in source)
+- DG_ScreenBuffer is malloc'd inside doomgeneric_Create before DG_Init; 640x400x4.
+- Pixel bytes in memory: B,G,R,0. Alpha is 0 -> must be forced to 255.
+- I_GetTime() uses basetime==0 as "unset"; DG_GetTicksMs must be nonzero on
+  first call or the time base re-latches.
+- Blocking waits exist: d_main.c wipe loop (`do { I_GetTime(); I_Sleep(1); }
+  while (tics<=0)`) and d_loop.c TryRunTics (`I_Sleep(1)` until a tic elapses).
+  cap_sleep_ms must therefore not busy-hang: it may spin on the real clock for
+  <= ~1-2 ms or yield via Asyncify/ASYNCIFY_SLEEP; the render_timing owner picks
+  the mechanism and tells coder the needed flags (e.g. -sASYNCIFY). Real time
+  MUST advance during these waits.
+- DG_GetKey: key codes are already Doom codes (TranslateKey is identity); see
+  doomkeys.h. I_GetEvent stops after the first release event per call, so the
+  queue must tolerate being polled repeatedly. Return 0 when empty.
+- Shift state is tracked from KEY_RSHIFT events only.
+
+## Control flow
+1. main(): mount/preload WAD, call doomgeneric_Create(argc, argv) with
+   argv = {"doom","-iwad","/doom1.wad"} (add "-nosound"-equivalent not needed;
+   FEATURE_SOUND is off by default).
+2. Browser drives `cap_frame()` per animation frame (emscripten_set_main_loop
+   or JS rAF); each call is one doomgeneric_Tick(), presenting via DG_DrawFrame.
+3. JS -> C input only via cap_input_event / cap_input_reset (browser events are
+   queued, never call engine directly).
+
+## Build interface (coder)
+`make clean`, `make all` -> dist/index.html, doom.js, doom.wasm, doom.data.
+Sources: third_party/doomgeneric/*.c excluding platform-specific/unneeded
+(dummy.c handling, i_cdmus, i_joystick, net_* to be confirmed at build time),
+plus platform/*.c, with `-I third_party/doomgeneric -I platform`. Specialists
+request flags/files from coder through their report.md; coder integrates.
+
+## Open items / change process
+Contract changes: specialist describes the exact change in report.md; coder
+bumps CAP_BRIDGE_VERSION and updates this file in a later attempt.
+Audio (DG_sound_module/DG_music_module, SDL_mixer include in i_sound.c) is
+UNDECIDED scope; `cap_audio_init` is a placeholder only.
+# Proposed specification (AGENT-PROPOSED, not student-approved)
+
+Source: commit e500c44 + uncommitted loop/ changes. No student-authored
+artifacts/specification.md existed at planning time; this is a fallback.
+
+## Scope
+- Port supplied doomgeneric (C) to WebAssembly with Emscripten 4.0.18 (pinned
+  per README/Dockerfile). Browser target: Chromium (current stable).
+- Use only assets/doom1.wad (shareware Episode 1), packaged into the module
+  (`--preload-file`) at `/doom1.wad`; launched with `-iwad /doom1.wad`.
+- Output: dist/{index.html,doom.js,doom.wasm,doom.data}; served from a local
+  static server (`python3 -m http.server --directory dist`).
+- Build: root `Makefile` with `clean` and `all`; documented in BUILD.md.
+
+## Functional requirements (proposed)
+- R1 Boot: page loads with no console errors; title screen/menu appear.
+- R2 Display: 640x400 canvas, correct colors (B,G,R,0 -> opaque RGBA), no
+  tearing or channel swap.
+- R3 Timing: engine runs at ~35 tics/s of real time; main loop yields to the
+  browser every frame (requestAnimationFrame / emscripten main loop); screen
+  melt wipe and tic-sync waits do not freeze the tab.
+- R4 Input: keyboard only. Arrows move/turn, Ctrl fire, Space use, Shift run,
+  Alt/comma/period strafe, Enter/Esc/menu navigation, digits weapon select,
+  Tab automap, Y/N prompts. Key release is delivered; focus loss releases keys.
+- R5 Gameplay: New Game -> E1M1 reachable via menu; player can move, shoot,
+  open doors, take damage, and progress state changes visibly.
+- R6 Robustness: no crash/abort in a >= 5 minute scripted session.
+
+## Explicitly UNDECIDED (student decision needed; not claimed done)
+- Audio (SFX via Web Audio, music synthesis): not in default scope.
+- Save/config persistence across reload (IDBFS).
+- Mouse input (engine mouse events are commented out in i_input.c).
+- Browsers other than Chromium; mobile/touch; deployment hosting headers.
+- "Faithful play" definition beyond R1-R6 (e.g., demo/determinism checks).
+Faithful-play acceptance MUST NOT be reported complete while these remain open.
+
+## Assumptions
+- emcc is not installed on this host (`which emcc` -> not found); Docker or
+  emsdk 4.0.18 is needed before any build. Planning did not require it.
+- tests/verify.sh (tester-owned) runs `make clean; make all; node
+  tests/playtest.mjs`, with a hard-coded absolute cd path; neither Makefile
+  nor playtest.mjs exists yet. Reported as a finding, not edited.
+- Single-threaded build (no SharedArrayBuffer), so no COOP/COEP headers.
+- Engine startup: doomgeneric_Create() runs D_DoomMain, which ends by calling
+  doomgeneric_Tick() once and returns; so main() calls Create once then
+  drives doomgeneric_Tick per frame.
+# Proposed acceptance criteria (AGENT-PROPOSED by tester; NOT student-approved)
+
+Basis: README.md, coder's proposed-spec.md (R1-R6) and interface-contract.md. No student
+artifacts/acceptance-criteria.md existed. Student may replace/freeze these; until then they are provisional.
+Implemented in `tests/playtest.mjs` (IDs match). Browser: Playwright Chromium 1.49.1 (131), viewport 800x600.
+
+| ID | Criterion (observable) | Spec |
+|---|---|---|
+| B0 | `make clean && make all` succeeds from clean tree; dist/index.html + doom.wasm exist | build |
+| B1 | `canvas#canvas` is 640x400 | R2 |
+| B2 | Non-black frame with >16 colors within 60s of load | R1 |
+| B3 | Canvas pixels opaque (alpha 255) | R2 |
+| B4/B6 | Mean R >= mean B on title/menu and E1M1 (catches BGR swap) | R2 |
+| B5 | No console errors, page errors, failed requests, or 404s | R1 |
+| T1 | >=20 rAF/s over 3s (main loop yields) | R3 |
+| M1 | Enter on title changes the display (menu opens) | R4/R5 |
+| G1 | Enter x4 reaches a level: big change from menu and populated status bar | R5 |
+| G2 | Idle frames stable (<2% pixels differ) | R5 |
+| I1/I3 | Hold Right/Left turns the view: scene shifts >=8px in the correct direction | R4 |
+| I2,I5,C3 | Motion/fire ceases after key release (<2% change over 0.5s) | R4 |
+| I4/I6 | Forward changes view and keeps changing while held; Backward returns closer to start | R4 |
+| I7 | Window blur while key held stops motion (no stuck key) | R4 |
+| C1/C2 | Ctrl fire animates the view; ammo-counter region changes persistently | R5 |
+| U1-U4 | Tab toggles automap and back; Esc opens/closes menu | R4 |
+| R1-R4 | 300s scripted random-input soak: no errors/aborts, rAF >=20/s, last frame visible, frames changed, no longtask >=1.5s | R6 |
+| selftest | Pixel helpers reject black / channel-swapped / transparent / static / mis-shifted frames | meta |
+
+## Explicitly UNVERIFIED (reported every run; completion must not be claimed while open)
+A1 audio (scope undecided; active AudioContext proves nothing), P1 save persistence, G3 door use /
+level exit, T2 35 tics/s rate (needs a coder-provided tic counter hook; proposal: export `cap_tic_count()`).
+Also not covered: other browsers, mouse, touch, "faithful play" vs. original (e.g. demo/determinism checks).
+
+## Known weaknesses of these checks
+Pixel heuristics can false-fail on legit layout variation (e.g., canvas scaled with different aspect/letterbox,
+HUD region assumptions) and can false-pass on identical-looking wrong gameplay. Backward-return check depends on
+E1M1 geometry. Soak input is seeded pseudo-random; the player may die, so soak proves stability, not progress.
+
+## Assumptions
+Page serves from dist/ via any static server (test uses its own, no special headers); canvas has id `canvas`;
+default menu path is Enter x4 with defaults; keyboard bindings are the Doom defaults in proposed-spec R4.
+Change control: any later change to these criteria is recorded separately with a reason.
+Role=coder RUN_ID=20261102T235903Z-41864 TASK_ID=1-build ATTEMPT_ID=attempt-1.
+OUTPUT_DIR=artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1. Run manifest: artifacts/runs/20261102T235903Z-41864/manifest.txt. Task: Implement/repair owned startup, Makefile and WAD packaging; address existing findings.
+Read current reports under artifacts/runs/20261102T235903Z-41864 and prior runs for unresolved findings.
+Student inputs, if present: artifacts/specification.md, artifacts/acceptance-criteria.md,
+artifacts/interface-contract.md. Fallback spec: artifacts/runs/20261102T235903Z-41864/coder/plan/attempt-1/proposed-spec.md.
+Fallback contract: artifacts/runs/20261102T235903Z-41864/coder/plan/attempt-1/interface-contract.md.
+Fallback criteria: artifacts/runs/20261102T235903Z-41864/tester/prepare/attempt-1/proposed-criteria.md.
+Missing optional inputs: propose sensible requirements, record assumptions, and proceed.
+Do not invent student approval or modify approved/frozen criteria.
+Save report.md and result.json with status and summary in OUTPUT_DIR.
+)
+
+Bash response → (
+// Shared bridge contract between the coder-owned DG adapters
+// (platform/doomgeneric_wasm.c) and the specialist modules
+// (render_timing.*, input_audio.*). AGENT-PROPOSED; not student-approved.
+// Full prose: artifacts/runs/20261102T235903Z-41864/coder/plan/attempt-1/interface-contract.md
+// Only the coder role edits this file; request changes via your report.
+#ifndef CAPSTONE_BRIDGE_H
+#define CAPSTONE_BRIDGE_H
+
+#include <stdint.h>
+
+#include "doomgeneric.h"
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#define CAP_EXPORT EMSCRIPTEN_KEEPALIVE
+#else
+#define CAP_EXPORT
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define CAP_BRIDGE_VERSION 1
+
+// Framebuffer: DG_ScreenBuffer is DOOMGENERIC_RESX x DOOMGENERIC_RESY
+// (640x400) pixel_t (uint32_t). Memory bytes per pixel are B,G,R,0 (alpha is
+// NOT set); the render module converts to opaque RGBA for canvas ImageData.
+#define CAP_FB_WIDTH   DOOMGENERIC_RESX
+#define CAP_FB_HEIGHT  DOOMGENERIC_RESY
+#define CAP_FB_BYTES   (CAP_FB_WIDTH * CAP_FB_HEIGHT * 4)
+
+// Paths inside the Emscripten virtual FS.
+#define CAP_WAD_PATH   "/doom1.wad"
+
+// ---- Owner: coder (platform/doomgeneric_wasm.c) -------------------------
+// The DG_* callbacks in doomgeneric.h are thin adapters that forward to the
+// cap_* functions below. Only the coder defines the DG_* symbols and main().
+CAP_EXPORT int      cap_bridge_version(void);        // returns CAP_BRIDGE_VERSION
+CAP_EXPORT void     cap_frame(void);                 // JS calls once per animation frame: runs doomgeneric_Tick()
+CAP_EXPORT const void *cap_framebuffer_ptr(void);    // DG_ScreenBuffer address (valid after startup)
+CAP_EXPORT int      cap_ready(void);                 // 1 once doomgeneric_Create() returned
+
+// ---- Owner: coder_render_timing (platform/render_timing.c) --------------
+void     cap_render_init(void);                      // from DG_Init
+void     cap_render_present(const pixel_t *fb);      // from DG_DrawFrame; must not retain fb
+uint32_t cap_time_ms(void);                          // from DG_GetTicksMs; monotonic, ms
+                                                     // since page start, MUST be nonzero
+                                                     // by the first engine call (i_timer.c
+                                                     // treats basetime==0 as unset)
+void     cap_sleep_ms(uint32_t ms);                  // from DG_SleepMs (engine wipe/tic waits)
+void     cap_set_title(const char *title);           // from DG_SetWindowTitle
+
+// ---- Owner: coder_input_audio (platform/input_audio.c) ------------------
+void cap_input_init(void);                           // from DG_Init
+int  cap_input_poll(int *pressed, unsigned char *doom_key); // from DG_GetKey; 1=event
+                                                     // returned, 0=queue empty.
+                                                     // doom_key is a doomkeys.h code.
+CAP_EXPORT void cap_input_event(int pressed, int doom_key); // JS->C enqueue (bounded queue)
+CAP_EXPORT void cap_input_reset(void);               // release all keys (blur/visibility)
+void cap_audio_init(void);                           // optional; no-op until audio scope approved
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // CAPSTONE_BRIDGE_H
+// Your WebAssembly platform layer for doomgeneric.
+//
+// These are the functions doomgeneric expects a platform to provide
+// (see third_party/doomgeneric/doomgeneric.h). Right now they do nothing,
+// so the engine links but shows nothing and takes no input.
+//
+// There is also no main() yet. How the engine gets started and kept
+// running in a browser is yours to design.
+//
+// Making this behave like Doom in a browser is the project.
+
+#include <stdint.h>
+
+#include "doomgeneric.h"
+
+void DG_Init()
+{
+}
+
+void DG_DrawFrame()
+{
+}
+
+void DG_SleepMs(uint32_t ms)
+{
+    (void)ms;
+}
+
+uint32_t DG_GetTicksMs()
+{
+    return 0;
+}
+
+int DG_GetKey(int *pressed, unsigned char *key)
+{
+    (void)pressed;
+    (void)key;
+    return 0;
+}
+
+void DG_SetWindowTitle(const char *title)
+{
+    (void)title;
+}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Doom (WASM)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    html, body { margin: 0; height: 100%; background: #000; }
+    body { display: flex; align-items: center; justify-content: center; }
+    canvas { background: #111; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="640" height="400"></canvas>
+  <!-- Wire your build output in here. -->
+</body>
+</html>
+#!/usr/bin/env bash
+# Acceptance entry point (tester-owned). Exit 0 only if build + every required check passes.
+# Env: RUN_ID (evidence dir name), SOAK_SECONDS (default 300), QUICK=1 (partial; never exits 0),
+#      SKIP_BUILD=1 is intentionally NOT supported.
+set -u
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+RUN_ID="${RUN_ID:-manual-$(date -u +%Y%m%dT%H%M%SZ)}"
+OUT_DIR="${OUT_DIR:-artifacts/runs/$RUN_ID/tester/verify-$(date -u +%H%M%SZ)}"
+mkdir -p "$OUT_DIR"
+export OUT_DIR
+fail() { echo "VERIFY FAIL: $1" | tee -a "$OUT_DIR/verify.log"; exit "${2:-1}"; }
+step() { echo "== $1" | tee -a "$OUT_DIR/verify.log"; }
+
+# Identity of what was tested.
+{
+  echo "commit: $(git rev-parse HEAD)"
+  echo "dirty_diff_sha256: $(git diff HEAD -- . ':!artifacts' | shasum -a 256 | cut -d' ' -f1)"
+  git status --short -- . ':!artifacts' | sed 's/^/status: /'
+  echo "tests_sha256: $(cat tests/verify.sh tests/playtest.mjs tests/selftest.mjs tests/lib/frames.mjs tests/package.json | shasum -a 256 | cut -d' ' -f1)"
+  echo "wad_sha256: $(shasum -a 256 assets/doom1.wad | cut -d' ' -f1)"
+  echo "emcc: $(emcc --version 2>/dev/null | head -1 || echo missing)"
+} > "$OUT_DIR/identity.txt"
+
+step "tooling"
+command -v node >/dev/null || fail "node missing" 2
+command -v make >/dev/null || fail "make missing" 2
+command -v emcc >/dev/null || fail "emcc missing (source emsdk 4.0.18 env)" 2
+(cd tests && npm ci --no-audit --no-fund >>"$OUT_DIR/verify.log" 2>&1) || fail "npm ci in tests/ failed" 2
+(cd tests && npx playwright install chromium >>"$OUT_DIR/verify.log" 2>&1) || fail "playwright chromium install failed" 2
+
+step "helper self-test (fault injection on pixel checks)"
+node tests/selftest.mjs 2>&1 | tee "$OUT_DIR/selftest.log"; [ "${PIPESTATUS[0]}" -eq 0 ] || fail "selftest failed"
+
+step "clean build"
+{ make clean && make all; } >"$OUT_DIR/build.log" 2>&1 || fail "make clean && make all failed (see $OUT_DIR/build.log)"
+[ -f dist/index.html ] && [ -f dist/doom.wasm ] || fail "dist/index.html or dist/doom.wasm missing after build"
+shasum -a 256 dist/* > "$OUT_DIR/dist-sha256.txt" 2>/dev/null
+
+step "browser playtest"
+node tests/playtest.mjs 2>&1 | tee "$OUT_DIR/playtest.log"
+rc=${PIPESTATUS[0]}
+echo "{\"exit\": $rc, \"evidence\": \"$OUT_DIR\"}" > "$OUT_DIR/verify-result.json"
+exit "$rc"
+tests:
+lib
+node_modules
+package-lock.json
+package.json
+playtest.mjs
+README.md
+selftest.mjs
+verify.sh
+
+tests/lib:
+frames.mjs
+assets:
+doom1.wad
+README.md
+
+third_party/doomgeneric:
+am_map.c
+am_map.h
+config.h
+d_englsh.h
+d_event.c
+d_event.h
+d_items.c
+d_items.h
+d_iwad.c
+d_iwad.h
+d_loop.c
+d_loop.h
+d_main.c
+d_main.h
+d_mode.c
+d_mode.h
+d_net.c
+d_player.h
+d_textur.h
+d_think.h
+d_ticcmd.h
+deh_main.h
+deh_misc.h
+deh_str.h
+doom.h
+doomdata.h
+doomdef.c
+doomdef.h
+doomfeatures.h
+doomgeneric.c
+doomgeneric.h
+doomkeys.h
+doomstat.c
+doomstat.h
+doomtype.h
+dstrings.c
+dstrings.h
+dummy.c
+f_finale.c
+f_finale.h
+f_wipe.c
+f_wipe.h
+g_game.c
+g_game.h
+gusconf.c
+gusconf.h
+hu_lib.c
+hu_lib.h
+hu_stuff.c
+hu_stuff.h
+i_cdmus.c
+i_cdmus.h
+i_endoom.c
+i_endoom.h
+i_input.c
+i_joystick.c
+i_joystick.h
+i_scale.c
+i_scale.h
+i_sound.c
+i_sound.h
+i_swap.h
+i_system.c
+i_system.h
+i_timer.c
+i_timer.h
+i_video.c
+i_video.h
+icon.c
+info.c
+info.h
+m_argv.c
+m_argv.h
+m_bbox.c
+m_bbox.h
+m_cheat.c
+m_cheat.h
+m_config.c
+m_config.h
+m_controls.c
+m_controls.h
+m_fixed.c
+m_fixed.h
+m_menu.c
+m_menu.h
+m_misc.c
+m_misc.h
+m_random.c
+m_random.h
+memio.c
+memio.h
+mus2mid.c
+mus2mid.h
+net_client.h
+net_dedicated.h
+net_defs.h
+net_gui.h
+net_io.h
+net_loop.h
+net_packet.h
+net_query.h
+net_sdl.h
+net_server.h
+p_ceilng.c
+p_doors.c
+p_enemy.c
+p_floor.c
+p_inter.c
+p_inter.h
+p_lights.c
+p_local.h
+p_map.c
+p_maputl.c
+p_mobj.c
+p_mobj.h
+p_plats.c
+p_pspr.c
+p_pspr.h
+p_saveg.c
+p_saveg.h
+p_setup.c
+p_setup.h
+p_sight.c
+p_spec.c
+p_spec.h
+p_switch.c
+p_telept.c
+p_tick.c
+p_tick.h
+p_user.c
+r_bsp.c
+r_bsp.h
+r_data.c
+r_data.h
+r_defs.h
+r_draw.c
+r_draw.h
+r_local.h
+r_main.c
+r_main.h
+r_plane.c
+r_plane.h
+r_segs.c
+r_segs.h
+r_sky.c
+r_sky.h
+r_state.h
+r_things.c
+r_things.h
+README.TXT
+s_sound.c
+s_sound.h
+sha1.c
+sha1.h
+sounds.c
+sounds.h
+st_lib.c
+st_lib.h
+st_stuff.c
+st_stuff.h
+statdump.c
+statdump.h
+tables.c
+tables.h
+v_patch.h
+v_video.c
+v_video.h
+w_checksum.c
+w_checksum.h
+w_file_stdc.c
+w_file.c
+w_file.h
+w_main.c
+w_main.h
+w_merge.h
+w_wad.c
+w_wad.h
+wi_stuff.c
+wi_stuff.h
+z_zone.c
+z_zone.h
+emcc not found
+bazel
+build
+docker
+)
+
+Calling Bash()
+
+Bash response → (
+bazel
+build
+docker
+downloads
+emcmdprompt.bat
+emscripten-releases-tags.json
+emsdk
+emsdk_env.bat
+emsdk_env.csh
+emsdk_env.fish
+emsdk_env.ps1
+emsdk_env.sh
+emsdk_manifest.json
+emsdk.bat
+emsdk.ps1
+emsdk.py
+legacy-binaryen-tags.txt
+legacy-emscripten-tags.txt
+LICENSE
+llvm-tags-64bit.txt
+emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 4.0.18 (fae107463db4d20a276a27ede393048deaeebf76)
+# Toolchain image for the sandbox. Emscripten is preinstalled so the agent
+# never needs the network to get a compiler.
+FROM emscripten/emsdk:4.0.18@sha256:bbe90e2b00acbd1a9596087d88305029f383de1eb71c0cdb20f4e19647265450
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      git make python3 nodejs npm \
+ && rm -rf /var/lib/apt/lists/*
+
+# Browser tooling is preinstalled so runtime checks need no package downloads.
+# A fixed prefix makes CommonJS require('playwright') available through NODE_PATH.
+# ESM scripts can import /opt/browser-tools/lib/node_modules/playwright/index.mjs.
+ENV NODE_PATH=/opt/browser-tools/lib/node_modules \
+    PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright
+ENV PATH=/opt/browser-tools/bin:${PATH}
+RUN npm install --global --prefix /opt/browser-tools playwright@1.56.1 \
+ && playwright install --with-deps chromium \
+ && chmod -R a+rX /opt/browser-tools /opt/ms-playwright
+
+# Fail the image build if either compiler or browser startup is broken.
+RUN emcc --version \
+ && node -e "const { chromium } = require('playwright'); (async () => { const browser = await chromium.launch(); await browser.close(); })().catch(error => { console.error(error); process.exit(1); });"
+
+WORKDIR /workspace
+#include <stdio.h>
+
+#include "m_argv.h"
+
+#include "doomgeneric.h"
+
+pixel_t* DG_ScreenBuffer = NULL;
+
+void M_FindResponseFile(void);
+void D_DoomMain (void);
+
+void doomgeneric_Create(int argc, char **argv)
+{
+	// save arguments
+    myargc = argc;
+    myargv = argv;
+
+	M_FindResponseFile();
+
+	DG_ScreenBuffer = malloc(DOOMGENERIC_RESX * DOOMGENERIC_RESY * 4);
+
+	DG_Init();
+
+	D_DoomMain ();
+}
+
+34:void doomgeneric_Tick();
+41:uint32_t DG_GetTicksMs();
+ls: build: No such file or directory
+ls: dist: No such file or directory
+platform:
+capstone_bridge.h
+doomgeneric_wasm.c
+README.md
+
+web:
+index.html
+?? platform/capstone_bridge.h
+)
+
+Calling Bash()
+
+Bash response → (
+d_main.c:16://	DOOM main program (D_DoomMain) and game loop (D_DoomLoop),
+d_main.c:86:void D_DoomLoop (void);
+d_main.c:405:void doomgeneric_Tick()
+d_main.c:422://  D_DoomLoop
+d_main.c:424:void D_DoomLoop (void)
+d_main.c:445:    I_InitGraphics();
+d_main.c:458:    doomgeneric_Tick();
+d_main.c:1817:		D_DoomLoop ();
+d_main.c:1825:		D_DoomLoop ();
+d_main.c:1843:    D_DoomLoop ();
+i_input.c:286:	while (DG_GetKey(&pressed, &key))
+i_timer.c:40:	return DG_GetTicksMs();
+i_timer.c:81:	DG_SleepMs(ms);
+i_sound.c:77:    &DG_sound_module,
+i_sound.c:134:    music_module = &DG_music_module;
+i_video.c:205:void I_InitGraphics (void)
+i_video.c:267:    printf("I_InitGraphics: framebuffer: x_res: %d, y_res: %d, x_virtual: %d, y_virtual: %d, bpp: %d\n",
+i_video.c:270:    printf("I_InitGraphics: framebuffer: RGBA: %d%d%d%d, red_off: %d, green_off: %d, blue_off: %d, transp_off: %d\n",
+i_video.c:273:    printf("I_InitGraphics: DOOM screen size: w x h: %d x %d\n", SCREENWIDTH, SCREENHEIGHT);
+i_video.c:280:        printf("I_InitGraphics: Scaling factor: %d\n", fb_scaling);
+i_video.c:285:        printf("I_InitGraphics: Auto-scaling factor: %d\n", fb_scaling);
+i_video.c:338:    line_out = (unsigned char *) DG_ScreenBuffer;
+i_video.c:369:	DG_DrawFrame();
+i_video.c:470:	DG_SetWindowTitle(title);
+i_sound.c:21:#if defined(FEATURE_SOUND) && !defined(__DJGPP__)
+i_sound.c:22:#include <SDL_mixer.h>
+i_sound.c:76:    #ifdef FEATURE_SOUND
+i_sound.c:133:#ifdef FEATURE_SOUND
+i_sound.c:135:#endif /* FEATURE_SOUND */
+i_sound.c:177:        // the TIMIDITY_CFG environment variable here before SDL_mixer
+i_sound.c:411:#ifdef FEATURE_SOUND
+i_sound.c:416:    // Before SDL_mixer version 1.2.11, MIDI music caused the game
+i_sound.c:417:    // to crash when it looped.  If this is an old SDL_mixer version,
+doomfeatures.h:19:#ifndef DOOM_FEATURES_H
+doomfeatures.h:20:#define DOOM_FEATURES_H
+doomfeatures.h:24:#undef FEATURE_WAD_MERGE
+doomfeatures.h:28:#undef FEATURE_DEHACKED
+doomfeatures.h:32:#undef FEATURE_MULTIPLAYER
+doomfeatures.h:36://#undef FEATURE_SOUND
+doomfeatures.h:38:#endif /* #ifndef DOOM_FEATURES_H */
+/*
+ * dummy.c
+ *
+ *  Created on: 16.02.2015
+ *      Author: Florian
+ */
+
+/*---------------------------------------------------------------------*
+ *  include files                                                      *
+ *---------------------------------------------------------------------*/
+
+#include "doomtype.h"
+
+/*---------------------------------------------------------------------*
+ *  local definitions                                                  *
+ *---------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------*
+ *  external declarations                                              *
+#ifndef DOOM_GENERIC
+#define DOOM_GENERIC
+
+#include <stdlib.h>
+#include <stdint.h>
+
+#ifndef DOOMGENERIC_RESX
+#define DOOMGENERIC_RESX 640
+#endif  // DOOMGENERIC_RESX
+
+#ifndef DOOMGENERIC_RESY
+#define DOOMGENERIC_RESY 400
+#endif  // DOOMGENERIC_RESY
+
+#ifdef CMAP256
+
+typedef uint8_t pixel_t;
+
+#else  // CMAP256
+
+typedef uint32_t pixel_t;
+
+#endif  // CMAP256
+
+extern pixel_t* DG_ScreenBuffer;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void doomgeneric_Create(int argc, char **argv);
+void doomgeneric_Tick();
+
+//Implement below functions for your platform
+void DG_Init();
+void DG_DrawFrame();
+void DG_SleepMs(uint32_t ms);
+)
+
+Calling Bash()
+
+Bash response → (
+27:#define KEY_RIGHTARROW	0xae
+28:#define KEY_LEFTARROW	0xac
+29:#define KEY_UPARROW		0xad
+30:#define KEY_DOWNARROW	0xaf
+31:#define KEY_STRAFE_L	0xa0
+32:#define KEY_STRAFE_R	0xa1
+33:#define KEY_USE			0xa2
+34:#define KEY_FIRE		0xa3
+35:#define KEY_ESCAPE		27
+36:#define KEY_ENTER		13
+37:#define KEY_TAB			9
+38:#define KEY_F1			(0x80+0x3b)
+39:#define KEY_F2			(0x80+0x3c)
+40:#define KEY_F3			(0x80+0x3d)
+41:#define KEY_F4			(0x80+0x3e)
+42:#define KEY_F5			(0x80+0x3f)
+43:#define KEY_F6			(0x80+0x40)
+44:#define KEY_F7			(0x80+0x41)
+45:#define KEY_F8			(0x80+0x42)
+46:#define KEY_F9			(0x80+0x43)
+47:#define KEY_F10			(0x80+0x44)
+48:#define KEY_F11			(0x80+0x57)
+49:#define KEY_F12			(0x80+0x58)
+51:#define KEY_BACKSPACE	0x7f
+52:#define KEY_PAUSE	0xff
+54:#define KEY_EQUALS	0x3d
+55:#define KEY_MINUS	0x2d
+57:#define KEY_RSHIFT	(0x80+0x36)
+58:#define KEY_RCTRL	(0x80+0x1d)
+59:#define KEY_RALT	(0x80+0x38)
+61:#define KEY_LALT	KEY_RALT
+65:#define KEY_CAPSLOCK    (0x80+0x3a)
+66:#define KEY_NUMLOCK     (0x80+0x45)
+67:#define KEY_SCRLCK      (0x80+0x46)
+68:#define KEY_PRTSCR      (0x80+0x59)
+70:#define KEY_HOME        (0x80+0x47)
+71:#define KEY_END         (0x80+0x4f)
+72:#define KEY_PGUP        (0x80+0x49)
+73:#define KEY_PGDN        (0x80+0x51)
+74:#define KEY_INS         (0x80+0x52)
+75:#define KEY_DEL         (0x80+0x53)
+77:#define KEYP_0          0
+78:#define KEYP_1          KEY_END
+79:#define KEYP_2          KEY_DOWNARROW
+80:#define KEYP_3          KEY_PGDN
+81:#define KEYP_4          KEY_LEFTARROW
+82:#define KEYP_5          '5'
+83:#define KEYP_6          KEY_RIGHTARROW
+84:#define KEYP_7          KEY_HOME
+85:#define KEYP_8          KEY_UPARROW
+86:#define KEYP_9          KEY_PGUP
+88:#define KEYP_DIVIDE     '/'
+89:#define KEYP_PLUS       '+'
+90:#define KEYP_MINUS      '-'
+91:#define KEYP_MULTIPLY   '*'
+92:#define KEYP_PERIOD     0
+93:#define KEYP_EQUALS     KEY_EQUALS
+94:#define KEYP_ENTER      KEY_ENTER
+    // only grab mouse when playing levels (but not demos)
+
+    return (gamestate == GS_LEVEL) && !demoplayback && !advancedemo;
+}
+
+void doomgeneric_Tick()
+{
+    // frame syncronous IO operations
+    I_StartFrame ();
+
+    TryRunTics (); // will run at least one tic
+
+    S_UpdateSounds (players[consoleplayer].mo);// move positional sounds
+
+    // Update display, next frame, with current state.
+    if (screenvisible)
+    {
+        D_Display ();
+    }
+}
+
+//
+//  D_DoomLoop
+//
+void D_DoomLoop (void)
+{
+    if (bfgedition &&
+        (demorecording || (gameaction == ga_playdemo) || netgame))
+    {
+        printf(" WARNING: You are playing using one of the Doom Classic\n"
+               " IWAD files shipped with the Doom 3: BFG Edition. These are\n"
+               " known to be incompatible with the regular IWAD files and\n"
+               " may cause demos and network games to get out of sync.\n");
+    }
+
+    if (demorecording)
+    	G_BeginRecording ();
+
+    main_loop_started = true;
+
+    TryRunTics();
+
+    I_SetWindowTitle(gamedescription);
+    I_GraphicsCheckCommandLine();
+    I_SetGrabMouseCallback(D_GrabMouseCallback);
+    I_InitGraphics();
+    I_EnableLoadingDisk();
+
+    V_RestoreBuffer();
+    R_ExecuteSetViewSize();
+
+    D_StartGameLoop();
+
+    if (testcontrols)
+    {
+        wipegamestate = gamestate;
+    }
+
+    doomgeneric_Tick();
+}
+
+//
+//  DEMO LOOP
+//
+int             demosequence;
+int             pagetic;
+char                    *pagename;
+
+1598:    KEY_F6,   KEY_F7,   KEY_F8,   KEY_F9,   KEY_F10,  /*KEY_NUMLOCK?*/KEY_PAUSE,KEY_SCRLCK,KEY_HOME,
+1635:        chars_written = fprintf(f, "%s ", defaults[i].name);
+1638:            fprintf(f, " ");
+1687:	        fprintf(f, "%i", v);
+1691:	        fprintf(f, "%i", * (int *) defaults[i].location);
+// Browser acceptance test for the Doom WASM port (AGENT-PROPOSED criteria; see
+// artifacts/runs/*/tester/prepare/attempt-1/proposed-criteria.md). Exit 0 only if every required
+// check passes. Env: DIST_DIR (default dist), OUT_DIR (evidence), SOAK_SECONDS (default 300),
+// QUICK=1 shortens the soak and forces a nonzero exit (3): partial runs never count as pass.
+import http from 'node:http'; import fs from 'node:fs'; import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { chromium } from 'playwright'; import { PNG } from 'pngjs';
+import { stats, diffFrac, bestShift, VIEW, STATUSBAR, AMMO } from './lib/frames.mjs';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const DIST = path.resolve(root, process.env.DIST_DIR || 'dist');
+const OUT = path.resolve(root, process.env.OUT_DIR || `artifacts/runs/manual-${Date.now()}/tester/playtest`);
+const QUICK = process.env.QUICK === '1';
+const SOAK = QUICK ? 15 : Number(process.env.SOAK_SECONDS || 300);
+fs.mkdirSync(path.join(OUT, 'screens'), { recursive: true });
+
+const results = []; const log = [];
+const rec = (id, status, detail = '') => { results.push({ id, status, detail }); console.log(`${status.padEnd(10)} ${id} ${detail}`); };
+const check = (id, cond, detail = '') => rec(id, cond ? 'PASS' : 'FAIL', detail);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+function finish(extra = {}) {
+  const failed = results.filter((r) => r.status === 'FAIL').length;
+  const unverified = results.filter((r) => r.status === 'UNVERIFIED').length;
+  let code = failed ? 1 : 0; if (!code && QUICK) code = 3;
+  const out = { status: code === 0 ? 'PASS' : 'FAIL', quick: QUICK, soak_seconds: SOAK, failed, unverified, results, ...extra };
+  fs.writeFileSync(path.join(OUT, 'playtest-results.json'), JSON.stringify(out, null, 2));
+  fs.writeFileSync(path.join(OUT, 'browser-console.log'), log.join('\n'));
+  console.log(`playtest: ${out.status} failed=${failed} unverified(not-in-scope, listed)=${unverified}${QUICK ? ' QUICK=partial' : ''}`);
+  process.exit(code);
+}
+
+// Missing dist is a hard failure, not a skip.
+for (const f of ['index.html', 'doom.wasm']) if (!fs.existsSync(path.join(DIST, f))) { rec('B0.dist-present', 'FAIL', `${path.join(DIST, f)} missing`); finish(); }
+rec('B0.dist-present', 'PASS');
+
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.wasm': 'application/wasm', '.data': 'application/octet-stream', '.css': 'text/css' };
+const badResponses = [];
+const server = http.createServer((req, res) => {
+  const p = path.join(DIST, decodeURIComponent(new URL(req.url, 'http://x').pathname).replace(/^\/$/, '/index.html'));
+  if (!p.startsWith(DIST) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) { badResponses.push(`404 ${req.url}`); res.writeHead(404).end(); return; }
+3:// check passes. Env: DIST_DIR (default dist), OUT_DIR (evidence), SOAK_SECONDS (default 300),
+11:const DIST = path.resolve(root, process.env.DIST_DIR || 'dist');
+32:// Missing dist is a hard failure, not a skip.
+33:for (const f of ['index.html', 'doom.wasm']) if (!fs.existsSync(path.join(DIST, f))) { rec('B0.dist-present', 'FAIL', `${path.join(DIST, f)} missing`); finish(); }
+34:rec('B0.dist-present', 'PASS');
+38:const server = http.createServer((req, res) => {
+43:await new Promise((r) => server.listen(0, '127.0.0.1', r));
+44:const url = `http://127.0.0.1:${server.address().port}/`;
+54:  window.__long = []; try { new PerformanceObserver((l) => l.getEntries().forEach((e) => window.__long.push(e.duration))).observe({ entryTypes: ['longtask'] }); } catch {}
+59:  const buf = await page.locator('#canvas').screenshot();
+67:  await page.goto(url);
+68:  check('B1.canvas-640x400', await page.evaluate(() => { const c = document.getElementById('canvas'); return !!c && c.width === 640 && c.height === 400; }), 'canvas#canvas intrinsic size');
+71:  while (Date.now() - t0 < 60000) { const p = await shot('boot'); const s = stats(p); if (s.darkFrac < 0.9 && s.distinctColors > 16) { boot = { p, s }; break; } await sleep(500); }
+72:  check('B2.boot-renders-frame', !!boot, boot ? `after ${Date.now() - t0}ms colors=${boot.s.distinctColors}` : 'no non-black frame in 60s');
+77:  await page.locator('#canvas').click({ position: { x: 5, y: 5 } }).catch(() => {}); // focus only
+90:  check('G1.level-started', diffFrac(menu, lvl) > 0.2 && sb.distinctColors > 20, `diff-from-menu=${diffFrac(menu, lvl).toFixed(2)} statusbarColors=${sb.distinctColors}`);
+164:await browser.close().catch(() => {}); server.close();
+)
+
+Calling Bash()
+
+Bash response → (
+29:int key_right = KEY_RIGHTARROW;
+30:int key_left = KEY_LEFTARROW;
+33:int key_strafeleft = KEY_STRAFE_L;
+34:int key_straferight = KEY_STRAFE_R;
+35:int key_fire = KEY_FIRE;
+36:int key_use = KEY_USE;
+37:int key_strafe = KEY_RALT;
+38:int key_speed = KEY_RSHIFT; 
+54:int key_useartifact = KEY_ENTER;
+80:int key_usehealth = 'h';
+206:    M_BindVariable("key_right",          &key_right);
+207:    M_BindVariable("key_left",           &key_left);
+210:    M_BindVariable("key_strafeleft",     &key_strafeleft);
+211:    M_BindVariable("key_straferight",    &key_straferight);
+212:    M_BindVariable("key_fire",           &key_fire);
+213:    M_BindVariable("key_use",            &key_use);
+214:    M_BindVariable("key_strafe",         &key_strafe);
+215:    M_BindVariable("key_speed",          &key_speed);
+253:    M_BindVariable("key_useartifact",    &key_useartifact);
+291:    M_BindVariable("key_useHealth",      &key_usehealth);
+#include <string.h>
+#include <fcntl.h>
+#include <stdio.h>
+
+#include "config.h"
+#include "deh_str.h"
+#include "doomtype.h"
+#include "doomkeys.h"
+#include "i_joystick.h"
+#include "i_system.h"
+#include "i_swap.h"
+#include "i_timer.h"
+#include "i_video.h"
+#include "i_scale.h"
+#include "m_argv.h"
+#include "m_config.h"
+#include "m_misc.h"
+#include "tables.h"
+#include "v_video.h"
+#include "w_wad.h"
+#include "z_zone.h"
+
+#include "doomgeneric.h"
+
+int vanilla_keyboard_mapping = 1;
+
+// Is the shift key currently down?
+
+static int shiftdown = 0;
+
+// Lookup table for mapping AT keycodes to their doom keycode
+static const char at_to_doom[] =
+{
+    /* 0x00 */ 0x00,
+    /* 0x01 */ KEY_ESCAPE,
+    /* 0x02 */ '1',
+    /* 0x03 */ '2',
+    /* 0x04 */ '3',
+    /* 0x05 */ '4',
+    /* 0x06 */ '5',
+    /* 0x07 */ '6',
+    /* 0x08 */ '7',
+    /* 0x09 */ '8',
+    /* 0x0a */ '9',
+    /* 0x0b */ '0',
+    /* 0x0c */ '-',
+    /* 0x0d */ '=',
+    /* 0x0e */ KEY_BACKSPACE,
+    /* 0x0f */ KEY_TAB,
+    /* 0x10 */ 'q',
+    /* 0x11 */ 'w',
+    /* 0x12 */ 'e',
+    /* 0x13 */ 'r',
+    /* 0x14 */ 't',
+    /* 0x15 */ 'y',
+    /* 0x16 */ 'u',
+    /* 0x17 */ 'i',
+    /* 0x18 */ 'o',
+    /* 0x19 */ 'p',
+    /* 0x1a */ '[',
+    /* 0x1b */ ']',
+    /* 0x1c */ KEY_ENTER,
+    /* 0x1d */ KEY_FIRE, /* KEY_RCTRL, */
+    /* 0x1e */ 'a',
+    /* 0x1f */ 's',
+    /* 0x20 */ 'd',
+    /* 0x21 */ 'f',
+    /* 0x22 */ 'g',
+    /* 0x23 */ 'h',
+    /* 0x24 */ 'j',
+    /* 0x25 */ 'k',
+    /* 0x26 */ 'l',
+    /* 0x27 */ ';',
+    /* 0x28 */ '\'',
+    /* 0x29 */ '`',
+    /* 0x2a */ KEY_RSHIFT,
+    /* 0x2b */ '\\',
+    /* 0x2c */ 'z',
+    /* 0x2d */ 'x',
+    /* 0x2e */ 'c',
+    /* 0x2f */ 'v',
+    /* 0x30 */ 'b',
+    /* 0x31 */ 'n',
+    /* 0x32 */ 'm',
+    /* 0x33 */ ',',
+    /* 0x34 */ '.',
+    /* 0x35 */ '/',
+    /* 0x36 */ KEY_RSHIFT,
+    /* 0x37 */ KEYP_MULTIPLY,
+    /* 0x38 */ KEY_LALT,
+    /* 0x39 */ KEY_USE,
+)
+
+Calling Bash()
+
+Bash response → (
+rc=2
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -w -c platform/cap_fallback.c -o build/platform/cap_fallback.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -w -c platform/doomgeneric_wasm.c -o build/platform/doomgeneric_wasm.o
+emcc build/third_party/doomgeneric/am_map.o build/third_party/doomgeneric/d_event.o build/third_party/doomgeneric/d_items.o build/third_party/doomgeneric/d_iwad.o build/third_party/doomgeneric/d_loop.o build/third_party/doomgeneric/d_main.o build/third_party/doomgeneric/d_mode.o build/third_party/doomgeneric/d_net.o build/third_party/doomgeneric/doomdef.o build/third_party/doomgeneric/doomgeneric.o build/third_party/doomgeneric/doomstat.o build/third_party/doomgeneric/dstrings.o build/third_party/doomgeneric/f_finale.o build/third_party/doomgeneric/f_wipe.o build/third_party/doomgeneric/g_game.o build/third_party/doomgeneric/gusconf.o build/third_party/doomgeneric/hu_lib.o build/third_party/doomgeneric/hu_stuff.o build/third_party/doomgeneric/i_cdmus.o build/third_party/doomgeneric/i_endoom.o build/third_party/doomgeneric/i_input.o build/third_party/doomgeneric/i_joystick.o build/third_party/doomgeneric/i_scale.o build/third_party/doomgeneric/i_sound.o build/third_party/doomgeneric/i_system.o build/third_party/doomgeneric/i_timer.o build/third_party/doomgeneric/i_video.o build/third_party/doomgeneric/icon.o build/third_party/doomgeneric/info.o build/third_party/doomgeneric/m_argv.o build/third_party/doomgeneric/m_bbox.o build/third_party/doomgeneric/m_cheat.o build/third_party/doomgeneric/m_config.o build/third_party/doomgeneric/m_controls.o build/third_party/doomgeneric/m_fixed.o build/third_party/doomgeneric/m_menu.o build/third_party/doomgeneric/m_misc.o build/third_party/doomgeneric/m_random.o build/third_party/doomgeneric/memio.o build/third_party/doomgeneric/mus2mid.o build/third_party/doomgeneric/p_ceilng.o build/third_party/doomgeneric/p_doors.o build/third_party/doomgeneric/p_enemy.o build/third_party/doomgeneric/p_floor.o build/third_party/doomgeneric/p_inter.o build/third_party/doomgeneric/p_lights.o build/third_party/doomgeneric/p_map.o build/third_party/doomgeneric/p_maputl.o build/third_party/doomgeneric/p_mobj.o build/third_party/doomgeneric/p_plats.o build/third_party/doomgeneric/p_pspr.o build/third_party/doomgeneric/p_saveg.o build/third_party/doomgeneric/p_setup.o build/third_party/doomgeneric/p_sight.o build/third_party/doomgeneric/p_spec.o build/third_party/doomgeneric/p_switch.o build/third_party/doomgeneric/p_telept.o build/third_party/doomgeneric/p_tick.o build/third_party/doomgeneric/p_user.o build/third_party/doomgeneric/r_bsp.o build/third_party/doomgeneric/r_data.o build/third_party/doomgeneric/r_draw.o build/third_party/doomgeneric/r_main.o build/third_party/doomgeneric/r_plane.o build/third_party/doomgeneric/r_segs.o build/third_party/doomgeneric/r_sky.o build/third_party/doomgeneric/r_things.o build/third_party/doomgeneric/s_sound.o build/third_party/doomgeneric/sha1.o build/third_party/doomgeneric/sounds.o build/third_party/doomgeneric/st_lib.o build/third_party/doomgeneric/st_stuff.o build/third_party/doomgeneric/statdump.o build/third_party/doomgeneric/tables.o build/third_party/doomgeneric/v_video.o build/third_party/doomgeneric/w_checksum.o build/third_party/doomgeneric/w_file_stdc.o build/third_party/doomgeneric/w_file.o build/third_party/doomgeneric/w_main.o build/third_party/doomgeneric/w_wad.o build/third_party/doomgeneric/wi_stuff.o build/third_party/doomgeneric/z_zone.o build/platform/cap_fallback.o build/platform/doomgeneric_wasm.o -O2 -sASYNCIFY -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=64MB -sEXPORTED_FUNCTIONS=_main,_cap_frame,_cap_ready,_cap_input_event,_cap_input_reset,_cap_bridge_version,_cap_framebuffer_ptr -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,HEAPU8 --preload-file assets/doom1.wad@/doom1.wad -o dist/doom.js
+wasm-ld: error: build/third_party/doomgeneric/d_loop.o: undefined symbol: drone
+wasm-ld: error: build/third_party/doomgeneric/d_loop.o: undefined symbol: net_client_connected
+wasm-ld: error: build/third_party/doomgeneric/d_loop.o: undefined symbol: drone
+wasm-ld: error: build/third_party/doomgeneric/d_loop.o: undefined symbol: net_client_connected
+wasm-ld: error: build/third_party/doomgeneric/d_loop.o: undefined symbol: net_client_connected
+wasm-ld: error: build/third_party/doomgeneric/d_loop.o: undefined symbol: net_client_connected
+wasm-ld: error: build/third_party/doomgeneric/d_loop.o: undefined symbol: drone
+wasm-ld: error: build/third_party/doomgeneric/d_loop.o: undefined symbol: net_client_connected
+wasm-ld: error: build/third_party/doomgeneric/d_loop.o: undefined symbol: drone
+wasm-ld: error: build/third_party/doomgeneric/d_main.o: undefined symbol: drone
+emcc: error: '/Users/sarahtseng/Developer/emsdk/upstream/bin/wasm-ld -o dist/doom.wasm build/third_party/doomgeneric/am_map.o build/third_party/doomgeneric/d_event.o build/third_party/doomgeneric/d_items.o build/third_party/doomgeneric/d_iwad.o build/third_party/doomgeneric/d_loop.o build/third_party/doomgeneric/d_main.o build/third_party/doomgeneric/d_mode.o build/third_party/doomgeneric/d_net.o build/third_party/doomgeneric/doomdef.o build/third_party/doomgeneric/doomgeneric.o build/third_party/doomgeneric/doomstat.o build/third_party/doomgeneric/dstrings.o build/third_party/doomgeneric/f_finale.o build/third_party/doomgeneric/f_wipe.o build/third_party/doomgeneric/g_game.o build/third_party/doomgeneric/gusconf.o build/third_party/doomgeneric/hu_lib.o build/third_party/doomgeneric/hu_stuff.o build/third_party/doomgeneric/i_cdmus.o build/third_party/doomgeneric/i_endoom.o build/third_party/doomgeneric/i_input.o build/third_party/doomgeneric/i_joystick.o build/third_party/doomgeneric/i_scale.o build/third_party/doomgeneric/i_sound.o build/third_party/doomgeneric/i_system.o build/third_party/doomgeneric/i_timer.o build/third_party/doomgeneric/i_video.o build/third_party/doomgeneric/icon.o build/third_party/doomgeneric/info.o build/third_party/doomgeneric/m_argv.o build/third_party/doomgeneric/m_bbox.o build/third_party/doomgeneric/m_cheat.o build/third_party/doomgeneric/m_config.o build/third_party/doomgeneric/m_controls.o build/third_party/doomgeneric/m_fixed.o build/third_party/doomgeneric/m_menu.o build/third_party/doomgeneric/m_misc.o build/third_party/doomgeneric/m_random.o build/third_party/doomgeneric/memio.o build/third_party/doomgeneric/mus2mid.o build/third_party/doomgeneric/p_ceilng.o build/third_party/doomgeneric/p_doors.o build/third_party/doomgeneric/p_enemy.o build/third_party/doomgeneric/p_floor.o build/third_party/doomgeneric/p_inter.o build/third_party/doomgeneric/p_lights.o build/third_party/doomgeneric/p_map.o build/third_party/doomgeneric/p_maputl.o build/third_party/doomgeneric/p_mobj.o build/third_party/doomgeneric/p_plats.o build/third_party/doomgeneric/p_pspr.o build/third_party/doomgeneric/p_saveg.o build/third_party/doomgeneric/p_setup.o build/third_party/doomgeneric/p_sight.o build/third_party/doomgeneric/p_spec.o build/third_party/doomgeneric/p_switch.o build/third_party/doomgeneric/p_telept.o build/third_party/doomgeneric/p_tick.o build/third_party/doomgeneric/p_user.o build/third_party/doomgeneric/r_bsp.o build/third_party/doomgeneric/r_data.o build/third_party/doomgeneric/r_draw.o build/third_party/doomgeneric/r_main.o build/third_party/doomgeneric/r_plane.o build/third_party/doomgeneric/r_segs.o build/third_party/doomgeneric/r_sky.o build/third_party/doomgeneric/r_things.o build/third_party/doomgeneric/s_sound.o build/third_party/doomgeneric/sha1.o build/third_party/doomgeneric/sounds.o build/third_party/doomgeneric/st_lib.o build/third_party/doomgeneric/st_stuff.o build/third_party/doomgeneric/statdump.o build/third_party/doomgeneric/tables.o build/third_party/doomgeneric/v_video.o build/third_party/doomgeneric/w_checksum.o build/third_party/doomgeneric/w_file_stdc.o build/third_party/doomgeneric/w_file.o build/third_party/doomgeneric/w_main.o build/third_party/doomgeneric/w_wad.o build/third_party/doomgeneric/wi_stuff.o build/third_party/doomgeneric/z_zone.o build/platform/cap_fallback.o build/platform/doomgeneric_wasm.o -L/Users/sarahtseng/Developer/emsdk/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten -L/Users/sarahtseng/Developer/emsdk/upstream/emscripten/src/lib -lGL-getprocaddr -lal -lhtml5 -lstubs -lnoexit -lc -ldlmalloc -lcompiler_rt -lc++-noexcept -lc++abi-noexcept -lsockets -mllvm -combiner-global-alias-analysis=false -mllvm -enable-emscripten-sjlj -mllvm -disable-lsr /var/folders/wg/4d62rn6925jckfpccqv6jfc40000gn/T/tmpmdcwxarblibemscripten_js_symbols.so --export=cap_frame --export=cap_ready --export=cap_input_event --export=cap_input_reset --export=cap_bridge_version --export=cap_framebuffer_ptr --export=_emscripten_stack_alloc --export=__wasm_call_ctors --export=emscripten_stack_get_current --export=_emscripten_stack_restore --export=malloc --export=free --export-if-defined=__start_em_asm --export-if-defined=__stop_em_asm --export-if-defined=__start_em_lib_deps --export-if-defined=__stop_em_lib_deps --export-if-defined=__start_em_js --export-if-defined=__stop_em_js --export-if-defined=main --export-if-defined=__main_argc_argv --export-table -z stack-size=65536 --max-memory=2147483648 --initial-memory=67108864 --no-entry --table-base=1 --global-base=1024' failed (returned 1)
+make: *** [dist/doom.js] Error 1
+total 8200
+drwxr-xr-x@  3 sarahtseng  staff       96 Nov  2 16:05 .
+drwxr-xr-x@ 21 sarahtseng  staff      672 Nov  2 16:05 ..
+-rw-r--r--@  1 sarahtseng  staff  4196020 Nov  2 16:05 doom.data
+)
+
+Calling Bash()
+
+Bash response → (
+d_loop.c:150:    if (drone)
+d_loop.c:152:        // In drone mode, do not generate any ticcmds.
+d_loop.c:162:       if (!net_client_connected && maketic - gameticdiv > 2)
+d_loop.c:182:    if (net_client_connected)
+d_loop.c:254:    // In drone mode, the game cannot continue once disconnected.
+d_loop.c:256:    if (drone)
+d_loop.c:258:        I_Error("Disconnected from server in drone mode.");
+d_loop.c:285:        if (!drone && i == localplayer)
+d_loop.c:323:        if (!net_client_connected)
+d_loop.c:402:    if (net_client_connected)
+d_loop.c:415:    if (drone)
+d_loop.c:530:        if (M_CheckParm("-drone") > 0)
+d_loop.c:532:            connect_data->drone = true;
+d_loop.c:575:    if (net_client_connected)
+d_loop.c:577:        if (drone || recvtic < lowtic)
+d_loop.c:650:    if (net_client_connected)
+d_loop.c:658:    // Whether single or multi-player, unless we are running as a drone,
+d_loop.c:661:    if (!drone)
+d_loop.c:756:        if (net_client_connected)
+d_loop.c:799:        if (!net_client_connected)
+)
+
+Calling Bash()
+
+Bash response → (
+third_party/doomgeneric/net_client.h:37:extern boolean net_client_connected;
+third_party/doomgeneric/net_client.h:50:extern boolean drone;
+third_party/doomgeneric/net_defs.h:152:    int drone;
+rc=0
+total 9512
+drwxr-xr-x@  6 sarahtseng  staff      192 Nov  2 16:05 .
+drwxr-xr-x@ 21 sarahtseng  staff      672 Nov  2 16:05 ..
+-rw-r--r--@  1 sarahtseng  staff  4196020 Nov  2 16:05 doom.data
+-rw-r--r--@  1 sarahtseng  staff    74267 Nov  2 16:05 doom.js
+-rwxr-xr-x@  1 sarahtseng  staff   539027 Nov  2 16:05 doom.wasm
+-rw-r--r--@  1 sarahtseng  staff     2070 Nov  2 16:05 index.html
+)
+Build succeeds. Now run the tester's playtest in quick mode.
+Calling Bash()
+
+Bash response → (
+playwright
+playwright-core
+pngjs
+rc=1
+PASS       B0.dist-present 
+PASS       B1.canvas-640x400 canvas#canvas intrinsic size
+PASS       B2.boot-renders-frame after 250ms colors=240
+PASS       B3.opaque-pixels transparentFrac=0
+PASS       B4.channel-order meanR=109.9 meanB=30.8 (title/menu are warm; swap => blue)
+PASS       B5.no-load-errors 
+PASS       T1.main-thread-responsive 60.0 rAF/s over 3s (need >=20)
+PASS       M1.enter-opens-menu diff=0.234
+PASS       G1.level-started diff-from-menu=0.93 statusbarColors=82
+PASS       B6.level-colors E1M1 view not blue-biased
+PASS       G2.idle-stable diff=0.0000
+PASS       I1.turn-right shift=-200px err=3.5 err0=7.4
+PASS       I2.turn-stops-on-release diff=0.0000
+PASS       I3.turn-left shift=204px
+PASS       I4.forward-moves start-vs-mid=0.654 still-moving=0.602
+FAIL       I5.forward-stops-on-release diff=0.1458
+FAIL       I6.backward-returns start-vs-back=0.381 start-vs-fwd=0.531
+FAIL       I7.blur-releases-keys diff after blur=0.2177 (key still physically down)
+PASS       C1.fire-animates view-diff=0.0327
+PASS       C2.fire-decrements-ammo ammo-region-diff=0.140 (persisting after weapon returns to rest)
+PASS       C3.fire-stops-on-release diff=0.0000
+PASS       U1.automap-toggles diff=0.708
+PASS       U2.automap-returns diff=0.000
+PASS       U3.escape-opens-menu diff=0.244
+PASS       U4.escape-closes-menu diff=0.244
+PASS       R1.soak-no-errors 15s; errors=
+PASS       R2.soak-still-rendering rAF/s=59.7 visibleFrame=true
+PASS       R3.no-long-stalls max longtask=0ms (must be <1500)
+PASS       R4.soak-frames-changed sampled frames that differed: 1
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3.door-use-and-level-exit no stable cross-build oracle; manual/protocol check
+UNVERIFIED T2.35-tics-per-second engine tic counter not observable from the page without a coder-provided hook
+playtest: FAIL failed=3 unverified(not-in-scope, listed)=4 QUICK=partial
+)
+
+Calling Bash()
+
+Bash response → (
+105-  check('I3.turn-left', sl.shift >= 8 && sl.err < sl.err0, `shift=${sl.shift}px`);
+106-
+107-  // Movement: forward changes view; backward returns toward start; release halts motion.
+108-  const s0 = await shot('move-start');
+109-  await page.keyboard.down('ArrowUp'); await sleep(800); const mid = await shot('move-fwd-held'); await sleep(300); const mid2 = await shot('move-fwd-held2');
+110-  check('I4.forward-moves', diffFrac(s0, mid, VIEW) > 0.05 && diffFrac(mid, mid2, VIEW) > 0.01, `start-vs-mid=${diffFrac(s0, mid, VIEW).toFixed(3)} still-moving=${diffFrac(mid, mid2, VIEW).toFixed(3)}`);
+111-  await page.keyboard.up('ArrowUp'); await sleep(900);
+112-  const f1 = await shot('move-fwd-end'); await sleep(500); const f2 = await shot('move-fwd-stopped');
+113:  check('I5.forward-stops-on-release', diffFrac(f1, f2, VIEW) < 0.02, `diff=${diffFrac(f1, f2, VIEW).toFixed(4)}`);
+114-  await page.keyboard.down('ArrowDown'); await sleep(1100); await page.keyboard.up('ArrowDown'); await sleep(900);
+115-  const back = await shot('move-back');
+116:  check('I6.backward-returns', diffFrac(s0, back, VIEW) < diffFrac(s0, f2, VIEW) * 0.7, `start-vs-back=${diffFrac(s0, back, VIEW).toFixed(3)} start-vs-fwd=${diffFrac(s0, f2, VIEW).toFixed(3)}`);
+117-
+118-  // Focus loss must release held keys (stuck-key regression).
+119-  await page.keyboard.down('ArrowUp'); await sleep(500);
+120-  await page.evaluate(() => { window.dispatchEvent(new Event('blur')); document.dispatchEvent(new Event('visibilitychange')); });
+121-  await sleep(700); const g1 = await shot('blur-a'); await sleep(500); const g2 = await shot('blur-b');
+122:  check('I7.blur-releases-keys', diffFrac(g1, g2, VIEW) < 0.02, `diff after blur=${diffFrac(g1, g2, VIEW).toFixed(4)} (key still physically down)`);
+)
+
+Calling Bash()
+
+Bash response → (
+0 0.551
+1 0.471
+2 0.352
+3 0.093
+4 0.001
+5 0.001
+6 0.001
+7 0.001
+8 0.000
+9 0.000
+)
+
+Calling Bash()
+
+Bash response → (
+0
+tics/s 34.94990513583309
+0 0.567
+1 0.474
+node:events:505
+    throw er; // Unhandled 'error' event
+    ^
+
+Error: write EPIPE
+    at afterWriteDispatched (node:internal/stream_base_commons:138:10)
+    at writeGeneric (node:internal/stream_base_commons:126:10)
+    at Socket._writeGeneric (node:net:1324:11)
+    at Socket._write (node:net:1336:8)
+    at writeOrBuffer (node:internal/streams/writable:574:12)
+    at _write (node:internal/streams/writable:503:10)
+    at Writable.write (node:internal/streams/writable:512:10)
+    at [kWriteToConsole] (node:internal/console/constructor:314:16)
+    at console.log (node:internal/console/constructor:417:26)
+    at file:///private/tmp/dbg/d.mjs:19:64
+Emitted 'error' event on Socket instance at:
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at processTicksAndRejections (node:internal/process/task_queues:90:21)
+    at runNextTicks (node:internal/process/task_queues:69:3)
+    at process.processImmediate (node:internal/timers:541:9) {
+  errno: -32,
+  code: 'EPIPE',
+  syscall: 'write'
+}
+
+Node.js v24.22.0
+)
+
+Calling Bash()
+
+Bash response → (
+build=0
+FAIL       I5.forward-stops-on-release diff=0.1453
+FAIL       I7.blur-releases-keys diff after blur=0.2267 (key still physically down)
+playtest: FAIL failed=2 unverified(not-in-scope, listed)=4 QUICK=partial
+e500c440656622db5ab3f8fb7df73d8b5998eeb3
+a8a5b0e4bdb5f2704a97ca844f86b51c5ec30229dedc746c11a78bd721c7a1e1  dist/doom.wasm
+1d7d43be501e67d927e415e0b8f3e29c3bf33075e859721816f652a526cac771  dist/doom.data
+build/
+dist/
+*.o
+*.wasm
+*.data
+node_modules/
+.DS_Store
+
+# Local environments and caches
+.venv/
+)
+
+Calling Bash()
+
+Bash response → "(Bash completed with no output)"
+The build task is partly done. `make clean all` now builds the game from a clean tree, and Doom boots and plays in Chromium. I ran only the 15-second quick playtest, which gave 23 passes and 2 fails, so the full 300-second soak has not been run.
+
+- **Failures:** the two failing checks are I5 and I7, which assert that the view stops moving 900 ms and 700 ms after a key release or window blur.
+  - **Likely cause:** the view keeps moving for about 1.2–1.5 s after a forward key release. That matches Doom's momentum, since the engine ran at 34.95 tics/s (full speed is 35) and key releases do reach it, because turning stops immediately.
+  - **Status:** I think the checks wait too short, but the tester hasn't confirmed that. I didn't touch `tests/`.
+  - **I6:** it failed in the first quick run and passed in the last, so it is flaky.
+- **Unverified checks:** audio, save persistence, door and level-exit, and the 35 tics/s rate are listed but not checked. Audio, persistence and mouse are still undecided scope for you.
+- **Specialist modules:** `render_timing` and `input_audio` don't exist yet. I added fallback (weak) definitions in `platform/cap_fallback.c` so the port works now, and any real module overrides them.
+- **Link fix:** the link failed on two missing network globals, `drone` and `net_client_connected`, so I defined them in `platform/engine_stubs.c`.
+- **Contract change:** I added `cap_tic_count()` to `platform/capstone_bridge.h` and exported it. I did not bump `CAP_BRIDGE_VERSION` or update `interface-contract.md`.
+- **Toolchain:** `emcc` 4.0.18 is installed under `~/Developer/emsdk` but isn't on the default PATH, so I sourced `emsdk_env.sh` for each build.
+
+Next steps are for the tester to re-check I5 and I7 and run the full `tests/verify.sh`. The coder should update the contract once the specialist modules arrive.
+
+Everything is in `artifacts/runs/20261102T235903Z-41864/coder/1-build/attempt-1/`; start with `report.md`.

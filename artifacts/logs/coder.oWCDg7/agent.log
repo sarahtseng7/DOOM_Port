@@ -1,0 +1,503 @@
+
+Calling Bash()
+
+Bash response → (
+artifacts/logs:
+coder_input_audio.0yubr6
+coder_input_audio.1EbASm
+coder_input_audio.1TaZlK
+coder_input_audio.3fWNbv
+coder_input_audio.3MXh6A
+coder_input_audio.5wrkFk
+coder_input_audio.6WSU74
+coder_input_audio.6zHSnA
+coder_input_audio.7uDQyJ
+coder_input_audio.9u4tS4
+coder_input_audio.a8DgOL
+coder_input_audio.DUI82V
+coder_input_audio.Ew3ETW
+coder_input_audio.g90qsB
+coder_input_audio.gRFlNu
+coder_input_audio.GUXhIX
+coder_input_audio.gVnY6U
+coder_input_audio.hlDobF
+coder_input_audio.JcM7SB
+coder_input_audio.kjW35H
+coder_input_audio.KqlYco
+coder_input_audio.KWBVgQ
+coder_input_audio.N0e4K8
+coder_input_audio.niQiMB
+coder_input_audio.OKDYKj
+coder_input_audio.OwOtK6
+coder_input_audio.PrVlSe
+coder_input_audio.RB2acD
+coder_input_audio.rdvBFz
+coder_input_audio.RfUwSi
+coder_input_audio.SEwuBm
+coder_input_audio.vSI2GO
+coder_input_audio.XJqG3c
+coder_input_audio.XSXPrI
+coder_input_audio.YCG1J3
+coder_input_audio.yleZko
+coder_input_audio.YoKls9
+coder_input_audio.zZGUhu
+coder_render_timing.0MFb7w
+coder_render_timing.1ZyeYK
+coder_render_timing.6XCJuY
+coder_render_timing.6ZxIHL
+coder_render_timing.8nHQTI
+coder_render_timing.atrTJx
+coder_render_timing.cK29OS
+coder_render_timing.Dy4Q1i
+coder_render_timing.EEYKNe
+coder_render_timing.EjeWNb
+coder_render_timing.El3oAP
+(eval):1: no matches found: loop/prompts/coder*
+)
+
+Calling Bash()
+
+Bash response → (
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+coder.03woB7
+coder.1Bi21x
+coder.4nrv6e
+coder.5cbI3A
+coder.72fg2O
+coder.7cXMRV
+coder.7RfYKW
+coder.8JOBA4
+coder.8NI43t
+coder.9PHBOq
+5:  coder:
+6-    description: Build and browser integration
+7-    harness:
+8-      type: claude-code
+9-      model: sonnet
+10:    instruction: Read loop/prompts/CODER.md. Follow the role and permissions there.
+11:  coder_render_timing:
+12-    description: Rendering and timing
+13-    harness:
+14-      type: claude-code
+15-      model: sonnet
+16:    instruction: Read loop/prompts/CODER_RENDER_TIMING.md. Follow the role and permissions there.
+17:  coder_input_audio:
+18-    description: Controls and audio
+19-    harness:
+20-      type: claude-code
+21-      model: sonnet
+22:    instruction: Read loop/prompts/CODER_INPUT_AUDIO.md. Follow the role and permissions there.
+23-  reviewer_site:
+24-    description: Site and startup review
+25-    harness:
+26-      type: claude-code
+27-      model: opus
+28-    instruction: Read loop/prompts/REVIEWER.md. Follow the role and permissions there.
+29-  reviewer_gameplay:
+30-    description: Gameplay and audio review
+31-    harness:
+32-      type: claude-code
+33-      model: opus
+34-    instruction: Read loop/prompts/REVIEWER_GAMEPLAY.md. Follow the role and permissions there.
+)
+
+Calling Bash()
+
+Bash response → (
+# Build and browser integration
+
+You are `coder`.
+
+Deliver a reproducible Emscripten 4.0.18 build and a correctly loaded browser game.
+Own Makefile, BUILD.md, web/index.html, platform/doomgeneric_wasm.c,
+platform/capstone_bridge.h, platform/cap_fallback.c, and platform/engine_stubs.c.
+You may create additional glue files only with names platform/glue_* or web/glue_*.
+Keep module interfaces coherent with the specialists. Implement startup, WAD
+packaging, exports, and final integration. Document serving dist/ on port 8000.
+Create missing interfaces pragmatically; ask specialists for changes in their
+files rather than making them yourself. Do not copy another browser port.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+=== artifacts/reports/coder_input_audio.md
+FINDINGS
+
+No source edits this run. No report in artifacts/reports/ names a reproducible defect in controls or audio. Audio by ear and a real hidden tab are still UNVERIFIED, so this stays FINDINGS.
+
+## Source identity (rechecked)
+- HEAD e500c44 plus uncommitted changes. `git diff HEAD -- . ':!artifacts' | shasum -a 256` prefix 92e25d7245a7dafd, the same as every prior report.
+- dist/doom.wasm prefix 7afb94fa1ec64b5c. `find platform web Makefile -newer dist/doom.wasm` is empty, so dist/ is current and the existing tester and reviewer evidence applies.
+- artifacts/specification.md and artifacts/acceptance-criteria.md do not exist.
+
+## Work
+- Read AGENTS.md, my role prompt, platform/README.md and the reports in artifacts/reports/. I ran no new browser probe.
+- Relied on, not rerun:
+  - tester: `tests/verify.sh` rc=0, 47 playtest checks pass, 7/7 injected faults caught.
+  - reviewer_gameplay: movement, strafe, run, fire, use, menu, pause, blur and visibility release pass. SFX requested equals SFX played, with no music errors. Damage, death and respawn pass.
+- Changed nothing. Any edit changes the wasm hash and invalidates that evidence, and no report gives a defect to justify one.
+
+## Unresolved (owner)
+1. UNVERIFIED, human: SFX and music by ear (A1), and a real hidden tab (H1). Protocol is in tests/README.md. Headless counters show only that audio plays without errors and is not silent.
+2. Unmet, student decision: music is an oscillator synth, not GENMIDI/OPL-faithful.
+3. Known limits, unfixed: linked-sound pitch is ignored; SFX requested before the first user gesture are dropped; WASD and mouse are not mapped.
+4. Persistence (P1): no scope was supplied, so volumes reset on load. Student decision.
+5. Sub-tic key taps are dropped, as in vanilla. Automation should hold keys at least 35 ms. Owner: tester.
+6. UNVERIFIED, tester/human: Firefox, Safari, other songs.
+7. Cosmetic, owner coder, outside my files: static `<title>` in web/index.html shows briefly.
+
+## Assumptions
+- Doom's default keys are the control requirement. I added no WASD, mouse or persistence because no requirement was supplied.
+- Criteria are agent-proposed, not student-approved.
+- Manual interventions: none. Token usage: not available.
+- Writes: this report only.
+
+## Next action
+Human: run A1 and H1. Student: decide on WASD/mouse, OPL-faithful music and persistence. If any becomes a requirement, I implement it in my files, the coder rebuilds, and the tester reruns `tests/verify.sh`.
+=== artifacts/reports/coder_render_timing.md
+FINDINGS
+
+No source edits. No reproducible rendering or timing defect exists in artifacts/reports/, and a fresh browser run on the unchanged build found none. The result stays FINDINGS because a hidden tab, other browsers and HiDPI are still unverified.
+
+## Source identity
+- HEAD e500c44 plus uncommitted changes. `git diff HEAD -- . ':!artifacts' | shasum -a 256` prefix 92e25d7245a7dafd (identity.txt), the same as every prior report.
+- render_timing.c af7995156cd24603, render_timing.h 524c31029de67e71, render_timing.js e4114e9951ad4ed1, dist/doom.wasm 7afb94fa1ec64b5c. All unchanged.
+- `find platform web Makefile -newer dist/doom.wasm` is empty, so dist/ is current and I did not rebuild.
+- artifacts/specification.md and artifacts/acceptance-criteria.md do not exist.
+
+## Work
+- Read AGENTS.md, the READMEs, my role prompt and all reports in artifacts/reports/ (coder_render_timing, tester, reviewer_gameplay, reviewer_site).
+- Ran `QUICK=1 OUT_DIR=<this dir>/playtest node tests/playtest.mjs` (playtest-console.log, playtest/). The run exits 3 by design, because QUICK is partial. It reports failed=0.
+  - B2: first frame at 222 ms.
+  - B3: 0 transparent pixels.
+  - B4: mean R 109.8, mean B 30.7, so no R/B swap.
+  - B6: E1M1 view is not blue-biased.
+  - T1: 60 rAF/s.
+  - T2: 34.93 tics/s.
+  - S1: 16:10 held at four viewport sizes.
+  - E2a, E2b, E3: keys released on hide and pagehide, and a repeat after blur is a fresh press.
+- Changed nothing. An edit would invalidate the evidence for wasm 7afb94fa1ec64b5c, and there is no defect to justify one.
+
+## Unresolved (owner)
+1. UNVERIFIED, human: timing in a really hidden tab (H1, protocol in tests/README.md).
+2. UNVERIFIED, human/tester: Firefox, Safari, physical HiDPI.
+3. Cosmetic, owner coder: static `<title>` "Doom (WASM)" in web/index.html shows briefly before the engine sets it. I don't own that file.
+4. Owner tester: B6 does not detect an R/B swap (only B4 does), so the faults.sh expectation overstates coverage.
+5. Out of my scope: A1 audio by ear, P1 persistence, G3c level exit.
+
+## Assumptions
+- A steady 35 tics/s (tester band 31.5-38.5) is correct, and 16:10 letterboxing is intended.
+- Criteria are agent-proposed, not student-approved.
+- Manual interventions: none. Token usage: not available.
+- Writes: this OUTPUT_DIR only.
+
+## Next action
+A human runs H1 and a HiDPI check. If either shows a defect, reopen this role with the reproduction.
+=== artifacts/reports/coder.md
+FINDINGS
+
+No source edits this run. Build and startup are current and no report names a reproducible defect in a coder-owned file. Level exit (G3c) and the human-only checks are still unverified, so this stays FINDINGS.
+
+## Source identity (rechecked this run)
+- HEAD e500c44 plus uncommitted changes. `git diff HEAD -- . ':!artifacts' | shasum -a 256` prefix 92e25d7245a7dafd, the same as the earlier reports.
+- dist/doom.wasm prefix 7afb94fa1ec64b5c. `find platform web Makefile -newer dist/doom.wasm` is empty and `make -n` prints "Nothing to be done for `all'", so dist/ matches the source.
+- artifacts/specification.md and artifacts/acceptance-criteria.md do not exist.
+
+## Work
+- Read AGENTS.md, README.md, BUILD.md, loop/prompts/CODER.md and the six reports in artifacts/reports/.
+- Did not rebuild or rerun the browser. The latest tester report (tester.1JMTzK) has verify.sh rc=0, 47 playtest checks passing and 7/7 injected faults caught on this same source hash.
+- Changed nothing. Any source edit changes the wasm hash and invalidates that evidence, and no report gives a defect that justifies one.
+
+## Unresolved (owner)
+1. G3c level exit: UNVERIFIED. Needs a coder-added level-exit hook (bridge version bump), then a tester check. Not requested yet.
+2. A1 (audio by ear) and H1 (real hidden tab): UNVERIFIED. Owner: human, protocol in tests/README.md.
+3. Cosmetic, owner coder: static `<title>` "Doom (WASM)" in web/index.html shows briefly. Bundle with the next functional change.
+4. Owner tester: the faults.sh expectations for swap-rb (B6) and drop-use (G3b) don't match the observed failures.
+5. Student decisions: approving the criteria, WASD/mouse, OPL-faithful music, save persistence.
+6. Not covered: Firefox, Safari, HiDPI, pickups, damage/death.
+
+## Assumptions
+- Doom's default keys are the control requirement. Criteria are agent-proposed, not student-approved.
+- Manual interventions: none. Token usage: not available.
+- Writes: this OUTPUT_DIR only.
+
+## Next action
+If G3c is wanted: the coder adds the level-exit hook and the title fix, rebuilds, and the tester reruns tests/verify.sh. Otherwise a human runs A1 and H1.
+=== artifacts/reports/reviewer_gameplay.md
+FINDINGS
+
+reviewer_gameplay K8HORm, 2026-11-04. I found no defect in movement, playability or the audio pipeline, so there is nothing to assign to a coder.
+- All six inherited probes pass again on the unchanged binary.
+- A new damage/death/respawn probe passes 10/10 on its third run. Runs 1 and 2 failed because the probe was wrong, not the game; both runs are preserved and explained below.
+
+The result stays FINDINGS because audio by ear (A1), a real hidden tab (H1) and normal level exit (G3c) are still UNVERIFIED.
+
+## Source identity (source-identity.txt, dist-hashes.txt)
+- HEAD e500c44 plus uncommitted changes. `git diff HEAD -- . ':!artifacts' | shasum -a 256` = 92e25d7245a7dafd…, the same as every report in artifacts/reports/.
+- dist sha256 prefixes are unchanged: doom.wasm 7afb94fa1ec64b5c, doom.js 0090630eeaf16a87, doom.data 1d7d43be501e67d9, index.html 5905489e041214ce.
+- `find platform web Makefile -newer dist/doom.wasm` was empty, so I did not rebuild.
+- artifacts/specification.md and artifacts/acceptance-criteria.md are absent.
+
+## Work
+- Read AGENTS.md, the three READMEs, loop/prompts/REVIEWER_GAMEPLAY.md and all six reports in artifacts/reports/. No report names an open defect. reviewer_site is PASS for startup, so I did not repeat that review.
+- Started `python3 -m http.server 8199 --bind 127.0.0.1 --directory dist` (PID in server.pid). server.log shows 71 requests, all 200. At the end I killed only that PID, and curl then returned 000 (server-stopped.txt).
+- Copied six probes unchanged from reviewer_gameplay.WxVbWe and ran `node <probe>.mjs <OUT_DIR> 8199`. All exited 0.
+- New: damage_death.mjs (headless Chromium, read-only bridge v5 hooks plus CapAudio.stats()).
+
+## Results (all files in this directory)
+### Inherited probes: all pass
+| Probe | Result | Key evidence |
+| --- | --- | --- |
+| review_state | 32 PASS / 0 FAIL / 2 NOTE | Same results as WxVbWe: forward/back, coast and stop, turn stops at release, strafe, run, fire, menu, pause, blur, audio counters |
+| coast_pertic | pass | 0 multi-tic gaps; stopped 42 tics after release; peak 8 u/tic |
+| pause_check | 6 PASS | Pause and menu freeze the world; unpause moves 96 u; no stuck key |
+| visibility_release | pass=true | Turn while held; no turn during the hidden window; input works afterwards |
+| blur_open | pass=true | Blur coast 78 u, last move 42 tics after release, 0 in the final 1 s (control: 70 u / 44 tics) |
+| cheats_weapons | 12 PASS | IDKFA, shotgun/chaingun/rocket/plasma SFX and ammo, IDDQD, IDCLEV13 with music restart, movement in E1M3 |
+
+The two NOTEs repeat earlier observations and are not defects: Use at a wall plays the "oof" sound, and music keeps playing in the menu.
+
+### damage_death (new): 10 PASS on run 3 (damage_death.stdout.log, damage-death.json, screens/dd-*.png)
+- **Setup:** E1M1 on the default skill, then IDKFA and the rocket launcher. The player backed into the south wall, turned to face it (257°) and fired point-blank.
+- **Damage:** HP went 100→36 and armour 200→136, so blue armour absorbed half. Each hit played 3 SFX (launch, explosion, pain). dd-run1-01-hurt.png shows the red pain tint and the grimacing face.
+- **Death:** the second rocket took HP to 0. dd-02-dead.png shows a floor-level view, the bloodied face and 0% health.
+- **Input while dead:** Up and Left gave 0 movement and 0 turn, which is correct.
+- **Respawn:** Space (Use) restarted E1M1 at the spawn point (1056,-3616), facing 90°, with HP 100. dd-03-respawned.png shows a pistol start with 50 bullets and 0% armour, which is vanilla.
+- **After respawn:** music kept playing (musicPlaying=true, musicErrors 0) and forward moved 148 u.
+- **Audio and errors:** sfxRequested 9 = sfxPlayed 9, sfxBad 0, and 0 page errors.
+
+### Why runs 1 and 2 failed
+- **Run 1, 5/6** (damage_death.run1.*): the probe fired from a fixed spot. The first rocket's knockback pushed the player about 165 u, out of splash range, so later shots missed and HP stayed 36. Fix: walk back into the wall before each shot.
+- **Run 2, 9/10** (damage_death.run2.*): I expected the music to restart on respawn. Vanilla `S_ChangeMusic` (third_party/doomgeneric/s_sound.c:625) returns early when the same track is already playing. Not restarting is correct, so run 3 checks that music keeps playing instead.
+
+## Unresolved (owner)
+1. UNVERIFIED, human: SFX and music correctness by ear (A1). The counters and peaks only show non-silent playback without errors.
+2. UNVERIFIED, human: a real hidden or minimized tab (H1). Playwright cannot hide a tab (see WxVbWe). Manual step: hold Right, press Cmd+T, wait 2 s, return, and confirm the view is not spinning.
+3. UNVERIFIED, coder then tester: normal level exit through the exit switch (G3c). There is still no exit hook; IDCLEV is only a proxy.
+4. UNVERIFIED, tester/human: item pickups (no probe yet), Firefox, Safari and HiDPI.
+5. Student decisions (coder_input_audio if required): the music is an oscillator synth, not OPL-faithful; WASD and mouse are not mapped; volume is not persisted; sub-tic taps are not latched.
+6. No new defects for coder_input_audio, coder_render_timing or coder.
+
+## Assumptions
+- The required controls are Doom's default keys. Correct momentum means vanilla friction, with a stop about 40–45 tics after release.
+- Self-inflicted rocket splash is a valid stand-in for taking damage. It exercises P_DamageMobj, armour, pain and death, but not monster attacks.
+- Vanilla behaviour, read from the supplied engine source, is the reference wherever my expectation differed from what I observed.
+- All criteria are agent-proposed, not student-approved. Headless audio peaks count only as evidence of non-silence.
+- Manual interventions: none. Token usage: not available.
+- Writes: this OUTPUT_DIR only. No source, test, build or loop edits, no artifacts/browser captures, and no result.json.
+
+## Next action
+- **Human:** run A1 and H1.
+- **Coder/tester:** decide whether to add the G3c exit hook; the tester could adopt damage_death.mjs as a regression check.
+- **If the dist hashes change:** rerun all seven probes with `node <probe>.mjs <OUT> <PORT>`.
+=== artifacts/reports/reviewer_site.md
+PASS
+
+reviewer_site qSiYJ9, 2026-11-04 ~13:56 UTC. I loaded the current dist/ build cold at http://localhost:8000 in Playwright MCP Chromium (1280x720) and watched it start. I found no loading or startup defect. This agrees with the prior reviewer_site PASS (0fZGKo) on the same binary.
+
+## Source identity (source-identity.txt, dist-hashes.txt, newer-than-dist.txt, make-n.txt, web-vs-dist.txt)
+- HEAD e500c44 plus uncommitted changes. `git diff HEAD -- . ':!artifacts' | shasum -a 256` = 92e25d7245a7dafd…, the same as the prior reports.
+- dist sha256 prefixes are unchanged from prior reports:
+  - doom.wasm 7afb94fa1ec64b5c
+  - doom.js 0090630eeaf16a87
+  - doom.data 1d7d43be501e67d9
+  - index.html 5905489e041214ce
+- web/* files are byte-identical to their dist/ copies.
+- `find platform web Makefile -newer dist/doom.wasm` is empty, and `make -n` prints "Nothing to be done". I did not rebuild.
+- artifacts/specification.md and artifacts/acceptance-criteria.md are absent.
+
+## Server (server-owner.txt, served-hashes.txt, server.log, server-stopped.txt)
+- At the start nothing was listening on :8000 (lsof rc=1).
+- I started `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist` (PID 60911).
+- All 7 files returned 200 with correct MIME types (wasm is `application/wasm`), and each served hash prefix matched dist/.
+- server.log has 14 requests, all 200.
+- At the end I killed only PID 60911. After that, curl returned 000.
+
+## Browser observations
+1. **Cold load** (cold-load.json). I used a CDP cache clear plus cache disable.
+   - Responses: /, render_timing.js, input_audio.js, audio_web.js, doom.js, doom.data and doom.wasm, all 200 and none from a service worker. 0 failed requests, 0 page errors.
+   - At 170 ms (before engine init) the canvas was blank and the title was the static "Doom (WASM)". This is the first run that has directly observed carry-over item 1.
+   - At 279 ms the sample showed cap_ready=1, tic 3, 0 transparent sampled pixels, mean RGB (110,50,30), and title "DOOM Shareware". This meets the 2 s first-frame criterion.
+   - The engine log shows W_Init "adding /doom1.wad", R_Init, S_Init, and I_InitGraphics at 640x400 RGBA8888.
+2. **title-early.png** (viewed): TITLEPIC in correct colours. The sky is red, the logo blue and gold, the marine green, and the id logo yellow on blue. There is no R/B swap, and it is pillarboxed.
+3. **Steady state** (steady-menu-geometry.json; in-page rAF for 6.0 s, about 9 s after load):
+   - tic went 555→766, which is 35.14 tics/s.
+   - The maximum rAF gap was 10.3 ms and the maximum tic stall was 34.8 ms, so the main thread was not blocked.
+   - demo.png (viewed): E1M1 demo with a correct HUD and neutral colours.
+4. **Escape menu** (after a canvas click):
+   - menu-open.png (viewed): main menu with the skull cursor.
+   - menu-closed.png (viewed): the menu is gone.
+   - tic went 998→1025→1052, so the demo keeps running behind the menu, as in vanilla.
+5. **Geometry:**
+   - At 1280x720 the canvas is 1152x720 at x=64 (aspect 1.600), with scroll size equal to the viewport.
+   - At 800x600 it is 800x500 at y=50, with no scrollbars.
+   - viewport-800x600.png (viewed) shows correct colours.
+6. **Console** (console-warnings.log; full capture in artifacts/browser/console-2026-11-04T13-56-53-230Z.log): 34 messages, 0 errors, 1 warning.
+   - The warning is Chrome's pre-gesture "AudioContext was not allowed to start" (audio_web.js:271).
+   - This is expected autoplay policy before a user gesture, not a fault.
+
+## Unresolved (owner)
+1. Cosmetic, coder: the static `<title>` "Doom (WASM)" in web/index.html shows until the engine sets "DOOM Shareware". I observed this at t=170 ms for about 0.1–0.3 s. The canvas is also blank (#111 background) during that time. Not blocking.
+2. Tester (carried over): stall and tic-rate checks must tolerate the ~1.1 s melt-wipe freeze. I did not re-measure the wipe this run.
+3. Tester (carried over): the faults.sh expectations are off (swap-rb lists B6, drop-use omits G3b). I did not re-check them this run.
+4. UNVERIFIED, human: Firefox, Safari, real HiDPI, non-localhost latency, a real hidden tab, and audio by ear.
+5. No loading or startup defect to assign to coders.
+
+## Assumptions
+- The PASS criteria are agent-proposed, not student-approved, and unchanged from prior reviewer_site runs:
+  - assets 200 on a cold load, with 0 page and console errors
+  - a correct-colour, non-blank frame within 2 s
+  - 31.5–38.5 tics/s, excluding the wipe
+  - Escape opens and closes the menu
+  - 16:10 kept with no scrollbars
+- "Cold" means a CDP cache clear plus disable in the MCP profile, not a fresh profile.
+- Colour judgments are by eye from screenshots plus mean-RGB sampling. I did not do a pixel-exact palette comparison.
+- The JSON files hold transcribed summaries of the MCP return values. The raw output is in the session transcript.
+- Manual interventions: none. Token usage: not available.
+- Writes: this OUTPUT_DIR only, plus the MCP console capture in artifacts/browser/. No source, test, or build files were changed.
+
+## Next action
+None for coders on startup, apart from the optional cosmetic title fix. A human should check Firefox/Safari/HiDPI. The tester should fix the faults.sh expectations.
+=== artifacts/reports/tester.md
+FINDINGS
+
+`tests/verify.sh` exited 0 (rc=0) on the current build, and all 7 injected faults were caught. The result stays FINDINGS because 4 required behaviors are still UNVERIFIED (A1, P1, G3c, H1). I changed no product source and no tests.
+
+## Source identity
+- HEAD e500c44 plus uncommitted changes. `git diff HEAD -- . ':!artifacts' | shasum -a 256` = 92e25d7245a7dafd…, the same as every report in artifacts/reports/ (verify/identity.txt).
+- `make clean && make all` rebuilt dist/ (verify/build.log, dist-sha256.txt).
+
+## Work
+- Read AGENTS.md, loop/prompts/TESTER.md, tests/README.md and the reports in artifacts/reports/. None names a new reproducible defect, so I added no regression checks.
+- Ran `RUN_ID=tester.1JMTzK OUT_DIR=artifacts/logs/tester.1JMTzK/verify tests/verify.sh` with emsdk sourced. Steps: tooling, selftest, clean build, playtest with the soak, fault injection.
+
+## Results
+- Selftest: ok.
+- Playtest: `PASS failed=0`, 47 PASS lines. Examples: T2 34.97 tics/s, A3 peak 0.435 with audio clock advancing (2.01 s per 2 s), G3a door opens, G3b sector sequence 3>4>0.
+- Fault injection: 7/7 caught.
+  - drop-keyup: I2 I5 I6 C3 I7
+  - drop-blur: I7
+  - ignore-left: I3 E2a E2b
+  - swap-rb: B4
+  - bad-aspect: S1
+  - drop-use: G3a
+  - drop-visibility: E2b
+- Remaining check failures: none.
+
+## Evidence (artifacts/logs/tester.1JMTzK/)
+verify-console.log (ends `rc=0`) and verify/ (identity.txt, playtest.log, playtest-results.json, faults.log, per-fault logs, build.log, dist-sha256.txt, browser-console.log, screens/).
+
+## Unresolved (owner)
+1. G3c level exit: UNVERIFIED. Needs a coder-added level-exit hook or scripted route, then a tester check. Owner: coder, then tester.
+2. A1 (audio by ear) and H1 (real hidden tab): UNVERIFIED. Owner: human, using the protocol in tests/README.md. Headless runs only show non-silent output.
+3. P1 save persistence and approval of the criteria: student scope decisions.
+4. Not covered: pickups, Firefox, Safari, HiDPI. U5 and A0-A3 have no injected fault, since that needs a product-side break the tester may not make.
+5. Test-quality items, not fixed. Owner: tester.
+   - `faults.sh` expects `swap-rb:B4 B6`, but only B4 fails, so the expectation overstates coverage.
+   - `faults.sh` expects `drop-use:G3a`, and G3b also depends on G3a's door. This run listed only G3a.
+   - I left both alone so the tests hash stays comparable with earlier runs.
+6. Cosmetic, owner coder: the static `<title>` "Doom (WASM)" in web/index.html shows briefly before the engine title.
+
+## Assumptions
+- The criteria are agent-proposed, not student-approved. artifacts/specification.md and acceptance-criteria.md do not exist.
+- Headless Chromium only, one macOS machine, run serially. Results apply to the build from the source hash above.
+- Manual interventions: none. Token usage: not available.
+- Writes: this OUTPUT_DIR, plus regenerated build/ and dist/.
+
+## Next action
+Decide on a level-exit hook (G3c). A human should run the A1 and H1 protocols. The tester should correct the two `faults.sh` expectations and re-run.
+)
+
+Calling Bash()
+
+Bash response → (
+5:  <title>Doom (WASM)</title>
+platform/capstone_bridge.h:70:void     cap_set_title(const char *title);           // from DG_SetWindowTitle
+platform/render_timing.c:47:EM_JS(void, rt_js_title, (const char *t), { document.title = UTF8ToString(t); });
+platform/doomgeneric_wasm.c:47:void DG_SetWindowTitle(const char *title)
+platform/cap_fallback.c:32:EM_JS(void, cap_js_title, (const char *t), { document.title = UTF8ToString(t); });
+/Users/sarahtseng/Developer/emsdk/upstream/emscripten/emcc
+3:Toolchain: Emscripten **4.0.18** (`source ~/Developer/emsdk/emsdk_env.sh`), GNU make, Node (tests only).
+8:- Engine sources: all `third_party/doomgeneric/*.c` except `dummy.c`, `doomgeneric_sdl.c`; platform code: `platform/*.c`.
+)
+
+Calling Bash()
+
+Bash response → (
+make rc=0
+cp web/index.html web/input_audio.js web/audio_web.js web/render_timing.js dist/
+441e441ad5dfcd52
+09969002dba66a00  dist/audio_web.js
+1d7d43be501e67d9  dist/doom.data
+0090630eeaf16a87  dist/doom.js
+7afb94fa1ec64b5c  dist/doom.wasm
+43a15c63d134b538  dist/index.html
+cc5e94829d3893bf  dist/input_audio.js
+e4114e9951ad4ed1  dist/render_timing.js
+Command did not complete within its 120s timeout and was moved to the background (ID: braltmve1). Output is being written to: /private/tmp/claude-501/-Users-sarahtseng-Projects-fellowship-loop-capstone/e6587011-a0e9-436a-beea-a5874778e136/tasks/braltmve1.output. You will be notified when it completes. If it is still running after 10m in the background, it will be stopped and you will be notified. It is running now: do not start a second copy while it runs. If it is no longer needed, stop it with TaskStop. To check interim output, use Read on that file path.
+Session cwd remains /Users/sarahtseng/Projects/fellowship-loop-capstone; directory changes made by the backgrounded command do not apply to subsequent commands.
+)
+Running the quick playtest against the rebuilt dist/ now. I'll write the report once it finishes.
+Calling Bash()
+
+Bash response → (
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3c.level-exit walking through the door is checked (G3b); no route/oracle yet for finishing E1M1 (needs scripted route or coder level-exit hook)
+UNVERIFIED H1.hidden-tab-timing headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)
+playtest: FAIL failed=1 unverified(not-in-scope, listed)=4 QUICK=partial
+46
+)
+One check failed. Finding out which.
+Calling Bash()
+
+Bash response → "32:FAIL       E2b.hidden-releases-keys precondition-turning=true settled=true later-diff=0.0570\n52:playtest: FAIL failed=1 unverified(not-in-scope, listed)=4 QUICK=partial"
+
+Calling Bash()
+
+Bash response → "rc=3\n52:playtest: FAIL failed=0 unverified(not-in-scope, listed)=4 QUICK=partial\nplaytest: FAIL failed=0 unverified(not-in-scope, listed)=4 QUICK=partial"
+
+Calling Bash()
+
+Bash response → "(Bash completed with no output)"
+I made one change: the static `<title>` in `web/index.html` is now "DOOM Shareware". The result is FINDINGS, not PASS.
+
+The old title, "Doom (WASM)", showed for about 0.1–0.3 s before the engine set its own. I assumed we only ship the shareware WAD. A rebuild with `make all` succeeded. Only `dist/index.html` changed; `doom.wasm`, `doom.js` and `doom.data` have the same hashes as before.
+
+- **Quick playtest:** I ran it twice. The first run failed one check, E2b (hidden tab releases keys). The second run had no failures. I didn't diagnose E2b beyond the rerun, so it could be a flaky check or an intermittent fault.
+- **Full verification:** I didn't rerun `tests/verify.sh`. The tester's earlier 47-check pass is for the old source hash.
+- **Still open:** no one has requested a level-exit hook, so level exit (G3c) is unverified. Audio by ear (A1) and a real hidden tab (H1) also still need a human.
+- **Next step:** the tester should run `tests/verify.sh` on source hash `441e441ad5dfcd52` and check E2b.
+
+The report is at `artifacts/logs/coder.oWCDg7/report.md`.

@@ -1,0 +1,445 @@
+
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+  the resource usage, manual interventions, and final stopping decision.
+
+Preserve failing evidence as well as passing evidence. Record changes to
+acceptance criteria separately, with a reason. Discuss disagreements and
+missed faults in your write-up.
+
+## Where your work belongs
+
+| Location | Purpose |
+| --- | --- |
+| [`loop/`](loop/README.md) | All loop code, prompts, role definitions, MCP configuration, and design documentation. |
+| [`artifacts/`](artifacts/README.md) | All durable run state, handoffs, logs, review findings, and evidence. Agents must use this folder between runs. |
+| `tests/` | Verification code, including checks for the loop itself. |
+| `platform/`, `web/` | The port and browser page. |
+| `third_party/doomgeneric/` | Supplied engine; platform ports have been removed. |
+| `assets/` | Included shareware `doom1.wad` (Episode 1). |
+| `build/`, `dist/` | Generated build output. |
+
+Keep the root for project documentation and shared build/toolchain files.
+The starter supplies engine source, platform and HTML stubs, the shareware
+WAD, documentation, and an optional Docker toolchain. It supplies no working
+game, build script, loop implementation, or test suite. `artifacts/` starts
+with its README only; students create run evidence there during the project.
+Use the supplied engine and Emscripten. Documentation is allowed; copying an
+existing Doom browser port does not satisfy the assignment.
+
+See [`platform/README.md`](platform/README.md) for engine integration caveats,
+including pixel format, timing, and audio. The supplied game data already
+contains sound effects and music; no additional sound assets are required.
+
+## Agent section for setup
+
+### macOS without Docker
+
+Install the build tools directly on your Mac to compile and test the browser
+port. Docker is not required for this workflow. There is currently no macOS
+setup script; run the steps below manually.
+
+1. **Install prerequisites.** In Terminal, run:
+
+   ```sh
+   xcode-select --install
+   ```
+
+   Finish the installer, then check `git --version` and `python3 --version`.
+   If Python is missing, install it from [python.org](https://www.python.org/downloads/macos/),
+   or run `brew install python` if you already have Homebrew.
+
+2. **Install Emscripten.** Use version `4.0.18` to match the supplied Dockerfile:
+
+   ```sh
+   mkdir -p ~/Developer
+   cd ~/Developer
+   git clone https://github.com/emscripten-core/emsdk.git
+   cd emsdk
+   ./emsdk install 4.0.18
+   ./emsdk activate 4.0.18
+   source ./emsdk_env.sh
+   emcc --version
+   ```
+
+   If you already have an SDK checkout at that location, use it instead of
+   cloning again. In each new Terminal session where you want to compile, run:
+
+   ```sh
+   source ~/Developer/emsdk/emsdk_env.sh
+   ```
+
+   See the [official installation instructions](https://emscripten.org/docs/getting_started/downloads.html).
+
+run_id: 20261103T001738Z-47122
+source_commit: e500c440656622db5ab3f8fb7df73d8b5998eeb3
+max_iterations: 10
+AI-assisted runner and prompts; permission isolation is not implemented by this script.
+artifacts/runs/.DS_Store
+artifacts/runs/20261103T001738Z-47122/initial-source.patch
+artifacts/runs/20261103T001738Z-47122/manifest.txt
+artifacts/runs/20261103T001738Z-47122/status.txt
+artifacts/runs/20261103T001738Z-47122/initial-source-status.txt
+artifacts/runs/20261030T202822-loop-sh/.DS_Store
+artifacts/runs/20261030T202822-loop-sh/manifest.txt
+artifacts/runs/20261102T235903Z-41864/initial-source.patch
+artifacts/runs/20261102T235903Z-41864/manifest.txt
+artifacts/runs/20261102T235903Z-41864/status.txt
+artifacts/runs/20261102T235903Z-41864/initial-source-status.txt
+artifacts/runs/20261030T202822-loop-sh/logs/loop.log
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-19.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-2.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-29.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-6.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-28.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-7.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-18.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-3.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-8.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-13.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-27.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-23.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-17.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-22.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-16.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-9.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-12.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-26.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-21.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-15.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-11.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-25.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-10.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-24.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-20.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-14.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-30.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-4.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-5.md
+artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/invocation.txt
+artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/result.json
+artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/report.md
+artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/proposed-criteria.md
+artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/playtest-quick.log
+artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/agent.log
+artifacts/runs/20261103T001738Z-47122/coder/plan/attempt-1/invocation.txt
+artifacts/runs/20261103T001738Z-47122/coder/plan/attempt-1/result.json
+artifacts/runs/20261103T001738Z-47122/coder/plan/attempt-1/report.md
+artifacts/runs/20261103T001738Z-47122/coder/plan/attempt-1/proposed-spec.md
+artifacts/runs/20261103T001738Z-47122/coder/plan/attempt-1/agent.log
+artifacts/runs/20261103T001738Z-47122/coder/plan/attempt-1/interface-contract.md
+artifacts/runs/20261103T001738Z-47122/coder/plan/attempt-1/source-status.txt
+artifacts/runs/20261103T001738Z-47122/coder/1-build/attempt-1/invocation.txt
+artifacts/runs/20261103T001738Z-47122/coder/1-build/attempt-1/agent.log
+artifacts/runs/20261102T235903Z-41864/tester/prepare/attempt-1/invocation.txt
+artifacts/runs/20261102T235903Z-41864/tester/prepare/attempt-1/result.json
+artifacts/runs/20261102T235903Z-41864/tester/prepare/attempt-1/report.md
+# Doom -> WebAssembly build. Requires Emscripten 4.0.18 (source emsdk_env.sh
+# or use the Dockerfile image). Output: dist/{index.html,doom.js,doom.wasm,doom.data}
+EMCC      ?= emcc
+ENGINE    := third_party/doomgeneric
+BUILD     := build
+DIST      := dist
+WAD       := assets/doom1.wad
+
+# Platform-specific/unused engine files: dummy.c, i_cdmus.c, i_joystick.c are
+# stubs here; net_* sources are absent from this tree.
+ENGINE_EXCLUDE := $(ENGINE)/dummy.c $(ENGINE)/doomgeneric_sdl.c
+ENGINE_SRC := $(filter-out $(ENGINE_EXCLUDE),$(wildcard $(ENGINE)/*.c))
+PLAT_SRC   := $(wildcard platform/*.c)
+OBJS       := $(patsubst %.c,$(BUILD)/%.o,$(ENGINE_SRC) $(PLAT_SRC))
+
+CFLAGS  := -O2 -I$(ENGINE) -Iplatform -w
+LDFLAGS := -O2 -sASYNCIFY -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=64MB \
+           -sEXPORTED_FUNCTIONS=_main,_cap_frame,_cap_ready,_cap_tic_count,_cap_input_event,_cap_input_reset,_cap_bridge_version,_cap_framebuffer_ptr \
+           -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,HEAPU8 \
+           --preload-file $(WAD)@/doom1.wad
+
+.PHONY: all clean
+all: $(DIST)/index.html
+
+$(BUILD)/%.o: %.c platform/capstone_bridge.h
+	@mkdir -p $(dir $@)
+	$(EMCC) $(CFLAGS) -c $< -o $@
+
+$(DIST)/doom.js: $(OBJS) $(WAD)
+	@mkdir -p $(DIST)
+	$(EMCC) $(OBJS) $(LDFLAGS) -o $@
+
+$(DIST)/index.html: $(DIST)/doom.js web/index.html
+	cp web/index.html $@
+
+clean:
+	rm -rf $(BUILD) $(DIST)
+artifacts:
+README.md
+runs
+
+assets:
+doom1.wad
+README.md
+
+platform:
+cap_fallback.c
+capstone_bridge.h
+doomgeneric_wasm.c
+engine_stubs.c
+README.md
+
+tests:
+lib
+node_modules
+package-lock.json
+package.json
+playtest.mjs
+README.md
+selftest.mjs
+verify.sh
+
+web:
+index.html
+)
+
+Calling Bash()
+
+Bash response → (
+# Coder plan report — attempt-1
+Run 20261103T001738Z-47122, role coder, task plan. Source commit e500c44 plus
+uncommitted changes (see source-status.txt in this dir and ../../../initial-source.patch).
+Plan only; no game implementation changed.
+
+## Work done
+- Read AGENTS.md, READMEs, manifest, and prior run reports (20261102T235903Z-41864 coder plan/1-build, tester prepare; 20261030T202822-loop-sh log).
+- Wrote `proposed-spec.md` and `interface-contract.md` here (AGENT-PROPOSED; no student approval claimed).
+- Edited `platform/capstone_bridge.h`: CAP_BRIDGE_VERSION 1 -> 2 (cap_tic_count was added without a bump), documented weak/strong override, repointed contract path to this run.
+- Did not touch loop/, tests/, assets/, third_party/, or any criteria.
+
+## Evidence
+- Header compiles with host `cc -fsyntax-only` against doomgeneric.h and CAP_BRIDGE_VERSION==2 (HDR_OK). Not an Emscripten build.
+- `which emcc`: not found on default PATH (a prior run used ~/Developer/emsdk). Version 4.0.18 not re-verified; dist/ from the prior run exists but was not rebuilt or retested here.
+
+## Unresolved findings carried forward
+1. (tester) I5/I7 FAIL in prior quick playtest; coder judged settle times (900/700ms) too short vs Doom momentum — UNCONFIRMED by tester.
+2. (student) Audio, persistence, mouse, non-Chromium, "faithful play" definition undecided.
+3. Full 300s soak never run; A1, P1, G3, T2 were UNVERIFIED in the quick run.
+4. (coder, later) Specialist modules render_timing/input_audio don't exist; weak fallbacks in use.
+5. (coder, later) BUILD.md not written.
+6. (runner) Earlier loop run failed for missing ANTHROPIC_API_KEY; not reproduced here.
+7. This run has no tester/prepare output; fallback criteria exist only in the prior run. Roles are instruction-enforced only.
+
+## Next action
+Tester: re-evaluate I5/I7 timing, add a cap_tic_count hook for T2, run full tests/verify.sh on a rebuilt tree. Coder: write BUILD.md, rebuild, integrate specialist modules when delivered. Student: decide the undecided scope items.
+Usage: not available. Manual interventions: none.
+# Tester prepare report (attempt-1, run 20261103T001738Z-47122)
+Source: commit e500c44 + uncommitted changes (see ../../../initial-source.patch). Criteria remain AGENT-PROPOSED, not student-approved; no student inputs existed.
+
+## Work done
+- Read prior reports (run 20261102T235903Z-41864 tester/coder, this run's coder plan). Existing suite already in tests/; reviewed, not rewritten.
+- `tests/playtest.mjs` updated:
+  - added `settle()` polling; I5, I6 and I7 no longer use fixed delays (prior coder-reported I5/I7 failures were short settle times vs Doom momentum).
+  - I7 now holds a turn key (ArrowRight) so a wall cannot mask a stuck key; new precondition I7a.
+  - T2 (35 tics/s +/-10%) now checked via `Module._cap_tic_count`; UNVERIFIED if export is missing.
+- `proposed-criteria.md` (rev 2, with change log) saved here.
+
+## Evidence
+- `node tests/selftest.mjs`: all ok, exit 0.
+- `playtest-quick.log`, `playtest-quick/` (results json, console log, screens): QUICK=1 against the EXISTING dist/ (built in run 20261102T235903Z-41864; NOT rebuilt here, emcc not on PATH): 0 FAIL, 32 PASS, 3 UNVERIFIED (A1, P1, G3). I5 settled in ~2.1s, I7 settled in ~0.5s, T2 = 34.98 tics/s. Exit 3 by design (QUICK never passes).
+- This supports the earlier hypothesis that I5/I7 were test timing issues, in one run only; flakiness not assessed (single run).
+
+## Not done / open findings
+1. Full `tests/verify.sh` (clean rebuild + 300s soak) not run; needs `source ~/Developer/emsdk/emsdk_env.sh`.
+2. dist/ identity vs the current working tree not verified.
+3. Student: audio, persistence, mouse, other browsers, "faithful play" definition undecided; A1/P1/G3 remain UNVERIFIED.
+4. Roles isolation is instruction-only; tests/ edits by tester only.
+Manual interventions: none. Usage: not available.
+RUNNING
+capstone_bridge.h
+doomgeneric_wasm.c
+engine_stubs.c
+README.md
+
+tests:
+lib
+node_modules
+package-lock.json
+package.json
+playtest.mjs
+README.md
+selftest.mjs
+verify.sh
+
+web:
+index.html
+)
+
+Calling Bash()
+emcc not found
+bazel
+build
+docker
+)
+Task: owned startup, Makefile, WAD packaging, plus BUILD.md. Rebuild with emsdk.
+Calling Bash()
+
+Bash response → (
+emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 4.0.18 (fae107463db4d20a276a27ede393048deaeebf76)
+e500c440656622db5ab3f8fb7df73d8b5998eeb3
+rm -rf build dist
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -w -c third_party/doomgeneric/statdump.c -o build/third_party/doomgeneric/statdump.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -w -c third_party/doomgeneric/tables.c -o build/third_party/doomgeneric/tables.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -w -c third_party/doomgeneric/v_video.c -o build/third_party/doomgeneric/v_video.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -w -c third_party/doomgeneric/w_checksum.c -o build/third_party/doomgeneric/w_checksum.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -w -c third_party/doomgeneric/w_file_stdc.c -o build/third_party/doomgeneric/w_file_stdc.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -w -c third_party/doomgeneric/w_file.c -o build/third_party/doomgeneric/w_file.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -w -c third_party/doomgeneric/w_main.c -o build/third_party/doomgeneric/w_main.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -w -c third_party/doomgeneric/w_wad.c -o build/third_party/doomgeneric/w_wad.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -w -c third_party/doomgeneric/wi_stuff.c -o build/third_party/doomgeneric/wi_stuff.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -w -c third_party/doomgeneric/z_zone.c -o build/third_party/doomgeneric/z_zone.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -w -c platform/cap_fallback.c -o build/platform/cap_fallback.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -w -c platform/doomgeneric_wasm.c -o build/platform/doomgeneric_wasm.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -w -c platform/engine_stubs.c -o build/platform/engine_stubs.o
+emcc build/third_party/doomgeneric/am_map.o build/third_party/doomgeneric/d_event.o build/third_party/doomgeneric/d_items.o build/third_party/doomgeneric/d_iwad.o build/third_party/doomgeneric/d_loop.o build/third_party/doomgeneric/d_main.o build/third_party/doomgeneric/d_mode.o build/third_party/doomgeneric/d_net.o build/third_party/doomgeneric/doomdef.o build/third_party/doomgeneric/doomgeneric.o build/third_party/doomgeneric/doomstat.o build/third_party/doomgeneric/dstrings.o build/third_party/doomgeneric/f_finale.o build/third_party/doomgeneric/f_wipe.o build/third_party/doomgeneric/g_game.o build/third_party/doomgeneric/gusconf.o build/third_party/doomgeneric/hu_lib.o build/third_party/doomgeneric/hu_stuff.o build/third_party/doomgeneric/i_cdmus.o build/third_party/doomgeneric/i_endoom.o build/third_party/doomgeneric/i_input.o build/third_party/doomgeneric/i_joystick.o build/third_party/doomgeneric/i_scale.o build/third_party/doomgeneric/i_sound.o build/third_party/doomgeneric/i_system.o build/third_party/doomgeneric/i_timer.o build/third_party/doomgeneric/i_video.o build/third_party/doomgeneric/icon.o build/third_party/doomgeneric/info.o build/third_party/doomgeneric/m_argv.o build/third_party/doomgeneric/m_bbox.o build/third_party/doomgeneric/m_cheat.o build/third_party/doomgeneric/m_config.o build/third_party/doomgeneric/m_controls.o build/third_party/doomgeneric/m_fixed.o build/third_party/doomgeneric/m_menu.o build/third_party/doomgeneric/m_misc.o build/third_party/doomgeneric/m_random.o build/third_party/doomgeneric/memio.o build/third_party/doomgeneric/mus2mid.o build/third_party/doomgeneric/p_ceilng.o build/third_party/doomgeneric/p_doors.o build/third_party/doomgeneric/p_enemy.o build/third_party/doomgeneric/p_floor.o build/third_party/doomgeneric/p_inter.o build/third_party/doomgeneric/p_lights.o build/third_party/doomgeneric/p_map.o build/third_party/doomgeneric/p_maputl.o build/third_party/doomgeneric/p_mobj.o build/third_party/doomgeneric/p_plats.o build/third_party/doomgeneric/p_pspr.o build/third_party/doomgeneric/p_saveg.o build/third_party/doomgeneric/p_setup.o build/third_party/doomgeneric/p_sight.o build/third_party/doomgeneric/p_spec.o build/third_party/doomgeneric/p_switch.o build/third_party/doomgeneric/p_telept.o build/third_party/doomgeneric/p_tick.o build/third_party/doomgeneric/p_user.o build/third_party/doomgeneric/r_bsp.o build/third_party/doomgeneric/r_data.o build/third_party/doomgeneric/r_draw.o build/third_party/doomgeneric/r_main.o build/third_party/doomgeneric/r_plane.o build/third_party/doomgeneric/r_segs.o build/third_party/doomgeneric/r_sky.o build/third_party/doomgeneric/r_things.o build/third_party/doomgeneric/s_sound.o build/third_party/doomgeneric/sha1.o build/third_party/doomgeneric/sounds.o build/third_party/doomgeneric/st_lib.o build/third_party/doomgeneric/st_stuff.o build/third_party/doomgeneric/statdump.o build/third_party/doomgeneric/tables.o build/third_party/doomgeneric/v_video.o build/third_party/doomgeneric/w_checksum.o build/third_party/doomgeneric/w_file_stdc.o build/third_party/doomgeneric/w_file.o build/third_party/doomgeneric/w_main.o build/third_party/doomgeneric/w_wad.o build/third_party/doomgeneric/wi_stuff.o build/third_party/doomgeneric/z_zone.o build/platform/cap_fallback.o build/platform/doomgeneric_wasm.o build/platform/engine_stubs.o -O2 -sASYNCIFY -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=64MB -sEXPORTED_FUNCTIONS=_main,_cap_frame,_cap_ready,_cap_tic_count,_cap_input_event,_cap_input_reset,_cap_bridge_version,_cap_framebuffer_ptr -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,HEAPU8 --preload-file assets/doom1.wad@/doom1.wad -o dist/doom.js
+cp web/index.html dist/index.html
+total 9416
+drwxr-xr-x@  6 sarahtseng  staff      192 Nov  2 16:20 .
+drwxr-xr-x@ 21 sarahtseng  staff      672 Nov  2 16:20 ..
+-rw-r--r--@  1 sarahtseng  staff  4196020 Nov  2 16:20 doom.data
+-rw-r--r--@  1 sarahtseng  staff    74351 Nov  2 16:20 doom.js
+-rwxr-xr-x@  1 sarahtseng  staff   539055 Nov  2 16:20 doom.wasm
+-rw-r--r--@  1 sarahtseng  staff     2070 Nov  2 16:20 index.html
+#!/usr/bin/env bash
+# Acceptance entry point (tester-owned). Exit 0 only if build + every required check passes.
+# Env: RUN_ID (evidence dir name), SOAK_SECONDS (default 300), QUICK=1 (partial; never exits 0),
+#      SKIP_BUILD=1 is intentionally NOT supported.
+set -u
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+RUN_ID="${RUN_ID:-manual-$(date -u +%Y%m%dT%H%M%SZ)}"
+OUT_DIR="${OUT_DIR:-artifacts/runs/$RUN_ID/tester/verify-$(date -u +%H%M%SZ)}"
+mkdir -p "$OUT_DIR"
+export OUT_DIR
+fail() { echo "VERIFY FAIL: $1" | tee -a "$OUT_DIR/verify.log"; exit "${2:-1}"; }
+step() { echo "== $1" | tee -a "$OUT_DIR/verify.log"; }
+
+# Identity of what was tested.
+{
+  echo "commit: $(git rev-parse HEAD)"
+  echo "dirty_diff_sha256: $(git diff HEAD -- . ':!artifacts' | shasum -a 256 | cut -d' ' -f1)"
+  git status --short -- . ':!artifacts' | sed 's/^/status: /'
+  echo "tests_sha256: $(cat tests/verify.sh tests/playtest.mjs tests/selftest.mjs tests/lib/frames.mjs tests/package.json | shasum -a 256 | cut -d' ' -f1)"
+  echo "wad_sha256: $(shasum -a 256 assets/doom1.wad | cut -d' ' -f1)"
+  echo "emcc: $(emcc --version 2>/dev/null | head -1 || echo missing)"
+} > "$OUT_DIR/identity.txt"
+
+step "tooling"
+command -v node >/dev/null || fail "node missing" 2
+command -v make >/dev/null || fail "make missing" 2
+command -v emcc >/dev/null || fail "emcc missing (source emsdk 4.0.18 env)" 2
+(cd tests && npm ci --no-audit --no-fund >>"$OUT_DIR/verify.log" 2>&1) || fail "npm ci in tests/ failed" 2
+(cd tests && npx playwright install chromium >>"$OUT_DIR/verify.log" 2>&1) || fail "playwright chromium install failed" 2
+
+step "helper self-test (fault injection on pixel checks)"
+node tests/selftest.mjs 2>&1 | tee "$OUT_DIR/selftest.log"; [ "${PIPESTATUS[0]}" -eq 0 ] || fail "selftest failed"
+
+step "clean build"
+{ make clean && make all; } >"$OUT_DIR/build.log" 2>&1 || fail "make clean && make all failed (see $OUT_DIR/build.log)"
+[ -f dist/index.html ] && [ -f dist/doom.wasm ] || fail "dist/index.html or dist/doom.wasm missing after build"
+shasum -a 256 dist/* > "$OUT_DIR/dist-sha256.txt" 2>/dev/null
+
+step "browser playtest"
+)
+Clean build succeeds. Run the quick playtest against it, then write BUILD.md and the report.
+Calling Bash()
+
+Bash response → (
+build=0
+exit=2
+== tooling
+tests/verify.sh: line 29: artifacts/runs/20261103T001738Z-47122/coder/1-build/attempt-1/verify-quick/verify.log: No such file or directory
+VERIFY FAIL: npm ci in tests/ failed
+87
+)
+
+Calling Bash()

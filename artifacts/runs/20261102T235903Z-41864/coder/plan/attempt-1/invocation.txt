@@ -1,0 +1,10 @@
+Role=coder RUN_ID=20261102T235903Z-41864 TASK_ID=plan ATTEMPT_ID=attempt-1.
+OUTPUT_DIR=artifacts/runs/20261102T235903Z-41864/coder/plan/attempt-1. Run manifest: artifacts/runs/20261102T235903Z-41864/manifest.txt. Task: Plan only: write missing proposed spec/contract, establish the bridge header, and document interfaces. Do not implement the game yet.
+Read current reports under artifacts/runs/20261102T235903Z-41864 and prior runs for unresolved findings.
+Student inputs, if present: artifacts/specification.md, artifacts/acceptance-criteria.md,
+artifacts/interface-contract.md. Fallback spec: artifacts/runs/20261102T235903Z-41864/coder/plan/attempt-1/proposed-spec.md.
+Fallback contract: artifacts/runs/20261102T235903Z-41864/coder/plan/attempt-1/interface-contract.md.
+Fallback criteria: artifacts/runs/20261102T235903Z-41864/tester/prepare/attempt-1/proposed-criteria.md.
+Missing optional inputs: propose sensible requirements, record assumptions, and proceed.
+Do not invent student approval or modify approved/frozen criteria.
+Save report.md and result.json with status and summary in OUTPUT_DIR.

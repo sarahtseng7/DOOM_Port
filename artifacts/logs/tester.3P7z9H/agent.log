@@ -1,0 +1,414 @@
+
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+  the resource usage, manual interventions, and final stopping decision.
+
+Preserve failing evidence as well as passing evidence. Record changes to
+acceptance criteria separately, with a reason. Discuss disagreements and
+missed faults in your write-up.
+
+## Where your work belongs
+
+| Location | Purpose |
+| --- | --- |
+| [`loop/`](loop/README.md) | All loop code, prompts, role definitions, MCP configuration, and design documentation. |
+| [`artifacts/`](artifacts/README.md) | All durable run state, handoffs, logs, review findings, and evidence. Agents must use this folder between runs. |
+| `tests/` | Verification code, including checks for the loop itself. |
+| `platform/`, `web/` | The port and browser page. |
+| `third_party/doomgeneric/` | Supplied engine; platform ports have been removed. |
+| `assets/` | Included shareware `doom1.wad` (Episode 1). |
+| `build/`, `dist/` | Generated build output. |
+
+Keep the root for project documentation and shared build/toolchain files.
+The starter supplies engine source, platform and HTML stubs, the shareware
+WAD, documentation, and an optional Docker toolchain. It supplies no working
+game, build script, loop implementation, or test suite. `artifacts/` starts
+with its README only; students create run evidence there during the project.
+Use the supplied engine and Emscripten. Documentation is allowed; copying an
+existing Doom browser port does not satisfy the assignment.
+
+See [`platform/README.md`](platform/README.md) for engine integration caveats,
+including pixel format, timing, and audio. The supplied game data already
+contains sound effects and music; no additional sound assets are required.
+
+## Agent section for setup
+
+### macOS without Docker
+
+Install the build tools directly on your Mac to compile and test the browser
+port. Docker is not required for this workflow. There is currently no macOS
+setup script; run the steps below manually.
+
+1. **Install prerequisites.** In Terminal, run:
+
+   ```sh
+   xcode-select --install
+   ```
+
+   Finish the installer, then check `git --version` and `python3 --version`.
+   If Python is missing, install it from [python.org](https://www.python.org/downloads/macos/),
+   or run `brew install python` if you already have Homebrew.
+
+2. **Install Emscripten.** Use version `4.0.18` to match the supplied Dockerfile:
+
+   ```sh
+   mkdir -p ~/Developer
+   cd ~/Developer
+   git clone https://github.com/emscripten-core/emsdk.git
+   cd emsdk
+   ./emsdk install 4.0.18
+   ./emsdk activate 4.0.18
+   source ./emsdk_env.sh
+   emcc --version
+   ```
+
+   If you already have an SDK checkout at that location, use it instead of
+   cloning again. In each new Terminal session where you want to compile, run:
+
+   ```sh
+   source ~/Developer/emsdk/emsdk_env.sh
+   ```
+
+   See the [official installation instructions](https://emscripten.org/docs/getting_started/downloads.html).
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+tester.9SkuzA
+tester.JAaNjg
+tester.QcBm5A
+tester.QSq2Uh
+tester.QT7YlR
+verify.Gjtb86
+verify.ICvgiu
+verify.oFQ3cu
+verify.wkzlnA
+verify.za54Fq
+)
+
+Calling Bash()
+
+Bash response → (
+# Repeatable automated verification
+
+You are `tester`.
+
+Own tests/ verification code (except explicitly student-frozen criteria/baselines).
+Deliver an executable tests/verify.sh that clean-builds and tests the game in
+Chromium, returning 0 only when all required checks genuinely pass. Create missing
+tests and test-only dependencies as needed. Automate browser actions AND assertions
+for loading, level start, controls, key release, responsiveness, and required audio.
+Use existing supplied criteria; if absent, document proposed criteria before first
+using them. Do not silently lower criteria after failures; record test corrections
+with evidence and reasons. Read reviewers' findings and turn reproducible failures
+into regression checks. Use MCP for exploration where helpful; scripts must work
+without an agent interpreting output. Preserve logs and failed evidence. Do not
+fix product source. Report unavailable tooling or unverifiable required audio as
+FINDINGS/nonzero, never skip required behavior and report PASS.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+FINDINGS
+
+`tests/verify.sh` exited 0 (full 300 s soak, clean build, 0 failed checks), but 5 required behaviors remain UNVERIFIED, so this is not PASS.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes (verify/identity.txt, dirty_diff_sha256 72688451...). emcc 4.0.18. Clean `make clean && make all` ran inside the script. I changed no product source, tests, or loop files.
+
+## Prior findings read
+artifacts/reports/ (tester, reviewer_gameplay, reviewer_site, coder*). No specification.md or acceptance-criteria.md exists.
+
+## Work and evidence (this dir)
+- verify.out and verify/ (identity.txt, playtest.log, faults.log, verify-result.json): `RUN_ID=tester.JAaNjg OUT_DIR=<abs> tests/verify.sh`, exit=0.
+- Selftest: all helper checks ok.
+- Playtest: failed=0. Every B, T, M, G1/G2, I1-I8, C, U, E and R check passed.
+  - T2: 34.97 tics/s.
+  - R1-R4: 300 s soak with no errors, 60 rAF/s, longtask 0 ms, 24 sampled frames differed.
+- I6.backward-returns passed (start-vs-back=0.368, start-vs-fwd=0.532, ratio ~0.69). The ratio is close to the 0.7 limit. Earlier runs gave 0.79 (fail) and 0.60 (pass), so I6 passed in this run and the earlier fail is unexplained. I did not loosen it.
+- Fault injection caught 4/4: drop-keyup (I2 I5 C3 I7), drop-blur (I7), ignore-left (I3 E2a), swap-rb (B4).
+- verify-attempt1-relative-outdir.out: failing evidence, kept. The first attempt exited 2 because I passed a relative OUT_DIR and verify.sh does `cd tests` before writing to it. This is a script robustness issue, not a product fault. I then reran with an absolute path.
+
+## Unresolved (owner)
+1. I6 is marginal: ratios of 0.60-0.79 against a 0.7 limit. It needs a more stable oracle, such as a position export, a longer backward hold, or a direction-only check (tester).
+2. tests/verify.sh breaks on a relative OUT_DIR, because the `cd tests` steps write to the log through a relative path (tester). Fix by resolving OUT_DIR to an absolute path.
+3. UNVERIFIED, listed by the suite as not in scope:
+   - A1 audio correctness. No human has listened, and an active AudioContext only proves non-silent output (student scope).
+   - P1 save persistence (student scope).
+   - G3 door use and level exit, which have no oracle (tester).
+   - I9 input-module identity. The exports `cap_input_impl`, `cap_input_delivered_count` and `cap_input_dropped_count` exist per coder's report, so this is wiring work for the tester.
+   - H1 hidden-tab timing. Headless Chromium cannot throttle a real background tab (needs a manual protocol).
+4. Faults are injected browser-side only. The criteria are agent-proposed, not student-approved. Only Chromium was tested.
+
+## Assumptions
+Doom default keys; headless Chromium via Playwright; no thresholds changed. I did not change tests. Manual interventions: none. Usage: not available.
+
+Movement, turning, stopping, fire, Esc-menu pause, focus-loss release, tic rate and non-silent audio were observed working on the current dist/. This is FINDINGS rather than PASS because audibility, a real hidden tab, door use, level exit and OPL music fidelity remain unverified. I found no new product defect.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes. I did not rebuild or edit any source. dist/ files are dated Nov 2 20:58. dist/doom.wasm sha256 prefix a4c6846627bdcb21, the same as in earlier reports. Server: `python3 -m http.server 8127 --bind 127.0.0.1 --directory dist`, started by me and stopped (port confirmed free).
+
+## Prior findings read
+artifacts/reports/ (all six) and the earlier reviewer_gameplay.* reports. No specification.md or acceptance-criteria.md exists. Nothing in prior reports is contradicted.
+
+## Work and evidence (this dir)
+Ad-hoc Playwright, headless Chromium 800x600, no autoplay flag. The scripts are copies of reviewer_gameplay.ldSVVs with the port changed to 8127. They are not protected checks.
+- review.mjs -> review.log, review/screens/
+  - AudioContext `suspended` before a gesture, `running` after one Enter, peak 0.22. Level music switches in (musicStarted 3, peak 0.50).
+  - 35.0 tics/s.
+  - Forward 500 ms, then coasting diffs 0.508, 0.341, 0.201, 0.129, then 0 for 2 s: normal Doom momentum, then a full stop.
+  - Period strafe (0.535) and Shift+Up run (0.718) move the view.
+  - Fire: ammo region changes (0.14), SFX 4->5; held Ctrl 5->9 (autofire).
+  - Held ArrowRight + `blur`: turn stops (0.000). Tic rate after the simulated tab switch is 35.0/s.
+  - Final: 11 SFX requested/11 played/0 bad, 0 music errors, 0 page/console errors.
+- escpause.mjs -> escpause.log. With the Esc menu open and ArrowUp held, view diff is 0.0000 over 1.5 s and 0.0000 after release. After closing the menu, forward motion resumes (0.735).
+- vol.mjs -> vol.log. Music volume 0 gives peak 0 with SFX still played (26/26); restoring gives peak 0.37.
+- back2.mjs -> back2.log. Three trials, each from a fresh page. Idle: 0 0 0 0. After ArrowDown 500 ms: 0.184, then 0 for 2.75 s. Input delivered 8->10, dropped 0. Backward moves and then stops fully, and the result is identical across the trials, so I saw no flakiness on this build. The screenshots from these trials were deleted to save space; the log is the evidence.
+
+## Failed checks kept (check flaws, not product defects)
+- FAIL A.menu-sfx-and-music-heard: the engine plays no SFX for the title Enter (sfxPlayed=0); music is heard (peak 0.22).
+- FAIL P.menu-pauses-game: `_cap_tic_count` keeps counting while paused (34/s). The pixel diff in escpause.log shows the world is frozen. The script's check is the wrong oracle. Explained in earlier reports.
+
+## Unresolved (owner)
+1. UNVERIFIED (tester/student): no human has heard the audio. Analyser peak proves non-silent output only. Music is a GM-family oscillator approximation, not OPL (coder_input_audio/student).
+2. UNVERIFIED (tester; timing owner coder_render_timing): a real hidden tab. Headless reports `document.hidden=false`, so throttling, background audio and key release on hide were not exercised. Blur was simulated by a dispatched event.
+3. UNVERIFIED (tester): door use (Space gave SFX delta 0 at spawn, no door nearby), pick-ups, damage/death, level exit. Needs a scripted route or position export.
+4. UNVERIFIED: other E1 songs, music/SFX balance, Safari/Firefox, headed browser, HiDPI.
+5. Scope (student): WASD and mouse are not mapped; Doom default keys only. Criteria are agent-proposed, not student-approved.
+6. Tester: I6.backward-returns is marginal in the tester's oracle (0.60-0.79 against a 0.7 limit). My three backward trials were identical and show no product fault, which points to oracle sensitivity rather than the game (tester-owned).
+
+## Assumptions
+- Doom default key bindings are the requirement.
+- Region screenshot diffs stand in for motion and pause; a 0.0000 diff in an unobstructed region means a frozen world.
+- Stopping allows about 1 s of friction; the pass bar was <2% diff in the last samples.
+- No source, test or loop files edited. Manual interventions: none. Usage: not available.
+# Verification
+
+Keep verification code here, including browser checks, fixtures, and tests
+for the loop itself. You design the checks; no test suite is provided.
+
+See [the acceptance criteria and evidence requirements](../README.md#evaluate-the-system-you-built).
+Document how to run your checks and what each one establishes.
+
+Save test results, logs, screenshots, and recordings in `artifacts/`.
+Keep acceptance checks outside the coder's write permissions using your
+sandbox/tool configuration; a folder name alone does not enforce access.
+
+## Suite (tester-owned; criteria are AGENT-PROPOSED, not student-approved)
+
+Run: `source ~/Developer/emsdk/emsdk_env.sh && tests/verify.sh` (RUN_ID, SOAK_SECONDS, QUICK=1 optional).
+Evidence goes to `artifacts/runs/$RUN_ID/tester/verify-*/` (identity.txt, logs, screenshots, playtest-results.json).
+Exit 0 only when tooling, build, selftest and every required playtest check pass; `QUICK=1` never exits 0.
+
+| File | Establishes |
+| --- | --- |
+| `verify.sh` | tooling check, source identity, selftest, `make clean && make all`, playtest |
+| `selftest.mjs` | pixel helpers FAIL on black, channel-swapped, transparent, static, wrongly shifted frames (no build needed) |
+| `playtest.mjs` | Chromium: load/console errors, boot frame, colors, rAF liveness, menu -> E1M1, turn/move/fire/release, blur, automap, Esc menu, soak |
+| `lib/frames.mjs` | region diff / color stats / horizontal-shift estimation on canvas screenshots |
+
+Limits: outcomes are inferred from pixels (no engine state hook); audio, persistence, door/level-exit and the
+35 tics/s rate are listed as UNVERIFIED in every result. Ammo/status regions assume the stock 320x200 layout.
+Test deps: `npm ci` in `tests/` (network needed once; Playwright 1.49.1, pngjs 7.0.0).
+e500c440656622db5ab3f8fb7df73d8b5998eeb3
+)
+
+Calling Bash()
+
+Bash response → (
+agent.log
+emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 4.0.18 (fae107463db4d20a276a27ede393048deaeebf76)
+deps ok
+3:# Env: RUN_ID (evidence dir name), SOAK_SECONDS (default 300), QUICK=1 (partial; never exits 0),
+8:RUN_ID="${RUN_ID:-manual-$(date -u +%Y%m%dT%H%M%SZ)}"
+9:OUT_DIR="${OUT_DIR:-artifacts/runs/$RUN_ID/tester/verify-$(date -u +%H%M%SZ)}"
+10:mkdir -p "$OUT_DIR"
+11:export OUT_DIR
+12:fail() { echo "VERIFY FAIL: $1" | tee -a "$OUT_DIR/verify.log"; exit "${2:-1}"; }
+13:step() { echo "== $1" | tee -a "$OUT_DIR/verify.log"; }
+23:} > "$OUT_DIR/identity.txt"
+29:(cd tests && npm ci --no-audit --no-fund >>"$OUT_DIR/verify.log" 2>&1) || fail "npm ci in tests/ failed" 2
+30:(cd tests && npx playwright install chromium >>"$OUT_DIR/verify.log" 2>&1) || fail "playwright chromium install failed" 2
+33:node tests/selftest.mjs 2>&1 | tee "$OUT_DIR/selftest.log"; [ "${PIPESTATUS[0]}" -eq 0 ] || fail "selftest failed"
+36:{ make clean && make all; } >"$OUT_DIR/build.log" 2>&1 || fail "make clean && make all failed (see $OUT_DIR/build.log)"
+38:shasum -a 256 dist/* > "$OUT_DIR/dist-sha256.txt" 2>/dev/null
+41:node tests/playtest.mjs 2>&1 | tee "$OUT_DIR/playtest.log"
+45:  tests/faults.sh 2>&1 | tee "$OUT_DIR/faults.log"; [ "${PIPESTATUS[0]}" -eq 0 ] || rc=1
+47:echo "{\"exit\": $rc, \"evidence\": \"$OUT_DIR\"}" > "$OUT_DIR/verify-result.json"
+)
+Fix the known relative OUT_DIR bug (tester-owned), then run.
+Calling Bash()
+
+Bash response → (
+set -u
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+RUN_ID="${RUN_ID:-manual-$(date -u +%Y%m%dT%H%M%SZ)}"
+OUT_DIR="${OUT_DIR:-artifacts/runs/$RUN_ID/tester/verify-$(date -u +%H%M%SZ)}"
+mkdir -p "$OUT_DIR"
+OUT_DIR="$(cd "$OUT_DIR" && pwd)"
+export OUT_DIR
+fail() { echo "VERIFY FAIL: $1" | tee -a "$OUT_DIR/verify.log"; exit "${2:-1}"; }
+step() { echo "== $1" | tee -a "$OUT_DIR/verify.log"; }
+Command did not complete within its 600s timeout and was moved to the background (ID: brb6dfgjc). Output is being written to: /private/tmp/claude-501/-Users-sarahtseng-Projects-fellowship-loop-capstone/c72cf490-c7ac-4bc2-be9e-71501f3f735f/tasks/brb6dfgjc.output. You will be notified when it completes. If it is still running after 10m in the background, it will be stopped and you will be notified. It is running now: do not start a second copy while it runs. If it is no longer needed, stop it with TaskStop. To check interim output, use Read on that file path.
+Session cwd remains /Users/sarahtseng/Projects/fellowship-loop-capstone; directory changes made by the backgrounded command do not apply to subsequent commands.
+)
+
+Calling Bash()
+
+Bash response → (
+{"exit": 0, "evidence": "/Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/tester.3P7z9H/verify"}
+PASS       I6.backward-returns start-vs-back=0.318 start-vs-fwd=0.532
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3.door-use-and-level-exit no stable cross-build oracle; manual/protocol check
+UNVERIFIED I9.input-module-identity input_audio.c has no exported diagnostic (e.g. cap_input_delivered), so a silent fallback queue cannot be told apart; needs coder export (R2-4)
+UNVERIFIED H1.hidden-tab-timing headless Chromium cannot throttle a real background tab; ASYNCIFY setTimeout catch-up unchecked (R2-6)
+playtest: PASS failed=0 unverified(not-in-scope, listed)=5
+== fault injection (checks must fail on broken behaviour)
+caught  FAULT=drop-keyup (failed: I2 I5 C3 I7)
+caught  FAULT=drop-blur (failed: I7)
+caught  FAULT=ignore-left (failed: I3 E2a E2b)
+caught  FAULT=swap-rb (failed: B4)
+)
+
+Calling Bash()
+
+Bash response → "(Bash completed with no output)"
+FINDINGS. `tests/verify.sh` exited 0, but 5 required behaviors are still unverified, so I can't report PASS.
+
+The run did a clean build with emcc 4.0.18, then the selftest and the full 300 s soak. The playtest had 0 failed checks. Fault injection caught all 4 deliberate breaks:
+- `drop-keyup` was caught by I2, I5, C3 and I7.
+- `drop-blur` was caught by I7.
+- `ignore-left` was caught by I3, E2a and E2b.
+- `swap-rb` was caught by B4.
+
+I made one change, in `tests/verify.sh`: it now turns `OUT_DIR` into an absolute path. This fixes the failure from the previous report, where a relative `OUT_DIR` made the script exit 2. This run used a relative `OUT_DIR` and succeeded.
+
+**Still unresolved:**
+- **I6 (backward returns) is unstable (tester):**
+  - It passed with a start-vs-back diff of 0.318 against a start-vs-forward diff of 0.532, a ratio of about 0.60 against the 0.7 limit.
+  - Earlier runs gave 0.60–0.79, so the oracle is marginal.
+  - I did not loosen it. It needs a position export or a direction-only check.
+- **Unverified behaviors:**
+  - **A1, audio correctness (student scope):** no human has listened.
+  - **P1, save persistence (student scope).**
+  - **G3, door use and level exit (tester):** there is no check for it yet.
+  - **I9, input-module identity (tester):** the coder's exports exist, but the check isn't wired up.
+  - **H1, real hidden-tab timing:** headless Chromium can't throttle a background tab, so this needs a manual protocol.
+- **Limits of the checks:**
+  - Faults are injected browser-side only.
+  - The criteria are agent-proposed, not student-approved.
+  - Only headless Chromium was tested.
+
+Everything is in `artifacts/logs/tester.3P7z9H/`. The report is `report.md`, and the evidence is in `verify.out` and `verify/`.

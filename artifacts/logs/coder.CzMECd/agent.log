@@ -1,0 +1,484 @@
+I'll start by reading the project docs, the role prompt, and the prior reports.
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+  the resource usage, manual interventions, and final stopping decision.
+
+Preserve failing evidence as well as passing evidence. Record changes to
+acceptance criteria separately, with a reason. Discuss disagreements and
+missed faults in your write-up.
+
+## Where your work belongs
+
+| Location | Purpose |
+| --- | --- |
+| [`loop/`](loop/README.md) | All loop code, prompts, role definitions, MCP configuration, and design documentation. |
+| [`artifacts/`](artifacts/README.md) | All durable run state, handoffs, logs, review findings, and evidence. Agents must use this folder between runs. |
+| `tests/` | Verification code, including checks for the loop itself. |
+| `platform/`, `web/` | The port and browser page. |
+| `third_party/doomgeneric/` | Supplied engine; platform ports have been removed. |
+| `assets/` | Included shareware `doom1.wad` (Episode 1). |
+| `build/`, `dist/` | Generated build output. |
+
+Keep the root for project documentation and shared build/toolchain files.
+The starter supplies engine source, platform and HTML stubs, the shareware
+WAD, documentation, and an optional Docker toolchain. It supplies no working
+game, build script, loop implementation, or test suite. `artifacts/` starts
+with its README only; students create run evidence there during the project.
+Use the supplied engine and Emscripten. Documentation is allowed; copying an
+existing Doom browser port does not satisfy the assignment.
+
+See [`platform/README.md`](platform/README.md) for engine integration caveats,
+including pixel format, timing, and audio. The supplied game data already
+contains sound effects and music; no additional sound assets are required.
+
+## Agent section for setup
+
+### macOS without Docker
+
+Install the build tools directly on your Mac to compile and test the browser
+port. Docker is not required for this workflow. There is currently no macOS
+setup script; run the steps below manually.
+
+1. **Install prerequisites.** In Terminal, run:
+
+   ```sh
+   xcode-select --install
+   ```
+
+   Finish the installer, then check `git --version` and `python3 --version`.
+   If Python is missing, install it from [python.org](https://www.python.org/downloads/macos/),
+   or run `brew install python` if you already have Homebrew.
+
+2. **Install Emscripten.** Use version `4.0.18` to match the supplied Dockerfile:
+
+   ```sh
+   mkdir -p ~/Developer
+   cd ~/Developer
+   git clone https://github.com/emscripten-core/emsdk.git
+   cd emsdk
+   ./emsdk install 4.0.18
+   ./emsdk activate 4.0.18
+   source ./emsdk_env.sh
+   emcc --version
+   ```
+
+   If you already have an SDK checkout at that location, use it instead of
+   cloning again. In each new Terminal session where you want to compile, run:
+
+   ```sh
+   source ~/Developer/emsdk/emsdk_env.sh
+   ```
+
+   See the [official installation instructions](https://emscripten.org/docs/getting_started/downloads.html).
+
+artifacts/logs:
+coder_input_audio.6WSU74
+coder_input_audio.6zHSnA
+coder_input_audio.9u4tS4
+coder_input_audio.KWBVgQ
+coder_input_audio.OwOtK6
+coder_input_audio.PrVlSe
+coder_input_audio.rdvBFz
+coder_input_audio.XSXPrI
+coder_input_audio.YCG1J3
+coder_input_audio.zZGUhu
+coder_render_timing.1ZyeYK
+coder_render_timing.6XCJuY
+coder_render_timing.8nHQTI
+coder_render_timing.cK29OS
+coder_render_timing.i3pFKE
+coder_render_timing.kFsAu7
+coder_render_timing.licfez
+coder_render_timing.mpRUkR
+coder_render_timing.Wkpv1o
+coder_render_timing.y2E5IZ
+coder.1Bi21x
+coder.7cXMRV
+coder.9PHBOq
+coder.CzMECd
+coder.FaD2R7
+coder.GhMtru
+coder.ICaI0g
+coder.J22PFD
+coder.JMrJmA
+coder.kf3uJJ
+coder.lRueHg
+coder.n6GiEG
+coder.nUFHev
+coder.NWKoK5
+coder.pLDPys
+coder.Q1melD
+coder.VgF4Hv
+coder.XGU7Cd
+coder.xIoyo9
+coder.Xl0uaN
+reviewer_gameplay.Bt9KSs
+reviewer_gameplay.dAPDqY
+reviewer_gameplay.facW3H
+reviewer_gameplay.GTAfxW
+reviewer_gameplay.ldSVVs
+reviewer_gameplay.Rw1fcA
+reviewer_gameplay.wHMOB2
+reviewer_gameplay.wQbJ7c
+reviewer_gameplay.ZUZV8O
+reviewer_site.f9dy0D
+reviewer_site.FnUrtZ
+reviewer_site.GwiGfG
+reviewer_site.msvdXx
+reviewer_site.Q4XPrg
+reviewer_site.qWTvbw
+reviewer_site.Rm0IxG
+reviewer_site.U8Ka1G
+reviewer_site.ZELzZH
+tester.3P7z9H
+tester.8fsQdw
+tester.9SkuzA
+tester.aZlP2G
+tester.JAaNjg
+tester.oPtvHA
+tester.Q0YUP2
+tester.QcBm5A
+tester.QSq2Uh
+tester.QT7YlR
+verify.2u2qnP
+verify.Gjtb86
+verify.Gm8XQE
+verify.hDJeOV
+verify.ICvgiu
+verify.oFQ3cu
+verify.wkzlnA
+verify.xskzsM
+verify.za54Fq
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+(eval):1: no matches found: loop/prompts/coder*
+)
+
+Calling Bash()
+
+Bash response → (
+# Build and browser integration
+
+You are `coder`.
+
+Deliver a reproducible Emscripten 4.0.18 build and a correctly loaded browser game.
+Own Makefile, BUILD.md, web/index.html, platform/doomgeneric_wasm.c,
+platform/capstone_bridge.h, platform/cap_fallback.c, and platform/engine_stubs.c.
+You may create additional glue files only with names platform/glue_* or web/glue_*.
+Keep module interfaces coherent with the specialists. Implement startup, WAD
+packaging, exports, and final integration. Document serving dist/ on port 8000.
+Create missing interfaces pragmatically; ask specialists for changes in their
+files rather than making them yourself. Do not copy another browser port.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+=== artifacts/reports/coder_input_audio.md
+FINDINGS
+
+No defect found in my scope and I changed no source files. This is FINDINGS because nobody has listened to the output, the music is not OPL/GENMIDI-accurate, and I did not re-run the controls myself.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes. `git diff HEAD` sha256 8a0736f5784ff838..., the same as the earlier tester/coder_render_timing runs, so the tree is unchanged. dist/doom.wasm sha256 6c93cbf125bd366a526dee0a456b63889b0c9454fc8e92bcaa10de1ddd2bf13e. web/{index.html,input_audio.js,audio_web.js,render_timing.js} are cmp-identical to dist/. I did not rebuild. artifacts/specification.md and acceptance-criteria.md do not exist.
+
+## Prior findings read
+All six files in artifacts/reports/. Nothing open in my scope that I can fix within my file ownership. Tester I9 is already satisfied by bridge exports (`cap_input_impl`, delivered/dropped counts); I6 is oracle-owned.
+
+## Evidence (this dir)
+check.mjs (copied from coder_input_audio.zZGUhu; headless Chromium, no autoplay flag; not a protected check) run against dist/ -> audio_result.json, check.err (empty), exit 0:
+- Before any key: context `suspended`, 0 notes scheduled, peak 0. An initialised context is not output.
+- After Enter x4 and Ctrl fire: context `running`, SFX 4 requested / 4 played / 0 suppressed / 0 bad, 3 songs started, 73 notes scheduled, 5 music voices, 0 music errors, peak 0.395, 0 page errors.
+- Controls were not re-run by me. I rely on the tester's 39 playtest checks and fault injection and on reviewer_gameplay's position-based movement checks, all on the same wasm hash.
+
+## Unresolved (owner)
+1. UNVERIFIED, student/tester: no human has listened. Peak and note counts show only non-silent output.
+2. Unmet, student decision: music is a GM-family oscillator synth, not GENMIDI/OPL, so timbre differs from original Doom.
+3. UNVERIFIED, tester: door use, pickups, damage/death, other E1 songs, SFX/music balance, a real hidden tab, Firefox/Safari.
+4. Known limits (mine, unfixed): linked-sound pitch ignored; the first SFX before a gesture is dropped, which causes the autoplay console warnings; WASD and mouse are not mapped (Doom default keys only).
+
+## Assumptions
+- I did not gate AudioContext creation behind a gesture to silence the warnings: musicPlay returns early without a context and a song requested before the first key press would be lost.
+- Persistence is out of scope (none supplied); volumes reset on load.
+- Doom default key bindings are the control requirement.
+- Manual interventions: none. Usage: not available.
+
+## Next action
+Tester runs tests/verify.sh on hash 6c93cbf125bd366a; a human listens to SFX and music.
+=== artifacts/reports/coder_render_timing.md
+FINDINGS
+
+Re-measured rendering and timing on the unchanged tree. I found no defect and made no source edits. FINDINGS rather than PASS because I did not run `tests/verify.sh` or rebuild, and a real hidden tab, physical HiDPI and non-Chromium browsers remain unverified.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes. `git diff HEAD` sha256 8a0736f5784ff838..., the same as tester.oPtvHA's identity.txt, so the tree is unchanged since the last reports. dist/doom.wasm sha256 6c93cbf125bd366a526dee0a456b63889b0c9454fc8e92bcaa10de1ddd2bf13e. web/{index.html,input_audio.js,audio_web.js,render_timing.js} are cmp-identical to dist/. I did not rebuild (prior coder_render_timing run did a clean build with the same hash; emcc 4.0.18). artifacts/specification.md and acceptance-criteria.md do not exist.
+
+## Prior findings read
+All six files in artifacts/reports/. No role reports a rendering or timing defect. Open items in my scope are H1 hidden-tab timing, physical HiDPI, and no automated canvas-scaling check.
+
+## Evidence (this dir)
+scale.mjs (copied from coder_render_timing.i3pFKE; headless Chromium; not a protected check) run against dist/ -> scale-dpr1.log, dpr1.png:
+- 34.98 tics/s, about 70 presents/s, 0 non-opaque pixels, 178 distinct colours, backing store 640x400, no page errors.
+- Canvas CSS size follows the window at 16:10: 1280x720 -> 1152x720; 1280x800 -> 1280x800; 1920x1080 -> 1728x1080; 640x400 -> 640x400; 500x300 -> 480x300; 1000x700 -> 1000x625.
+- dpr1.png viewed: brown walls, red HUD digits, skin-tone hand, muzzle flash and the "picked up an armor bonus" message. No R/B swap, opaque, sharp nearest-neighbour scaling, letterboxed, no corruption.
+- DPR 2 was not re-run; see the earlier run in coder_render_timing.i3pFKE (same numbers).
+
+## Unresolved (owner)
+1. tester (manual protocol): real hidden-tab timing (H1). Headless cannot throttle a background tab.
+2. UNVERIFIED: physical Retina/HiDPI, Safari, Firefox.
+3. tester: no automated canvas-scaling check; run tests/verify.sh on this revision.
+4. Optional, not a defect: presents run about 2x the tic rate (duplicate frames), a possible CPU saving.
+
+## Assumptions
+No spec exists. Criteria used: opaque correct-colour frames, about 35 tics/s, canvas fits the window at 16:10. No speculative edits to passing code. Manual interventions: none. Usage: not available.
+
+## Next action
+Tester runs tests/verify.sh on hash 6c93cbf125bd366a and adds a scaling check and the H1 manual protocol.
+=== artifacts/reports/coder.md
+FINDINGS
+
+Build and startup interfaces are coherent and reproducible; no source edits were needed. FINDINGS rather than PASS because I ran no browser and no `tests/verify.sh`.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes. emcc 4.0.18. Clean build: `make BUILD=$O/build DIST=$O/dist` (make.log, exit 0). doom.wasm sha256 6c93cbf125bd366a526dee0a456b63889b0c9454fc8e92bcaa10de1ddd2bf13e, identical to repo `dist/doom.wasm`. web/index.html, input_audio.js, audio_web.js and render_timing.js are cmp-identical to the built dist copies.
+
+## Prior findings read
+artifacts/reports/*. All roles report the same wasm hash. No coder-owned defect is open.
+
+## Interface status
+- Makefile exports the bridge v4 symbols, including `_cap_input_impl`, so the tester's I9 request is satisfied on the coder side.
+- BUILD.md documents the toolchain, script load order and serving dist/ on port 8000.
+- No spec.md or acceptance-criteria.md exists.
+
+## Unresolved (owner)
+1. tester: make I6 position-based (`_cap_player_x/y`), adopt `_cap_input_impl` for I9, and rerun `tests/verify.sh` on this hash. Record the change as a test correction.
+2. UNVERIFIED (tester/student): audio by ear, door use and level exit, pickups and damage, a real hidden tab, Firefox and Safari.
+3. Known limits: oscillator-synth music, no WASD or mouse mapping, first SFX before a gesture dropped.
+
+## Next action
+Tester reruns verify.sh against hash 6c93cbf125bd366a.
+
+## Assumptions
+Doom default keys. Edited only this directory. Manual interventions: none. Usage: not available.
+=== artifacts/reports/reviewer_gameplay.md
+FINDINGS
+
+Level entry and movement through real corridors work on the current build. This is FINDINGS rather than PASS because door use, pickups, damage and audio correctness were not established. I found no new defect and changed no source.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes. `make -n` reports nothing to do. dist/doom.wasm sha256 prefix 6c93cbf125bd366a, the same build as the prior gameplay review. I did not rebuild. artifacts/specification.md and acceptance-criteria.md do not exist.
+
+## Prior findings read
+All six files in artifacts/reports/. The prior gameplay report already measured stop-after-release, turn, strafe, run and blur release with the `_cap_player_*` exports. Those were not repeated. I targeted the gaps it listed: door use and traversal.
+
+## Work and evidence (this directory)
+`door.mjs` is my own script and is not a protected check. It uses headless Chromium via Playwright against a throwaway local server that exited with the script. Outputs: door-results.json, door-console.txt, door-*.png and door2-*.png.
+- **Start:** E1M1 (level 101), health 100, position (1056,-3616), angle 90 degrees, 50 ammo (HUD screenshot).
+- **Forward walk to the north wall:** the player advanced from y=-3616 to y=-2897 and stopped at a wall (door-39.png shows a flat wall). Space taps there did nothing, which is correct for a plain wall.
+- **Traversal:** after turning right and walking, the player went about 440 units through the corridor. It slid along walls, with y still changing while x was blocked. After a left turn of about 147 degrees it walked about 650 units back to (720,-3346). Health stayed 100 and the level id stayed 101.
+- **Console:** door-console.txt has no error entries. It has the engine startup lines only.
+
+## Unresolved (owner)
+1. UNVERIFIED, tester: door use. I tapped Space while walking but never confirmed standing at a door or a sector change. There is no exported door or sector oracle. Needs a position-based scenario, or a bridge export from coder.
+2. UNVERIFIED, tester: pickups, damage and death, a real hidden tab (headless Chromium cannot background a tab), Firefox and Safari.
+3. UNVERIFIED, student/tester: audio correctness. No human has listened. The prior reports record non-silent output only (peak about 0.4, notes scheduled). I did not re-test audio this run.
+4. Known limits from the prior reports, unchanged: music is an oscillator synth rather than GENMIDI/OPL. WASD and mouse are not mapped. The first SFX before a gesture is dropped.
+5. For the tester: I6 should move to a position-based check (see the prior gameplay and tester reports).
+
+## Assumptions
+- Doom default keys (arrows, Ctrl, Space, Shift, Alt) are the control requirement.
+- The position exports are trusted as engine state.
+- Manual interventions: none. Usage: not available.
+=== artifacts/reports/reviewer_site.md
+FINDINGS
+
+Startup observed and working on the current dist/. FINDINGS (not PASS) only because time-to-first-frame, other viewports, clean rebuild, other browsers, warm-cache reload and post-gesture audio were not verified, plus one minor expected audio warning (unchanged from prior reviewer_site report).
+
+## Work
+- Read AGENTS.md, loop/prompts/REVIEWER.md, artifacts/README.md, artifacts/reports/reviewer_site.md and tester.md. No specification.md or acceptance-criteria.md exists.
+- Port 8000 had no listener. I started `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist` (pid in server.pid) and stopped it afterwards (port confirmed free).
+- `make`: "Nothing to be done". web/{index.html,input_audio.js,audio_web.js,render_timing.js} identical to dist/. doom.wasm sha256 6c93cbf125bd366a... (same as the prior review). Source: HEAD e500c44 plus uncommitted changes (rev.txt).
+- Playwright load of /?r=site5: document + 6 resources (input_audio.js, audio_web.js, render_timing.js, doom.js, doom.data ~4.2 MB, doom.wasm ~555 KB), all HTTP 200 and all in server.log. Title "DOOM Shareware" (the served HTML source has "Doom (WASM)" as its initial title, then the page sets it).
+- Canvas 640x400, displayed 1152x720 CSS (1.6 aspect). 93 distinct colours in a sparse sample. Module._rt.frames 645 -> 715 in 1 s, so the render loop runs (headless Chromium).
+- startup.png (viewed): in-game view with HUD and a "YOU GOT THE SHOTGUN!" message and an imp-like enemy. This is probably the attract-mode demo, not a player-controlled game. Colours are correct (no R/B swap), no corruption, letterboxed.
+- Console: 0 errors, 2 warnings (console.txt).
+
+## Evidence (this directory)
+startup.png, console.txt, server.log, server.pid, rev.txt. Playwright captures are in artifacts/browser/.
+
+## Findings
+1. Minor, owner coder_input_audio: AudioContext "not allowed to start" warnings (audio_web.js:27, :53) before a user gesture. Expected under autoplay policy; confirm audio resumes on first gesture (not verified here).
+
+No actionable startup fault found.
+
+## Not verified
+Precise time to first frame; clean rebuild; non-Chromium browsers; warm-cache reload; other viewports; audio after a gesture; whether the first frame is a demo or the title screen (I did not check the first frame, only a screenshot ~6 s after load); movement and combat (out of scope).
+
+## Assumptions
+- Headless Playwright Chromium via MCP; no spec, so criteria were: page loads, no failed required assets, canvas draws with plausible colours, loop advances.
+- "Fresh" = new query string; the browser cache was not cleared, but server.log shows every asset requested.
+- Wrote nothing outside OUTPUT_DIR apart from Playwright captures in artifacts/browser/.
+=== artifacts/reports/tester.md
+FINDINGS
+
+`tests/verify.sh` exited 0: tooling, selftest, clean build, all required playtest checks (failed=0, incl. 300 s soak) and all 4 fault injections passed. The result is FINDINGS rather than PASS because 5 required behaviors remain UNVERIFIED and the I6 oracle is flaky.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes (verify/identity.txt, dirty_diff_sha256 8a0736f5...). Command: `RUN_ID=tester.oPtvHA OUT_DIR=artifacts/logs/tester.oPtvHA/verify tests/verify.sh` (emsdk env sourced). Exit 0 (verify/verify-result.json).
+
+## Evidence (artifacts/logs/tester.oPtvHA/)
+verify.out, verify/ (identity.txt, build.log, selftest.log, playtest.log, playtest-results.json, faults.log, verify-result.json, dist-sha256.txt, screens/).
+- Passed: load/console, boot frame, colors, rAF liveness, menu -> E1M1, turn, move/stop on release, blur/pagehide/hidden key release, fire, automap, Esc menu, 34.98 tics/s, soak (no errors, no stalls, max longtask 0 ms).
+- Fault injection caught: drop-keyup (I2 I5 I6 C3 I7), drop-blur (I7), ignore-left (I3 E2a E2b), swap-rb (B4).
+- I6.backward-returns passed (start-vs-back=0.348, start-vs-fwd=0.584, ratio 0.60). Earlier runs ranged 0.60-0.79 against a 0.7 limit (tester.Q0YUP2 failed at 0.79).
+
+## Unresolved (owner)
+1. I6 flaky pixel oracle (tester). Not changed this run: no thresholds altered. Should become position-based using `_cap_player_x/y` exports, as a documented test correction.
+2. UNVERIFIED, listed in the results: A1 audio correctness (student scope, nobody has listened); P1 save persistence (student scope); G3 door use and level exit (tester, no oracle); I9 input-module identity (coder must export e.g. cap_input_delivered); H1 real hidden-tab timing (headless Chromium can't throttle; needs manual protocol).
+3. Limits: faults injected browser-side only; criteria agent-proposed, not student-approved; headless Chromium only; pixel-inferred outcomes.
+
+## Assumptions
+Doom default keys. No spec/acceptance-criteria files exist. Ran the suite once; I6 not rerun in isolation. No product source or tests changed. Manual interventions: none. Usage: not available.
+agent.log
+)
+
+Calling Bash()
+
+Bash response → (
+8a0736f5784ff838
+6c93cbf125bd366a
+emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 4.0.18 (fae107463db4d20a276a27ede393048deaeebf76)
+make: Nothing to be done for `all'.
+same index.html
+same input_audio.js
+same audio_web.js
+same render_timing.js
+1
+ls: artifacts/acceptance-criteria.md: No such file or directory
+ls: artifacts/specification.md: No such file or directory
+)
+
+Calling Bash()
+
+Bash response → "(Bash completed with no output)"
+The integration check found nothing for me to fix, so I made no source edits. I saved the report to `artifacts/logs/coder.CzMECd/report.md` and marked it FINDINGS, not PASS. I ran no browser and did not run `tests/verify.sh`.
+
+- **Build is current:** `make -n` has nothing to do. `dist/doom.wasm` hash starts `6c93cbf125bd366a`, the same build every prior report names. The web files in `dist/` match `web/`, and the working-tree diff hash (`8a0736f5784ff838`) is unchanged.
+- **Nothing assigned to my files:** none of the six reports lists an open item for them. The tester's request for an input-module identity export (I9) is already met by the `cap_input_impl` export in the Makefile.
+- **No spec files:** `artifacts/specification.md` and `acceptance-criteria.md` do not exist, so I added no requirements.
+
+Still open, and not mine to close:
+- **Tester:** make the flaky I6 check position-based, adopt `cap_input_impl` for I9, and rerun `tests/verify.sh` on this build. Door use and level exit have no check, because nothing in the build exposes door or sector state. I can add an export if the tester asks.
+- **Tester or student:** audio has never been listened to, pickups and damage are untested, and a real hidden tab, Firefox and Safari are unchecked.
+- **Known limits:** the music is a synthesizer rather than the original OPL sound, WASD and mouse are not mapped, and the first sound effect before a key press is dropped.

@@ -1,0 +1,12 @@
+import { createRequire } from 'module';
+const require = createRequire(process.cwd()+'/tests/');
+const { chromium } = require('playwright');
+const b = await chromium.launch({args:['--autoplay-policy=no-user-gesture-required']});
+const p = await b.newPage({viewport:{width:1280,height:800}}); const errs=[];
+p.on('pageerror',e=>errs.push(String(e)));
+await p.goto('http://localhost:8011/'); await p.waitForTimeout(4000);
+await p.keyboard.press('Enter'); await p.waitForTimeout(1500);
+await p.keyboard.press('Enter'); await p.waitForTimeout(3000);
+const r = await p.evaluate(()=>({impl:Module._cap_input_impl(),ver:Module._cap_bridge_version(),rt:Module._rt&&Module._rt.frames,audio:window.CapAudio&&CapAudio.stats(),css:document.querySelector('canvas').style.width||getComputedStyle(document.querySelector('canvas')).width}));
+console.log(JSON.stringify({r,errs}));
+await p.screenshot({path:process.argv[2]+'/play.png'}); await b.close();

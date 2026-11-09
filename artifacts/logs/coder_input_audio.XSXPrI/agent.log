@@ -1,0 +1,471 @@
+I'll start by reading the required docs and prior reports.
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+  the resource usage, manual interventions, and final stopping decision.
+
+Preserve failing evidence as well as passing evidence. Record changes to
+acceptance criteria separately, with a reason. Discuss disagreements and
+missed faults in your write-up.
+
+## Where your work belongs
+
+| Location | Purpose |
+| --- | --- |
+| [`loop/`](loop/README.md) | All loop code, prompts, role definitions, MCP configuration, and design documentation. |
+| [`artifacts/`](artifacts/README.md) | All durable run state, handoffs, logs, review findings, and evidence. Agents must use this folder between runs. |
+| `tests/` | Verification code, including checks for the loop itself. |
+| `platform/`, `web/` | The port and browser page. |
+| `third_party/doomgeneric/` | Supplied engine; platform ports have been removed. |
+| `assets/` | Included shareware `doom1.wad` (Episode 1). |
+| `build/`, `dist/` | Generated build output. |
+
+Keep the root for project documentation and shared build/toolchain files.
+The starter supplies engine source, platform and HTML stubs, the shareware
+WAD, documentation, and an optional Docker toolchain. It supplies no working
+game, build script, loop implementation, or test suite. `artifacts/` starts
+with its README only; students create run evidence there during the project.
+Use the supplied engine and Emscripten. Documentation is allowed; copying an
+existing Doom browser port does not satisfy the assignment.
+
+See [`platform/README.md`](platform/README.md) for engine integration caveats,
+including pixel format, timing, and audio. The supplied game data already
+contains sound effects and music; no additional sound assets are required.
+
+## Agent section for setup
+
+### macOS without Docker
+
+Install the build tools directly on your Mac to compile and test the browser
+port. Docker is not required for this workflow. There is currently no macOS
+setup script; run the steps below manually.
+
+1. **Install prerequisites.** In Terminal, run:
+
+   ```sh
+   xcode-select --install
+   ```
+
+   Finish the installer, then check `git --version` and `python3 --version`.
+   If Python is missing, install it from [python.org](https://www.python.org/downloads/macos/),
+   or run `brew install python` if you already have Homebrew.
+
+2. **Install Emscripten.** Use version `4.0.18` to match the supplied Dockerfile:
+
+   ```sh
+   mkdir -p ~/Developer
+   cd ~/Developer
+   git clone https://github.com/emscripten-core/emsdk.git
+   cd emsdk
+   ./emsdk install 4.0.18
+   ./emsdk activate 4.0.18
+   source ./emsdk_env.sh
+   emcc --version
+   ```
+
+   If you already have an SDK checkout at that location, use it instead of
+   cloning again. In each new Terminal session where you want to compile, run:
+
+   ```sh
+   source ~/Developer/emsdk/emsdk_env.sh
+   ```
+
+   See the [official installation instructions](https://emscripten.org/docs/getting_started/downloads.html).
+
+artifacts/logs:
+coder_input_audio.KWBVgQ
+coder_input_audio.XSXPrI
+coder_input_audio.zZGUhu
+coder_render_timing.1ZyeYK
+coder_render_timing.licfez
+coder_render_timing.y2E5IZ
+coder.9PHBOq
+coder.J22PFD
+coder.pLDPys
+coder.Q1melD
+coder.xIoyo9
+reviewer_gameplay.dAPDqY
+reviewer_gameplay.facW3H
+reviewer_site.f9dy0D
+reviewer_site.msvdXx
+tester.8fsQdw
+tester.QSq2Uh
+tester.QT7YlR
+verify.oFQ3cu
+verify.wkzlnA
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+# Building the Doom WebAssembly port
+
+Toolchain: Emscripten **4.0.18** (`source ~/Developer/emsdk/emsdk_env.sh`), GNU make, Node (tests only).
+
+    make        # builds build/*.o and dist/{index.html,doom.js,doom.wasm,doom.data}
+    make clean  # removes build/ and dist/
+
+- Engine sources: all `third_party/doomgeneric/*.c` except `dummy.c`, `doomgeneric_sdl.c`; platform code: `platform/*.c`.
+- WAD packaging: `assets/doom1.wad` is embedded via `--preload-file` at `/doom1.wad` in `dist/doom.data`.
+- `web/index.html` is copied to `dist/index.html`. Serve `dist/` over HTTP (not `file://`).
+- Audio: built with `-DFEATURE_SOUND -Iplatform/audio_compat` (stub SDL_mixer.h); `web/audio_web.js` provides the Web Audio backend. Scripts load before doom.js: input_audio.js, audio_web.js, render_timing.js.
+- JS/C bridge exports are listed in the Makefile `EXPORTED_FUNCTIONS`; see `platform/capstone_bridge.h`.
+- Acceptance: `tests/verify.sh` (tester-owned); `QUICK=1` is partial and never exits 0.
+)
+
+Calling Bash()
+
+Bash response → (
+# Controls and audio
+
+You are `coder_input_audio`.
+
+Deliver reliable controls, key release/focus behavior, and working game audio.
+Own platform/input_audio.c, platform/input_audio.h, web/input_audio.js, plus new
+platform/audio_* and web/audio_* files. Request build/header/HTML changes from coder.
+Make movement, turning, firing, use, and menus work. Implement sound effects and
+music from the supplied WAD; distinguish genuine output from a merely initialized
+audio context. Choose a practical permitted backend; report unmet music fidelity
+or synthesis requirements honestly. Persistence follows supplied scope; otherwise
+record your assumption. Do not change rendering/timing or tests.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+FINDINGS
+
+Audio is now wired into the real build and measured output is non-silent, but nothing was heard by a human, music is not OPL-accurate, and tests/verify.sh was not run. No source files were changed this run; only this OUTPUT_DIR was written.
+
+## Source identity
+HEAD e500c44 + uncommitted changes. emcc from ~/Developer/emsdk. No artifacts/specification.md or acceptance-criteria.md.
+
+## Prior findings read
+reports: coder_input_audio (previous run), reviewer_gameplay, reviewer_site, tester, coder*. The previous blocker (unwired build) is resolved: Makefile now has `-DFEATURE_SOUND -Iplatform/audio_compat`, `web/audio_web.js` in WEB_FILES, and index.html loads audio_web.js (coder's edits).
+
+## Work / evidence (this dir)
+- `make BUILD=$O/build DIST=$O/dist` with the repo Makefile as-is: clean build, no errors; dist has audio_web.js.
+- check.mjs (ad-hoc headless Chromium, NO autoplay flag, not a protected check) -> audio_result.json:
+  - before any key: ctx `suspended`, music requested, 0 notes, peak 0 (an initialised context is not output).
+  - after Enter x4 and Ctrl fire: ctx `running`, SFX 4 requested / 4 played / 0 suppressed / 0 bad, 3 songs started, 73 notes scheduled, 5 voices, master-bus peak 0.39, 0 page errors.
+- Controls: no defect found; reviewer_gameplay and tester results for movement, fire, menu, blur release stand. Not re-run here.
+
+## Unresolved (owner)
+1. UNVERIFIED, tester/student: no human listened; the analyser peak shows non-silent output only.
+2. Unmet, student decision: music is a General MIDI-family oscillator synth, not GENMIDI/OPL. Timbre differs from original Doom.
+3. UNVERIFIED, tester: door use, pickups, damage/death, other E1 songs, music/SFX balance (music bus 0.5), real hidden tab, Safari/Firefox.
+4. Known limits: linked-sound pitch ignored; first SFX before a gesture is dropped; WASD/mouse not mapped (Doom defaults only; scope for student).
+5. Tester: tests/verify.sh not run against this build.
+
+## Assumptions
+- Persistence out of scope (no scope supplied); volumes reset to engine defaults each load.
+- Doom default key bindings are the control requirement.
+- Manual interventions: none.
+artifacts/logs/coder_input_audio.KWBVgQ:
+agent.log
+audio_check.mjs
+audio_check2.mjs
+dist
+report.md
+run1
+run2
+
+artifacts/logs/coder_input_audio.XSXPrI:
+agent.log
+
+artifacts/logs/coder_input_audio.zZGUhu:
+agent.log
+audio_result.json
+build
+check.mjs
+dist
+report.md
+FINDINGS
+
+Not PASS: a single uninterrupted `tests/verify.sh` run exited 0 with all required checks passing, and this closes the prior run's caveat. Five items are still UNVERIFIED, so the work is partial. The criteria are also still agent-proposed.
+
+## Source identity
+HEAD e500c440656622db5ab3f8fb7df73d8b5998eeb3 plus uncommitted changes (see verify/identity.txt for the diff hash and test hash). dist/doom.wasm sha256 prefix a4c6846627bdcb21, the same as the prior runs. The build is a clean `make clean && make all` with emsdk 4.0.18 from ~/Developer/emsdk. I edited no product source or tests, and wrote only to this OUTPUT_DIR.
+
+## Prior findings read
+I read artifacts/reports/ (tester, reviewer_gameplay, reviewer_site, coder*). The reviewers' reproducible failures were already covered by existing checks. The coder-owned minor items (favicon 404, canvas scaling, autoplay warnings) are not required checks.
+
+## Results (evidence: verify.out, verify/)
+- `tests/verify.sh` default settings (SOAK_SECONDS=300 for the playtest, 5 s for each fault run): **exit=0** in one uninterrupted run. Result file: verify/verify-result.json.
+- Tooling, selftest and clean build: ok.
+- Playtest: PASS, failed=0, 37 PASS lines. Soak results: R1 no errors over 300 s, R2 60.1 rAF/s, R3 no long tasks, R4 23 sampled frames differed. T2 was 34.97 tics/s. I8 render module was active.
+- Fault injection: all 4 caught. drop-keyup (I2 I5 I6 C3 I7), drop-blur (I7), ignore-left (I3 E2a E2b), swap-rb (B4).
+- Dist hashes: verify/dist-sha256.txt.
+
+## Failed attempt kept (my error)
+The first invocation (verify-attempt1.out, verify-attempt1-badpath/) failed at `npm ci` with exit 2. I had passed a relative OUT_DIR, and verify.sh `cd`s into tests/, so the log path was invalid. This is not a product failure. I reran with an absolute OUT_DIR.
+
+## Unresolved (owner)
+1. A1 audio and P1 save persistence: scope undecided (student). An active AudioContext does not prove correct sound.
+2. I9 input-module identity: needs a coder-exported diagnostic (coder).
+3. G3 door use and level exit: no stable oracle (tester/student).
+4. H1 hidden-tab timing: headless cannot throttle a real background tab. This needs a manual protocol (tester).
+5. Faults are browser-side only; no C-source regression was injected (student/instructor).
+6. Criteria are agent-proposed, not student-approved.
+7. Minor: verify.sh does not make a relative OUT_DIR absolute (tester, optional hardening; not changed).
+
+## Assumptions
+Doom default keys; headless Chromium via Playwright; no thresholds changed. Manual interventions: none beyond the rerun above. Usage: not available.
+FINDINGS
+
+This run was an incremental review. I re-observed Doom's Pause key in the real build, which closes one gap in the earlier reviewer_gameplay report. Other prior observations were not repeated here. FINDINGS (not PASS) because audibility, a real hidden tab, door use, level exit and OPL music fidelity are still unverified.
+
+## Source identity
+HEAD e500c44 + uncommitted changes. I did not rebuild. dist/doom.wasm sha256 prefix a4c6846627bdcb21, the same as the prior reviewer_gameplay, reviewer_site and tester runs. Server: `python3 -m http.server 8123 --bind 127.0.0.1 --directory dist`, started and stopped by me (port confirmed free afterwards).
+
+## Prior findings read
+artifacts/reports/: reviewer_gameplay, reviewer_site, coder, coder_input_audio, coder_render_timing, tester. I did not re-run their controls, audio, volume or momentum checks. Those results stand from the previous run, which used the same wasm hash.
+
+## Work and evidence (this dir)
+pause.mjs -> pause.log, screens/. Ad-hoc Playwright, headless Chromium, 800x600, no autoplay flag. It is not a protected check.
+- Enter x4 reaches E1M1.
+- Pause key: screens/02-paused.png shows the "PAUSE" patch on a correct E1M1 frame. The frame differs from the unpaused base by 0.015 in the view region.
+- While paused, ArrowUp held for 1.5 s changed the view by 0.0000, so the world is frozen.
+- After the second Pause press, ArrowUp for 1.2 s moved the view by 0.663 against the base, so play resumes.
+- Audio while paused: lastPeak 0 and 0 music voices. The music is silent during pause, as in Doom.
+- Console and page errors: none.
+- Use (Space) at the spawn point produced no SFX (delta 0). There is no door in front of the player there, so this is not evidence either way.
+
+## Resolves a prior item
+The earlier "menu pauses game" item was UNVERIFIED because `_cap_tic_count` is the gametic and cannot show pause. The Pause key is now verified by pixels. I did not verify pause via the Esc menu. I only screenshotted the menu and did not check movement behind it.
+
+## Unresolved (owner)
+1. UNVERIFIED, tester/student: no human has heard the audio. The only evidence is the analyser peak. Music is a GM-family oscillator approximation, not OPL (coder_input_audio/student).
+2. UNVERIFIED, tester: a real hidden or background tab. Headless Playwright reports `document.hidden=false`, so I did not exercise throttling, audio in the background, or key release on a real hide (H1; coder_render_timing).
+3. UNVERIFIED, tester: door use, pick-ups, damage/death and level exit. I made no deterministic route to a door. The tester should add a scripted route or a position export.
+4. UNVERIFIED: Esc-menu pause, other E1 songs, music/SFX balance, Safari/Firefox, headed browser, HiDPI.
+5. Scope (student): WASD and mouse are not mapped, only Doom defaults. Criteria are still agent-proposed.
+
+## Assumptions
+- No specification.md or acceptance-criteria.md was supplied, so the Doom default key bindings are the requirement.
+- Screenshot diffs of the view region stand in for player motion and pause state. The "PAUSE" patch in the screenshot is the primary pause evidence.
+- Because dist/ is unchanged since the prior review (same wasm hash), I judged repeating the prior checks to be low value.
+- No source, test or loop files were edited. Manual interventions: none.
+)
+
+Calling Bash()
+
+Bash response → (
+e500c44
+ M platform/doomgeneric_wasm.c
+ M web/index.html
+?? Makefile
+?? platform/audio_compat/
+?? platform/audio_web.c
+?? platform/cap_fallback.c
+?? platform/capstone_bridge.h
+?? platform/engine_stubs.c
+?? platform/input_audio.c
+?? platform/input_audio.h
+?? platform/render_timing.c
+?? platform/render_timing.h
+?? web/audio_web.js
+?? web/input_audio.js
+?? web/render_timing.js
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -c platform/engine_stubs.c -o artifacts/logs/coder_input_audio.XSXPrI/build/platform/engine_stubs.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -c platform/input_audio.c -o artifacts/logs/coder_input_audio.XSXPrI/build/platform/input_audio.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -c platform/render_timing.c -o artifacts/logs/coder_input_audio.XSXPrI/build/platform/render_timing.o
+emcc artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/am_map.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/d_event.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/d_items.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/d_iwad.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/d_loop.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/d_main.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/d_mode.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/d_net.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/doomdef.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/doomgeneric.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/doomstat.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/dstrings.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/f_finale.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/f_wipe.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/g_game.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/gusconf.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/hu_lib.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/hu_stuff.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/i_cdmus.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/i_endoom.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/i_input.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/i_joystick.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/i_scale.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/i_sound.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/i_system.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/i_timer.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/i_video.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/icon.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/info.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/m_argv.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/m_bbox.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/m_cheat.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/m_config.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/m_controls.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/m_fixed.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/m_menu.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/m_misc.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/m_random.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/memio.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/mus2mid.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/p_ceilng.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/p_doors.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/p_enemy.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/p_floor.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/p_inter.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/p_lights.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/p_map.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/p_maputl.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/p_mobj.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/p_plats.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/p_pspr.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/p_saveg.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/p_setup.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/p_sight.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/p_spec.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/p_switch.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/p_telept.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/p_tick.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/p_user.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/r_bsp.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/r_data.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/r_draw.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/r_main.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/r_plane.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/r_segs.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/r_sky.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/r_things.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/s_sound.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/sha1.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/sounds.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/st_lib.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/st_stuff.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/statdump.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/tables.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/v_video.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/w_checksum.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/w_file_stdc.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/w_file.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/w_main.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/w_wad.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/wi_stuff.o artifacts/logs/coder_input_audio.XSXPrI/build/third_party/doomgeneric/z_zone.o artifacts/logs/coder_input_audio.XSXPrI/build/platform/audio_web.o artifacts/logs/coder_input_audio.XSXPrI/build/platform/cap_fallback.o artifacts/logs/coder_input_audio.XSXPrI/build/platform/doomgeneric_wasm.o artifacts/logs/coder_input_audio.XSXPrI/build/platform/engine_stubs.o artifacts/logs/coder_input_audio.XSXPrI/build/platform/input_audio.o artifacts/logs/coder_input_audio.XSXPrI/build/platform/render_timing.o -O2 -sASYNCIFY -sASYNCIFY_STACK_SIZE=65536 -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=64MB -sEXPORTED_FUNCTIONS=_main,_cap_ready,_cap_tic_count,_cap_input_event,_cap_input_reset,_cap_bridge_version,_cap_framebuffer_ptr,_cap_input_impl,_cap_input_delivered_count,_cap_input_dropped_count -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,HEAPU8 --preload-file assets/doom1.wad@/doom1.wad -o artifacts/logs/coder_input_audio.XSXPrI/dist/doom.js
+cp web/index.html web/input_audio.js web/audio_web.js web/render_timing.js artifacts/logs/coder_input_audio.XSXPrI/dist/
+audio_web.js
+doom.data
+doom.js
+doom.wasm
+index.html
+input_audio.js
+render_timing.js
+import { chromium } from '/Users/sarahtseng/Projects/fellowship-loop-capstone/tests/node_modules/playwright/index.mjs';
+import http from 'http'; import fs from 'fs'; import path from 'path';
+const root=process.argv[2];
+const types={'.html':'text/html','.js':'text/javascript','.wasm':'application/wasm'};
+const srv=http.createServer((q,r)=>{const f=path.join(root,q.url==='/'?'index.html':q.url.split('?')[0]);fs.readFile(f,(e,d)=>{if(e){r.writeHead(404);r.end();return}r.writeHead(200,{'content-type':types[path.extname(f)]||'application/octet-stream'});r.end(d)})}).listen(0);
+const port=srv.address().port;
+const b=await chromium.launch(); const p=await b.newPage({viewport:{width:800,height:600}});
+const errs=[]; p.on('pageerror',e=>errs.push(String(e)));
+await p.goto(`http://127.0.0.1:${port}/`); await p.waitForTimeout(4000);
+const pre=await p.evaluate(()=>CapAudio.stats());
+await p.keyboard.press('Enter'); await p.waitForTimeout(1500);
+for(let i=0;i<3;i++){await p.keyboard.press('Enter');await p.waitForTimeout(600)}
+await p.waitForTimeout(3000);
+await p.keyboard.down('Control');await p.waitForTimeout(400);await p.keyboard.up('Control');await p.waitForTimeout(1000);
+const post=await p.evaluate(()=>CapAudio.stats());
+console.log(JSON.stringify({pre,post,errs},null,1));
+await b.close(); srv.close();
+)
+Build is clean. I'll re-run the audio check against this build, plus a door-use probe (an open item).
+Calling Bash()
+
+Bash response → (
+{
+ "pre": {
+  "sfxRequested": 0,
+  "sfxPlayed": 0,
+  "sfxSuppressed": 0,
+  "sfxBad": 0,
+  "musicRequested": 1,
+  "musicStarted": 1,
+  "notesScheduled": 0,
+  "musicErrors": 0,
+  "maxPeak": 0,
+  "lastPeak": 0,
+  "ctxState": "suspended",
+  "sampleRate": 48000,
+  "sfxChannelsActive": 0,
+  "musicPlaying": true,
+  "musicVoices": 0
+ },
+ "post": {
+  "sfxRequested": 4,
+  "sfxPlayed": 4,
+  "sfxSuppressed": 0,
+  "sfxBad": 0,
+  "musicRequested": 3,
+  "musicStarted": 3,
+  "notesScheduled": 73,
+  "musicErrors": 0,
+  "maxPeak": 0.3948320150375366,
+  "lastPeak": 0.03463168069720268,
+  "ctxState": "running",
+  "sampleRate": 48000,
+  "sfxChannelsActive": 0,
+  "musicPlaying": true,
+  "musicVoices": 5
+ },
+ "errs": []
+}
+a4c6846627bdcb21
+)
+
+Calling Bash()
+
+Bash response → "(Bash completed with no output)"
+FINDINGS. I changed no source files, because I found nothing to repair. The report is at `artifacts/logs/coder_input_audio.XSXPrI/report.md`.
+
+I rebuilt from the current tree and the build was clean. `dist/doom.wasm` has the same hash prefix (`a4c6846627bdcb21`) as the earlier tester and reviewer runs.
+
+I re-ran the headless audio check, which isn't one of the protected acceptance checks:
+- **Before any key press:** the audio context is suspended, music is requested, and the output peak is 0. An initialised context is not sound.
+- **After Enter ×4 and Ctrl fire:** the context is running. All 4 sound effects played, 3 songs started and 73 notes were scheduled. The output peak is 0.39, with no page errors.
+
+I didn't re-run the controls checks. The tester's last full `tests/verify.sh` run exited 0, including the key-release and blur fault checks, and this build has the same wasm hash.
+
+Still open:
+1. **Nobody has listened to it.** The only evidence of sound is the measured output peak.
+2. **Music is not OPL-accurate.** It is an oscillator synth in the General MIDI style, so it won't sound like original Doom. Whether that's acceptable is your decision.
+3. **Door use, pickups, damage and death, the other E1 songs, a real hidden tab, and Safari/Firefox are still untested.**
+4. **Known limits.** Linked-sound pitch is ignored, and the first sound effect before a key press is dropped. WASD and mouse aren't mapped, only Doom's default keys.
+5. **The tester hasn't run `tests/verify.sh` against this build.**
+
+I assumed saved volumes are out of scope, since none was specified. I also treated Doom's default key bindings as the controls requirement. There were no manual interventions.

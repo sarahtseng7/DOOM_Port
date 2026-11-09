@@ -1,0 +1,146 @@
+{
+ "res": [
+  {
+   "id": "entered-e1m1",
+   "ok": true,
+   "d": {
+    "tic": 389,
+    "valid": 1,
+    "lvl": 101,
+    "hp": 100,
+    "x": 1056,
+    "y": -3616,
+    "ang": 1073741824,
+    "sfx": 3,
+    "sfxReq": 3,
+    "sfxBad": 0,
+    "mus": 3
+   }
+  },
+  {
+   "id": "rocket-splash-damages-player",
+   "ok": true,
+   "d": {
+    "firstHit": {
+     "pre": 100,
+     "post": 36,
+     "sfxDelta": 3
+    },
+    "hpTrace": [
+     100,
+     36,
+     0
+    ]
+   }
+  },
+  {
+   "id": "damage-plays-sfx",
+   "ok": true,
+   "d": {
+    "note": "launch + explosion/pain expected",
+    "firstHit": {
+     "pre": 100,
+     "post": 36,
+     "sfxDelta": 3
+    }
+   }
+  },
+  {
+   "id": "player-dies-at-zero-hp",
+   "ok": true,
+   "d": {
+    "dead": {
+     "tic": 873,
+     "valid": 1,
+     "lvl": 101,
+     "hp": 0,
+     "x": 1077,
+     "y": -3501,
+     "ang": 3066036224,
+     "sfx": 9,
+     "sfxReq": 9,
+     "sfxBad": 0,
+     "mus": 3
+    },
+    "hpTrace": [
+     100,
+     36,
+     0
+    ]
+   }
+  },
+  {
+   "id": "no-movement-while-dead",
+   "ok": true,
+   "d": {
+    "moved": 0,
+    "dAng": 0,
+    "hp": 0
+   }
+  },
+  {
+   "id": "use-respawns-level-restart",
+   "ok": true,
+   "d": {
+    "before": {
+     "tic": 992,
+     "valid": 1,
+     "lvl": 101,
+     "hp": 0,
+     "x": 1078,
+     "y": -3499,
+     "ang": 3066036224,
+     "sfx": 9,
+     "sfxReq": 9,
+     "sfxBad": 0,
+     "mus": 3
+    },
+    "after": {
+     "tic": 1106,
+     "valid": 1,
+     "lvl": 101,
+     "hp": 100,
+     "x": 1056,
+     "y": -3616,
+     "ang": 1073741824,
+     "sfx": 9,
+     "sfxReq": 9,
+     "sfxBad": 0,
+     "mus": 3
+    }
+   }
+  },
+  {
+   "id": "music-continues-on-respawn",
+   "ok": true,
+   "d": {
+    "musicStartedPre": 3,
+    "musicStartedPost": 3,
+    "musicPlaying": true,
+    "musicErrors": 0,
+    "lastPeak": 0.08362902700901031
+   }
+  },
+  {
+   "id": "movement-after-respawn",
+   "ok": true,
+   "d": {
+    "moved": 140.00357138301862
+   }
+  },
+  {
+   "id": "audio-counters-clean",
+   "ok": true,
+   "d": {
+    "sfxRequested": 9,
+    "sfxPlayed": 9,
+    "sfxBad": 0
+   }
+  },
+  {
+   "id": "no-page-errors",
+   "ok": true,
+   "d": []
+  }
+ ]
+}

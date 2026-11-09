@@ -1,0 +1,9 @@
+{"t0":"2026-11-04T04:31:39.089Z","url":"http://localhost:8000/?r=1793766699089","cache":"CDP Network.clearBrowserCache + setCacheDisabled",
+ "reqs":[["/?r=1793766699089",200],["/input_audio.js",200],["/render_timing.js",200],["/audio_web.js",200],["/doom.js",200],["/doom.data",200],["/doom.wasm",200]],
+ "failedRequests":[],"pageErrors":[],"consoleWarnings":["The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page."],
+ "firstFrameMs":179,"ticRate":35.04,"first":{"t":179,"tic":3,"colors64x40":192},"last":{"t":4945,"tic":170,"colors64x40":192},
+ "preStart":{"t":72,"tic":0,"colors":1,"transparentPx":2560,"title":"Doom (WASM)"},
+ "canvas":{"backing":"640x400","css@1280x720":"1152x720","transparentPxAfterStart":0},
+ "viewport800x600":{"w":800,"h":500,"top":50,"left":0,"scrollX":false,"scrollY":false},
+ "ticSeries_ms_tic":[[72,0],[179,3],[287,7],[396,11],[504,15],[612,18],[723,22],[888,28],[995,32],[1103,36],[1211,39],[1321,43],[1429,47],[1536,51],[1645,55],[1754,58],[1870,62],[1980,66],[2091,70],[2205,74],[2315,78],[2423,82],[2531,86],[2641,89],[2753,93],[2864,97],[2973,101],[3081,105],[3190,109],[3298,112],[3412,116],[3523,120],[3631,124],[3740,128],[3847,132],[3956,135],[4064,139],[4174,143],[4288,147],[4398,151],[4506,155],[4617,159],[4727,162],[4837,166],[4945,170]],
+ "laterTic":784}

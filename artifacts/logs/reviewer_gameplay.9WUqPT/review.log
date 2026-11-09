@@ -1,0 +1,23 @@
+audio before gesture {"sfxRequested":0,"sfxPlayed":0,"sfxSuppressed":0,"sfxBad":0,"musicRequested":1,"musicStarted":1,"notesScheduled":0,"musicErrors":0,"maxPeak":0,"lastPeak":0,"ctxState":"suspended","sampleRate":48000,"sfxChannelsActive":0,"musicPlaying":true,"musicVoices":0}
+audio after gesture {"sfxRequested":0,"sfxPlayed":0,"sfxSuppressed":0,"sfxBad":0,"musicRequested":2,"musicStarted":2,"notesScheduled":24,"musicErrors":0,"maxPeak":0.21119150519371033,"lastPeak":0.00455494923517108,"ctxState":"running","sampleRate":48000,"sfxChannelsActive":0,"musicPlaying":true,"musicVoices":3}
+PASS A.ctx-running-after-gesture-no-autoplay-flag before=suspended after=running
+FAIL A.menu-sfx-and-music-heard sfxPlayed=0 musicStarted=2 maxPeak=0.21119150519371033
+PASS G.level-entered statusbar colours
+PASS A.level-music-switched {"ms":3,"playing":true,"peak":0.4613686501979828}
+PASS T.tic-rate 35.0 tics/s
+post-release diffs per 250ms 0.495 0.352 0.198 0.107 0 0 0 0 0 0 0 0
+PASS M.forward-coasts-then-stops 0.495,0.352,0.198,0.107,0,0,0,0,0,0,0,0
+PASS M.period-strafes diff=0.499
+PASS M.shift-run-moves diff=0.690
+PASS C.fire-ammo-and-sfx ammoDiff=0.140 sfx 4->5
+PASS C.held-fire-repeats-sfx 5->9
+use sfx delta 0
+PASS P.menu-freezes-world-by-framediff diff over 1.5s with menu open=0.000 (coast without menu was ~0.5 first 250ms)
+audio clock advance 2.005 in 2.003 s wall
+PASS A.audio-clock-advances 2.005s per 2s wall
+peak while paused (lastPeak) 0.09843799471855164 voices 19
+PASS F.blur-stops-turn diff=0.000
+background tab {"hidden":false,"vis":"visible"} tics in 3s 105 audio {"sfxRequested":11,"sfxPlayed":11,"sfxSuppressed":0,"sfxBad":0,"musicRequested":3,"musicStarted":3,"notesScheduled":1004,"musicErrors":0,"maxPeak":0.4613686501979828,"lastPeak":0.06983671337366104,"ctxState":"running","sampleRate":48000,"sfxChannelsActive":0,"musicPlaying":true,"musicVoices":12}
+PASS F.resumes-after-foreground 35.0 tics/s
+final audio {"sfxRequested":11,"sfxPlayed":11,"sfxSuppressed":0,"sfxBad":0,"musicRequested":3,"musicStarted":3,"notesScheduled":1107,"musicErrors":0,"maxPeak":0.4613686501979828,"lastPeak":0.05294595658779144,"ctxState":"running","sampleRate":48000,"sfxChannelsActive":0,"musicPlaying":true,"musicVoices":14}
+errors []

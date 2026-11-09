@@ -1,0 +1,40 @@
+{
+ "t0": 0,
+ "t1": 0.005333333333333333,
+ "wall": 12.756,
+ "pre": {
+  "sfxRequested": 0,
+  "sfxPlayed": 0,
+  "sfxSuppressed": 0,
+  "sfxBad": 0,
+  "musicRequested": 1,
+  "musicStarted": 1,
+  "notesScheduled": 0,
+  "musicErrors": 0,
+  "maxPeak": 0,
+  "lastPeak": 0,
+  "ctxState": "suspended",
+  "sampleRate": 48000,
+  "sfxChannelsActive": 0,
+  "musicPlaying": true,
+  "musicVoices": 0
+ },
+ "post": {
+  "sfxRequested": 4,
+  "sfxPlayed": 4,
+  "sfxSuppressed": 0,
+  "sfxBad": 0,
+  "musicRequested": 3,
+  "musicStarted": 3,
+  "notesScheduled": 16,
+  "musicErrors": 0,
+  "maxPeak": 0,
+  "lastPeak": 0,
+  "ctxState": "running",
+  "sampleRate": 48000,
+  "sfxChannelsActive": 1,
+  "musicPlaying": true,
+  "musicVoices": 6
+ },
+ "errs": []
+}

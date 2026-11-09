@@ -1,0 +1,10 @@
+{
+  "name": "doom-wasm-acceptance-tests",
+  "private": true,
+  "type": "module",
+  "description": "Tester-owned acceptance checks (agent-proposed criteria, not student-approved).",
+  "dependencies": {
+    "playwright": "1.49.1",
+    "pngjs": "7.0.0"
+  }
+}

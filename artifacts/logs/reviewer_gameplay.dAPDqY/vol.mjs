@@ -1,0 +1,20 @@
+import { createRequire } from 'node:module'; import fs from 'node:fs';
+const require = createRequire('/Users/sarahtseng/Projects/fellowship-loop-capstone/tests/package.json');
+const { chromium } = require('playwright');
+const OUT = process.argv[2]; fs.mkdirSync(OUT, { recursive: true });
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+const b = await chromium.launch(); const page = await (await b.newContext({ viewport: { width: 800, height: 600 } })).newPage();
+await page.goto('http://127.0.0.1:8123/'); await sleep(3000);
+const A = () => page.evaluate(() => window.CapAudio.stats());
+const key = async (k, h = 80) => { await page.keyboard.down(k); await sleep(h); await page.keyboard.up(k); await sleep(250); };
+const peak = async (ms = 2500) => { await page.evaluate(() => CapAudio.resetPeak()); await sleep(ms); return (await A()).maxPeak; };
+await key('Enter'); await sleep(1200); for (let i = 0; i < 2; i++) { await key('Enter'); await sleep(700); } await key('Enter'); await sleep(7000);
+const base = await peak(); console.log('music+idle peak', base);
+const shot = async (n) => fs.writeFileSync(`${OUT}/${n}.png`, await page.locator('#canvas').screenshot());
+await key('Escape'); await sleep(500); await key('ArrowDown'); await key('Enter'); await sleep(500); await key('ArrowUp'); await key('Enter'); await sleep(500); await shot('soundvol-menu');
+await key('ArrowDown'); // to music volume
+for (let i = 0; i < 16; i++) await key('ArrowLeft', 60);
+await shot('music-zero'); const pm = await peak(); console.log('music volume 0 (menu still open) peak', pm, JSON.stringify(await A()));
+for (let i = 0; i < 16; i++) await key('ArrowRight', 60);
+const pr = await peak(); console.log('music volume restored peak', pr);
+await b.close();

@@ -1,0 +1,718 @@
+
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+# Run artifacts
+
+**Agents must use this folder for durable artifacts between runs.**
+
+The distributed starter contains only this README in this folder. Create
+run records when student work begins; starter preparation notes and sample
+results are not included.
+
+Anything saved for a later agent or run—state, plans, handoffs, logs, review
+findings, test results, screenshots, recordings, or reports—belongs here.
+Fresh agent contexts must be able to resume using the repo and this folder.
+
+Loop code, prompts, and configuration belong in [`loop/`](../loop/README.md).
+Port code belongs in `platform/` and `web/`, verification code in `tests/`,
+and game assets in `assets/`. Shared build files may live at the root. Build products
+may live in `build/` or `dist/`; link to them from a run record when useful.
+Temporary scratch files may be disposable, but anything needed for a
+handoff, resumption, or evaluation must be copied here before a run ends.
+
+## Suggested layout
+
+You can choose a different layout inside this folder. Document it so another
+agent can find the current state without reading your conversation.
+
+```text
+artifacts/
+  README.md
+  state.json                 # Current run, next task, and stopping status
+  runs/
+    <unique-run-id>/
+      manifest.json          # Source revision, environment, budgets, usage
+      handoffs/              # Tasks and responses between roles
+      reviews/               # Findings and their resolution
+      logs/                  # Tool and build output
+      tests/                 # Commands, results, screenshots, recordings
+      summary.md             # Outcome and next steps
+```
+
+## Required habits
+
+- Give each run a unique ID. Preserve earlier results instead of overwriting
+  failure evidence with the latest passing output.
+- Record the source revision and any uncommitted changes being tested.
+  Evidence from an older revision does not establish that the current one passes.
+- Save the current task, unresolved findings, artifact paths, and next action
+  before handing off or stopping. Include the stopping reason and resource usage.
+- Reference evidence with paths relative to the repo, so it works in a sandbox.
+- Include the artifacts needed to assess your submission. Explain any omitted
+  large files and how to reproduce them.
+- Do not store credentials, API keys, or commercial game data here. Sanitize
+  logs before saving them.
+
+This folder starts with instructions only. Your loop creates the run records.
+artifacts:
+README.md
+runs
+
+artifacts/runs:
+20261030T202822-loop-sh
+20261102T235903Z-41864
+20261103T001738Z-47122
+
+artifacts/runs/20261103T001738Z-47122:
+coder
+initial-source-status.txt
+initial-source.patch
+manifest.txt
+status.txt
+tester
+run_id: 20261103T001738Z-47122
+source_commit: e500c440656622db5ab3f8fb7df73d8b5998eeb3
+max_iterations: 10
+AI-assisted runner and prompts; permission isolation is not implemented by this script.
+tests:
+lib
+node_modules
+package-lock.json
+package.json
+playtest.mjs
+README.md
+selftest.mjs
+verify.sh
+
+tests/lib:
+frames.mjs
+# Verification
+
+Keep verification code here, including browser checks, fixtures, and tests
+for the loop itself. You design the checks; no test suite is provided.
+
+See [the acceptance criteria and evidence requirements](../README.md#evaluate-the-system-you-built).
+Document how to run your checks and what each one establishes.
+
+Save test results, logs, screenshots, and recordings in `artifacts/`.
+Keep acceptance checks outside the coder's write permissions using your
+sandbox/tool configuration; a folder name alone does not enforce access.
+
+## Suite (tester-owned; criteria are AGENT-PROPOSED, not student-approved)
+
+Run: `source ~/Developer/emsdk/emsdk_env.sh && tests/verify.sh` (RUN_ID, SOAK_SECONDS, QUICK=1 optional).
+Evidence goes to `artifacts/runs/$RUN_ID/tester/verify-*/` (identity.txt, logs, screenshots, playtest-results.json).
+Exit 0 only when tooling, build, selftest and every required playtest check pass; `QUICK=1` never exits 0.
+
+| File | Establishes |
+| --- | --- |
+| `verify.sh` | tooling check, source identity, selftest, `make clean && make all`, playtest |
+| `selftest.mjs` | pixel helpers FAIL on black, channel-swapped, transparent, static, wrongly shifted frames (no build needed) |
+| `playtest.mjs` | Chromium: load/console errors, boot frame, colors, rAF liveness, menu -> E1M1, turn/move/fire/release, blur, automap, Esc menu, soak |
+| `lib/frames.mjs` | region diff / color stats / horizontal-shift estimation on canvas screenshots |
+
+Limits: outcomes are inferred from pixels (no engine state hook); audio, persistence, door/level-exit and the
+35 tics/s rate are listed as UNVERIFIED in every result. Ammo/status regions assume the stock 320x200 layout.
+Test deps: `npm ci` in `tests/` (network needed once; Playwright 1.49.1, pngjs 7.0.0).
+)
+
+Calling Bash()
+
+Bash response → (
+(eval):1: no matches found: ./*/node_modules
+RUNNING
+ M loop/agents.yaml
+ M loop/loop.sh
+ M platform/doomgeneric_wasm.c
+ M tests/README.md
+ M web/index.html
+?? Makefile
+?? artifacts/runs/
+?? loop/DESIGN_DECISION_QUESTIONS.md
+?? loop/prompts/
+?? platform/cap_fallback.c
+?? platform/capstone_bridge.h
+?? platform/engine_stubs.c
+?? tests/lib/
+?? tests/package-lock.json
+?? tests/package.json
+?? tests/playtest.mjs
+?? tests/selftest.mjs
+?? tests/verify.sh
+)
+
+Calling Bash()
+
+Bash response → (
+./.DS_Store
+./20261103T001738Z-47122/initial-source.patch
+./20261103T001738Z-47122/manifest.txt
+./20261103T001738Z-47122/status.txt
+./20261103T001738Z-47122/initial-source-status.txt
+./20261030T202822-loop-sh/.DS_Store
+./20261030T202822-loop-sh/manifest.txt
+./20261102T235903Z-41864/initial-source.patch
+./20261102T235903Z-41864/manifest.txt
+./20261102T235903Z-41864/status.txt
+./20261102T235903Z-41864/initial-source-status.txt
+./20261030T202822-loop-sh/logs/loop.log
+./20261030T202822-loop-sh/handoffs/agent-session-notes-19.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-2.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-29.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-6.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-28.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-7.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-18.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-3.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-8.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-13.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-27.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-23.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-17.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-22.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-16.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-9.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-12.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-26.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-21.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-15.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-11.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-25.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-10.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-24.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-20.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-14.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-30.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-4.md
+./20261030T202822-loop-sh/handoffs/agent-session-notes-5.md
+./20261103T001738Z-47122/tester/prepare/attempt-1/invocation.txt
+./20261103T001738Z-47122/tester/prepare/attempt-1/agent.log
+./20261103T001738Z-47122/coder/plan/attempt-1/invocation.txt
+./20261103T001738Z-47122/coder/plan/attempt-1/result.json
+./20261103T001738Z-47122/coder/plan/attempt-1/report.md
+./20261103T001738Z-47122/coder/plan/attempt-1/proposed-spec.md
+./20261103T001738Z-47122/coder/plan/attempt-1/agent.log
+./20261103T001738Z-47122/coder/plan/attempt-1/interface-contract.md
+./20261103T001738Z-47122/coder/plan/attempt-1/source-status.txt
+./20261102T235903Z-41864/tester/prepare/attempt-1/invocation.txt
+./20261102T235903Z-41864/tester/prepare/attempt-1/result.json
+./20261102T235903Z-41864/tester/prepare/attempt-1/report.md
+./20261102T235903Z-41864/tester/prepare/attempt-1/proposed-criteria.md
+./20261102T235903Z-41864/tester/prepare/attempt-1/agent.log
+./20261102T235903Z-41864/coder/plan/attempt-1/invocation.txt
+./20261102T235903Z-41864/coder/plan/attempt-1/result.json
+./20261102T235903Z-41864/coder/plan/attempt-1/report.md
+./20261102T235903Z-41864/coder/plan/attempt-1/proposed-spec.md
+./20261102T235903Z-41864/coder/plan/attempt-1/agent.log
+./20261102T235903Z-41864/coder/plan/attempt-1/interface-contract.md
+./20261102T235903Z-41864/coder/1-build/attempt-1/invocation.txt
+./20261102T235903Z-41864/coder/1-build/attempt-1/result.json
+./20261102T235903Z-41864/coder/1-build/attempt-1/report.md
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick.log
+./20261102T235903Z-41864/coder/1-build/attempt-1/dist-sha256.txt
+./20261102T235903Z-41864/coder/1-build/attempt-1/agent.log
+./20261102T235903Z-41864/coder/1-build/attempt-1/build.log
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/playtest-results.json
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/browser-console.log
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/018-blur-b.png
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/024-automap-pre.png
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/013-move-fwd-held2.png
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/016-move-back.png
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/final-page.png
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/006-idle-b.png
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/021-fire-post.png
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/027-esc-menu.png
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/003-main-menu.png
+)
+
+Calling Bash()
+
+Bash response → (
+# Tester prepare report (attempt-1)
+Run 20261102T235903Z-41864 | source commit e500c44 + dirty loop/ changes, untracked platform/capstone_bridge.h, spec artifacts.
+
+## Work done
+- Wrote `tests/playtest.mjs`, `tests/lib/frames.mjs`, `tests/selftest.mjs`, `tests/package.json` (+lock), rewrote `tests/verify.sh`, appended docs to `tests/README.md`.
+- Wrote `proposed-criteria.md` (agent-proposed, not student-approved) in this directory.
+- Read prior evidence: coder plan reports; run 20261030T202822-loop-sh (loop.log: both iterations failed on missing ANTHROPIC_API_KEY, no code produced). Nothing there to resolve in tests.
+
+## Commands / results
+- `node tests/selftest.mjs`: 9/9 ok (black, BGR swap, alpha 0, static, shift sign/size detected).
+- `node tests/playtest.mjs` with missing dist: exit 1 (B0 FAIL). With a blank placeholder page (web/index.html + empty wasm), QUICK=1: B2 FAIL "no non-black frame in 60s" -> checks catch a non-working port. (Scratch logs in /tmp, not kept; rerun to reproduce.)
+- Full `tests/verify.sh` NOT run: no Makefile and `emcc` is not installed. Real-game behavior of the playtest is therefore untested; thresholds (shifts, diffs) are unvalidated against a real build and may need tuning by the tester via a reported change.
+
+## Findings
+1. (coder / student) `emcc` absent on host; needs emsdk 4.0.18 or Docker. verify.sh exits 2 when missing.
+2. (coder) No Makefile; must provide `clean`/`all` producing dist/index.html, doom.wasm (+ .js/.data), canvas `#canvas` 640x400, and key release + blur handling (`cap_input_reset`).
+3. (coder, optional) Export a tic counter (e.g. `cap_tic_count`) so T2 (35 tics/s) can be verified; otherwise it stays UNVERIFIED.
+4. (tester) Pre-existing untracked `tests/verify.sh` had a hard-coded absolute path, no evidence saving or identity; replaced (same make clean/make all/playtest interface). It was not student-frozen as far as the invocation indicates.
+5. (student) Decide audio, persistence, mouse scope; criteria are provisional until approved.
+
+## Assumptions
+See proposed-criteria.md. `npm ci`/playwright download need network once (tests/package-lock.json committed-able; node_modules is gitignored). `tests/node_modules` and Playwright browser cache are local-only.
+
+## Next action
+Coder builds Makefile/port; tester runs `tests/verify.sh` unchanged in the test phase. Manual interventions: none. Usage: not available.
+{"status":"READY","summary":"Wrote proposed-criteria.md plus tests/verify.sh, playtest.mjs, selftest.mjs, lib/frames.mjs (Playwright 1.49.1). Selftest passes 9/9; playtest fails correctly on missing/blank builds. Full run not possible yet: no Makefile, emcc not installed; thresholds untuned against a real build. Criteria are agent-proposed, not student-approved."}
+# Coder build report — attempt-1
+Run 20261102T235903Z-41864, role coder, task 1-build. Source commit e500c44 plus uncommitted
+working-tree changes (loop/, tests/ are not mine). Student inputs absent; fallback spec/contract/criteria used
+(AGENT-PROPOSED, no approval claimed).
+
+## Changes (all coder-owned paths)
+- `Makefile` (new): `make clean all` -> `dist/{index.html,doom.js,doom.wasm,doom.data}`. Emscripten 4.0.18,
+  `-O2 -sASYNCIFY`, WAD packaged via `--preload-file assets/doom1.wad@/doom1.wad`. Objects in `build/`.
+- `platform/doomgeneric_wasm.c`: DG_* adapters -> cap_*; `main()` runs `doomgeneric_Create(-iwad /doom1.wad)`,
+  then loops `doomgeneric_Tick(); emscripten_sleep(0)`. Exports cap_frame/ready/framebuffer_ptr/bridge_version, and new `cap_tic_count()`.
+- `platform/cap_fallback.c` (new): WEAK default cap_* (canvas render with BGR0->opaque RGBA, clock, ASYNCIFY sleep, key queue) so the
+  port works before specialist modules exist; strong definitions in other platform/*.c override them.
+- `platform/engine_stubs.c` (new): `drone`, `net_client_connected` (net code absent from tree; link failed without them).
+- `platform/capstone_bridge.h`: added `cap_tic_count()` (contract change, version number NOT bumped; update interface-contract.md later).
+- `web/index.html`: loads doom.js, keyboard -> Doom key mapping (Ctrl fire, Space use, Alt strafe, ...), blur/visibility release.
+
+## Evidence (this dir)
+- `build.log` — clean build, rc=0. `dist-sha256.txt` — doom.wasm a8a5b0e4..., doom.data 1d7d43be...
+- `playtest-quick.log`, `playtest-quick/` — tests/playtest.mjs with QUICK=1 (15s soak; partial by design, exits nonzero).
+  Result: 23 PASS (incl. B0-B6, T1 60 rAF/s, menu, E1M1, turn, fire, automap), 2 FAIL (I5, I7), 4 UNVERIFIED (A1, P1, G3, T2).
+- Debug (not saved as script): measured `cap_tic_count` rate = 34.95 tics/s over 3s in Chromium (supports T2; the test has no hook yet).
+
+## Unresolved findings
+1. I5/I7 FAIL (also I6 failed in an earlier run, passed in the last). Investigation: after key release the view keeps changing for
+   ~1.2-1.5s (per-300ms frame diff 0.55,0.47,0.35,0.09,0.001) — Doom momentum/friction at a verified 35 tics/s, and keyup is delivered
+   (turning stops immediately, I2 passes). I judge the test settle times (900ms/700ms) too short, not a port bug. NOT confirmed by
+   tester; I did not edit tests/. Tester should lengthen settle or poll until stable.
+2. Audio, persistence, mouse, non-Chromium: still UNDECIDED (student). Faithful play cannot be called complete.
+3. Full 300s soak not run by me; only the 15s quick soak.
+4. render_timing / input_audio specialist modules do not exist; weak fallbacks are in use. ASYNCIFY chosen for sleeps; specialists may change.
+5. Role isolation is by instruction only (manifest says so). emcc was found at ~/Developer/emsdk (sourced), not on default PATH.
+6. Previous-run API-key issue unchanged (runner matter).
+
+## Next action
+Tester: re-evaluate I5/I7 settle timing, run full `tests/verify.sh`. Coder: bump CAP_BRIDGE_VERSION/contract for cap_tic_count when specialists land.
+Usage: not available. Manual interventions: none.
+{"role":"coder","task_id":"1-build","attempt_id":"attempt-1","run_id":"20261102T235903Z-41864","status":"partial","source_commit":"e500c440656622db5ab3f8fb7df73d8b5998eeb3","summary":"Makefile, WAD packaging, startup, weak-fallback adapters and web loader implemented; clean build passes; quick playtest 23 PASS / 2 FAIL (I5, I7: likely test settle-time too short vs Doom momentum, unconfirmed) / 4 UNVERIFIED. Full 300s soak not run.","report":"report.md"}
+# Coder plan report — attempt-1
+Run 20261103T001738Z-47122, role coder, task plan. Source commit e500c44 plus
+uncommitted changes (see source-status.txt in this dir and ../../../initial-source.patch).
+Plan only; no game implementation changed.
+
+## Work done
+- Read AGENTS.md, READMEs, manifest, and prior run reports (20261102T235903Z-41864 coder plan/1-build, tester prepare; 20261030T202822-loop-sh log).
+- Wrote `proposed-spec.md` and `interface-contract.md` here (AGENT-PROPOSED; no student approval claimed).
+- Edited `platform/capstone_bridge.h`: CAP_BRIDGE_VERSION 1 -> 2 (cap_tic_count was added without a bump), documented weak/strong override, repointed contract path to this run.
+- Did not touch loop/, tests/, assets/, third_party/, or any criteria.
+
+## Evidence
+- Header compiles with host `cc -fsyntax-only` against doomgeneric.h and CAP_BRIDGE_VERSION==2 (HDR_OK). Not an Emscripten build.
+- `which emcc`: not found on default PATH (a prior run used ~/Developer/emsdk). Version 4.0.18 not re-verified; dist/ from the prior run exists but was not rebuilt or retested here.
+
+## Unresolved findings carried forward
+1. (tester) I5/I7 FAIL in prior quick playtest; coder judged settle times (900/700ms) too short vs Doom momentum — UNCONFIRMED by tester.
+2. (student) Audio, persistence, mouse, non-Chromium, "faithful play" definition undecided.
+3. Full 300s soak never run; A1, P1, G3, T2 were UNVERIFIED in the quick run.
+4. (coder, later) Specialist modules render_timing/input_audio don't exist; weak fallbacks in use.
+5. (coder, later) BUILD.md not written.
+6. (runner) Earlier loop run failed for missing ANTHROPIC_API_KEY; not reproduced here.
+7. This run has no tester/prepare output; fallback criteria exist only in the prior run. Roles are instruction-enforced only.
+
+## Next action
+Tester: re-evaluate I5/I7 timing, add a cap_tic_count hook for T2, run full tests/verify.sh on a rebuilt tree. Coder: write BUILD.md, rebuild, integrate specialist modules when delivered. Student: decide the undecided scope items.
+Usage: not available. Manual interventions: none.
+{"status":"READY","summary":"Plan only: wrote agent-proposed spec and interface contract (bridge v2) and bumped platform/capstone_bridge.h to version 2 for cap_tic_count. Header syntax-checked on host; no build run, emcc not on PATH. Open: audio/persistence/mouse undecided, prior I5/I7 test-timing finding unconfirmed, no student approval."}
+./20261102T235903Z-41864/coder/1-build/attempt-1/result.json
+./20261102T235903Z-41864/coder/1-build/attempt-1/report.md
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick.log
+./20261102T235903Z-41864/coder/1-build/attempt-1/dist-sha256.txt
+./20261102T235903Z-41864/coder/1-build/attempt-1/agent.log
+./20261102T235903Z-41864/coder/1-build/attempt-1/build.log
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/playtest-results.json
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/browser-console.log
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/018-blur-b.png
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/024-automap-pre.png
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/013-move-fwd-held2.png
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/016-move-back.png
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/final-page.png
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/006-idle-b.png
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/021-fire-post.png
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/027-esc-menu.png
+./20261102T235903Z-41864/coder/1-build/attempt-1/playtest-quick/screens/003-main-menu.png
+)
+
+Calling Bash()
+      41 20261102T235903Z-41864/tester/prepare/attempt-1/proposed-criteria.md
+)
+
+Calling Bash()
+
+Bash response → (
+165 playtest.mjs
+102:  const b2 = await shot('turn-right-settled'); check('I2.turn-stops-on-release', diffFrac(b, b2, VIEW) < 0.02, `diff=${diffFrac(b, b2, VIEW).toFixed(4)}`);
+113:  check('I5.forward-stops-on-release', diffFrac(f1, f2, VIEW) < 0.02, `diff=${diffFrac(f1, f2, VIEW).toFixed(4)}`);
+116:  check('I6.backward-returns', diffFrac(s0, back, VIEW) < diffFrac(s0, f2, VIEW) * 0.7, `start-vs-back=${diffFrac(s0, back, VIEW).toFixed(3)} start-vs-fwd=${diffFrac(s0, f2, VIEW).toFixed(3)}`);
+122:  check('I7.blur-releases-keys', diffFrac(g1, g2, VIEW) < 0.02, `diff after blur=${diffFrac(g1, g2, VIEW).toFixed(4)} (key still physically down)`);
+162:  ['T2.35-tics-per-second', 'engine tic counter not observable from the page without a coder-provided hook']]) rec(id, 'UNVERIFIED', why);
+# Proposed acceptance criteria (AGENT-PROPOSED by tester; NOT student-approved)
+
+Basis: README.md, coder's proposed-spec.md (R1-R6) and interface-contract.md. No student
+artifacts/acceptance-criteria.md existed. Student may replace/freeze these; until then they are provisional.
+Implemented in `tests/playtest.mjs` (IDs match). Browser: Playwright Chromium 1.49.1 (131), viewport 800x600.
+
+| ID | Criterion (observable) | Spec |
+|---|---|---|
+| B0 | `make clean && make all` succeeds from clean tree; dist/index.html + doom.wasm exist | build |
+| B1 | `canvas#canvas` is 640x400 | R2 |
+| B2 | Non-black frame with >16 colors within 60s of load | R1 |
+| B3 | Canvas pixels opaque (alpha 255) | R2 |
+| B4/B6 | Mean R >= mean B on title/menu and E1M1 (catches BGR swap) | R2 |
+| B5 | No console errors, page errors, failed requests, or 404s | R1 |
+| T1 | >=20 rAF/s over 3s (main loop yields) | R3 |
+| M1 | Enter on title changes the display (menu opens) | R4/R5 |
+| G1 | Enter x4 reaches a level: big change from menu and populated status bar | R5 |
+| G2 | Idle frames stable (<2% pixels differ) | R5 |
+| I1/I3 | Hold Right/Left turns the view: scene shifts >=8px in the correct direction | R4 |
+| I2,I5,C3 | Motion/fire ceases after key release (<2% change over 0.5s) | R4 |
+| I4/I6 | Forward changes view and keeps changing while held; Backward returns closer to start | R4 |
+| I7 | Window blur while key held stops motion (no stuck key) | R4 |
+| C1/C2 | Ctrl fire animates the view; ammo-counter region changes persistently | R5 |
+| U1-U4 | Tab toggles automap and back; Esc opens/closes menu | R4 |
+| R1-R4 | 300s scripted random-input soak: no errors/aborts, rAF >=20/s, last frame visible, frames changed, no longtask >=1.5s | R6 |
+| selftest | Pixel helpers reject black / channel-swapped / transparent / static / mis-shifted frames | meta |
+
+## Explicitly UNVERIFIED (reported every run; completion must not be claimed while open)
+A1 audio (scope undecided; active AudioContext proves nothing), P1 save persistence, G3 door use /
+level exit, T2 35 tics/s rate (needs a coder-provided tic counter hook; proposal: export `cap_tic_count()`).
+Also not covered: other browsers, mouse, touch, "faithful play" vs. original (e.g. demo/determinism checks).
+
+## Known weaknesses of these checks
+Pixel heuristics can false-fail on legit layout variation (e.g., canvas scaled with different aspect/letterbox,
+HUD region assumptions) and can false-pass on identical-looking wrong gameplay. Backward-return check depends on
+E1M1 geometry. Soak input is seeded pseudo-random; the player may die, so soak proves stability, not progress.
+
+## Assumptions
+Page serves from dist/ via any static server (test uses its own, no special headers); canvas has id `canvas`;
+default menu path is Enter x4 with defaults; keyboard bindings are the Doom defaults in proposed-spec R4.
+Change control: any later change to these criteria is recorded separately with a reason.
+)
+Next I'm fixing the I5/I7 settle timing in the playtest and adding the T2 tic-counter check.
+Calling Read()
+
+Read response → (
+1	// Browser acceptance test for the Doom WASM port (AGENT-PROPOSED criteria; see
+2	// artifacts/runs/*/tester/prepare/attempt-1/proposed-criteria.md). Exit 0 only if every required
+3	// check passes. Env: DIST_DIR (default dist), OUT_DIR (evidence), SOAK_SECONDS (default 300),
+4	// QUICK=1 shortens the soak and forces a nonzero exit (3): partial runs never count as pass.
+5	import http from 'node:http'; import fs from 'node:fs'; import path from 'node:path';
+6	import { fileURLToPath } from 'node:url';
+7	import { chromium } from 'playwright'; import { PNG } from 'pngjs';
+8	import { stats, diffFrac, bestShift, VIEW, STATUSBAR, AMMO } from './lib/frames.mjs';
+9	
+10	const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+11	const DIST = path.resolve(root, process.env.DIST_DIR || 'dist');
+12	const OUT = path.resolve(root, process.env.OUT_DIR || `artifacts/runs/manual-${Date.now()}/tester/playtest`);
+13	const QUICK = process.env.QUICK === '1';
+14	const SOAK = QUICK ? 15 : Number(process.env.SOAK_SECONDS || 300);
+15	fs.mkdirSync(path.join(OUT, 'screens'), { recursive: true });
+16	
+17	const results = []; const log = [];
+18	const rec = (id, status, detail = '') => { results.push({ id, status, detail }); console.log(`${status.padEnd(10)} ${id} ${detail}`); };
+19	const check = (id, cond, detail = '') => rec(id, cond ? 'PASS' : 'FAIL', detail);
+20	const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+21	function finish(extra = {}) {
+22	  const failed = results.filter((r) => r.status === 'FAIL').length;
+23	  const unverified = results.filter((r) => r.status === 'UNVERIFIED').length;
+24	  let code = failed ? 1 : 0; if (!code && QUICK) code = 3;
+25	  const out = { status: code === 0 ? 'PASS' : 'FAIL', quick: QUICK, soak_seconds: SOAK, failed, unverified, results, ...extra };
+26	  fs.writeFileSync(path.join(OUT, 'playtest-results.json'), JSON.stringify(out, null, 2));
+27	  fs.writeFileSync(path.join(OUT, 'browser-console.log'), log.join('\n'));
+28	  console.log(`playtest: ${out.status} failed=${failed} unverified(not-in-scope, listed)=${unverified}${QUICK ? ' QUICK=partial' : ''}`);
+29	  process.exit(code);
+30	}
+31	
+32	// Missing dist is a hard failure, not a skip.
+33	for (const f of ['index.html', 'doom.wasm']) if (!fs.existsSync(path.join(DIST, f))) { rec('B0.dist-present', 'FAIL', `${path.join(DIST, f)} missing`); finish(); }
+34	rec('B0.dist-present', 'PASS');
+35	
+36	const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.wasm': 'application/wasm', '.data': 'application/octet-stream', '.css': 'text/css' };
+37	const badResponses = [];
+38	const server = http.createServer((req, res) => {
+39	  const p = path.join(DIST, decodeURIComponent(new URL(req.url, 'http://x').pathname).replace(/^\/$/, '/index.html'));
+40	  if (!p.startsWith(DIST) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) { badResponses.push(`404 ${req.url}`); res.writeHead(404).end(); return; }
+41	  res.writeHead(200, { 'content-type': MIME[path.extname(p)] || 'application/octet-stream' }); fs.createReadStream(p).pipe(res);
+42	});
+43	await new Promise((r) => server.listen(0, '127.0.0.1', r));
+44	const url = `http://127.0.0.1:${server.address().port}/`;
+45	
+46	const browser = await chromium.launch();
+47	const page = await (await browser.newContext({ viewport: { width: 800, height: 600 }, deviceScaleFactor: 1 })).newPage();
+48	const errors = [];
+49	page.on('console', (m) => { log.push(`[${m.type()}] ${m.text()}`); if (m.type() === 'error') errors.push(m.text()); });
+50	page.on('pageerror', (e) => { log.push(`[pageerror] ${e.message}`); errors.push(`pageerror: ${e.message}`); });
+51	page.on('requestfailed', (r) => errors.push(`requestfailed: ${r.url()}`));
+52	await page.addInitScript(() => {
+53	  window.__raf = 0; (function t() { window.__raf++; requestAnimationFrame(t); })();
+54	  window.__long = []; try { new PerformanceObserver((l) => l.getEntries().forEach((e) => window.__long.push(e.duration))).observe({ entryTypes: ['longtask'] }); } catch {}
+55	});
+56	
+57	let n = 0;
+58	async function shot(name) {
+59	  const buf = await page.locator('#canvas').screenshot();
+60	  fs.writeFileSync(path.join(OUT, 'screens', `${String(++n).padStart(3, '0')}-${name}.png`), buf);
+61	  return PNG.sync.read(buf);
+62	}
+63	const key = async (k, hold = 80) => { await page.keyboard.down(k); await sleep(hold); await page.keyboard.up(k); };
+64	const hasCrash = () => errors.some((e) => /abort|RuntimeError|unreachable|Aborted/i.test(e));
+65	
+66	try {
+67	  await page.goto(url);
+68	  check('B1.canvas-640x400', await page.evaluate(() => { const c = document.getElementById('canvas'); return !!c && c.width === 640 && c.height === 400; }), 'canvas#canvas intrinsic size');
+69	  // Boot: wait for a non-black, multi-colour frame.
+70	  let boot = null; const t0 = Date.now();
+71	  while (Date.now() - t0 < 60000) { const p = await shot('boot'); const s = stats(p); if (s.darkFrac < 0.9 && s.distinctColors > 16) { boot = { p, s }; break; } await sleep(500); }
+72	  check('B2.boot-renders-frame', !!boot, boot ? `after ${Date.now() - t0}ms colors=${boot.s.distinctColors}` : 'no non-black frame in 60s');
+73	  if (!boot) finish();
+74	  check('B3.opaque-pixels', boot.s.transparentFrac === 0, `transparentFrac=${boot.s.transparentFrac}`);
+75	  check('B4.channel-order', boot.s.meanR > boot.s.meanB, `meanR=${boot.s.meanR.toFixed(1)} meanB=${boot.s.meanB.toFixed(1)} (title/menu are warm; swap => blue)`);
+76	  check('B5.no-load-errors', errors.length === 0 && badResponses.length === 0, [...errors, ...badResponses].slice(0, 5).join(' | '));
+77	  await page.locator('#canvas').click({ position: { x: 5, y: 5 } }).catch(() => {}); // focus only
+78	
+79	  // Animation liveness (T1): requestAnimationFrame keeps firing; no multi-second main-thread stalls.
+80	  const r0 = await page.evaluate(() => window.__raf); await sleep(3000); const r1 = await page.evaluate(() => window.__raf);
+81	  check('T1.main-thread-responsive', (r1 - r0) / 3 >= 20, `${((r1 - r0) / 3).toFixed(1)} rAF/s over 3s (need >=20)`);
+82	
+83	  // Menu navigation -> new game E1M1 (episode + skill menus with defaults).
+84	  const title = await shot('title');
+85	  await key('Enter'); await sleep(1200); const menu = await shot('main-menu');
+86	  check('M1.enter-opens-menu', diffFrac(title, menu, VIEW) > 0.01, `diff=${diffFrac(title, menu, VIEW).toFixed(3)}`);
+87	  await key('Enter'); await sleep(900); await key('Enter'); await sleep(900); await key('Enter'); // New Game, episode, skill
+88	  await sleep(6000); // wipe + level load
+89	  const lvl = await shot('level-start'); const sb = stats(lvl, STATUSBAR);
+90	  check('G1.level-started', diffFrac(menu, lvl) > 0.2 && sb.distinctColors > 20, `diff-from-menu=${diffFrac(menu, lvl).toFixed(2)} statusbarColors=${sb.distinctColors}`);
+91	  check('B6.level-colors', stats(lvl, VIEW).meanR >= stats(lvl, VIEW).meanB * 0.9, 'E1M1 view not blue-biased');
+92	
+93	  // Idle stability: nothing should move with no input (guards "frames change by themselves").
+94	  const i1 = await shot('idle-a'); await sleep(600); const i2 = await shot('idle-b');
+95	  check('G2.idle-stable', diffFrac(i1, i2, VIEW) < 0.02, `diff=${diffFrac(i1, i2, VIEW).toFixed(4)}`);
+96	
+97	  // Turning: right turn => scene shifts left (negative); left turn shifts back (positive). Key release stops it.
+98	  const a = await shot('turn-start');
+99	  await page.keyboard.down('ArrowRight'); await sleep(350); await page.keyboard.up('ArrowRight'); await sleep(700);
+100	  const b = await shot('turn-right'); const sr = bestShift(a, b);
+101	  check('I1.turn-right', sr.shift <= -8 && sr.err < sr.err0, `shift=${sr.shift}px err=${sr.err.toFixed(1)} err0=${sr.err0.toFixed(1)}`);
+102	  const b2 = await shot('turn-right-settled'); check('I2.turn-stops-on-release', diffFrac(b, b2, VIEW) < 0.02, `diff=${diffFrac(b, b2, VIEW).toFixed(4)}`);
+103	  await page.keyboard.down('ArrowLeft'); await sleep(350); await page.keyboard.up('ArrowLeft'); await sleep(700);
+104	  const c = await shot('turn-left'); const sl = bestShift(b, c);
+105	  check('I3.turn-left', sl.shift >= 8 && sl.err < sl.err0, `shift=${sl.shift}px`);
+106	
+107	  // Movement: forward changes view; backward returns toward start; release halts motion.
+108	  const s0 = await shot('move-start');
+109	  await page.keyboard.down('ArrowUp'); await sleep(800); const mid = await shot('move-fwd-held'); await sleep(300); const mid2 = await shot('move-fwd-held2');
+110	  check('I4.forward-moves', diffFrac(s0, mid, VIEW) > 0.05 && diffFrac(mid, mid2, VIEW) > 0.01, `start-vs-mid=${diffFrac(s0, mid, VIEW).toFixed(3)} still-moving=${diffFrac(mid, mid2, VIEW).toFixed(3)}`);
+111	  await page.keyboard.up('ArrowUp'); await sleep(900);
+112	  const f1 = await shot('move-fwd-end'); await sleep(500); const f2 = await shot('move-fwd-stopped');
+113	  check('I5.forward-stops-on-release', diffFrac(f1, f2, VIEW) < 0.02, `diff=${diffFrac(f1, f2, VIEW).toFixed(4)}`);
+114	  await page.keyboard.down('ArrowDown'); await sleep(1100); await page.keyboard.up('ArrowDown'); await sleep(900);
+115	  const back = await shot('move-back');
+116	  check('I6.backward-returns', diffFrac(s0, back, VIEW) < diffFrac(s0, f2, VIEW) * 0.7, `start-vs-back=${diffFrac(s0, back, VIEW).toFixed(3)} start-vs-fwd=${diffFrac(s0, f2, VIEW).toFixed(3)}`);
+117	
+118	  // Focus loss must release held keys (stuck-key regression).
+119	  await page.keyboard.down('ArrowUp'); await sleep(500);
+120	  await page.evaluate(() => { window.dispatchEvent(new Event('blur')); document.dispatchEvent(new Event('visibilitychange')); });
+121	  await sleep(700); const g1 = await shot('blur-a'); await sleep(500); const g2 = await shot('blur-b');
+122	  check('I7.blur-releases-keys', diffFrac(g1, g2, VIEW) < 0.02, `diff after blur=${diffFrac(g1, g2, VIEW).toFixed(4)} (key still physically down)`);
+123	  await page.keyboard.up('ArrowUp'); await sleep(500);
+124	
+125	  // Fire: ammo counter changes and the weapon/view animates; release stops firing.
+126	  const pre = await shot('fire-pre');
+127	  await key('Control', 120); await sleep(250); const flash = await shot('fire-anim'); await sleep(1500); const post = await shot('fire-post');
+128	  check('C1.fire-animates', diffFrac(pre, flash, VIEW) > 0.005, `view-diff=${diffFrac(pre, flash, VIEW).toFixed(4)}`);
+129	  check('C2.fire-decrements-ammo', diffFrac(pre, post, AMMO) > 0.02, `ammo-region-diff=${diffFrac(pre, post, AMMO).toFixed(3)} (persisting after weapon returns to rest)`);
+130	  const q1 = await shot('fire-rest-a'); await sleep(600); const q2 = await shot('fire-rest-b');
+131	  check('C3.fire-stops-on-release', diffFrac(q1, q2, VIEW) < 0.02, `diff=${diffFrac(q1, q2, VIEW).toFixed(4)}`);
+132	
+133	  // Use key + automap + menu overlay do not crash and change the display as expected.
+134	  await key('Space'); await sleep(500);
+135	  const am0 = await shot('automap-pre'); await key('Tab'); await sleep(700); const am1 = await shot('automap-on');
+136	  check('U1.automap-toggles', diffFrac(am0, am1) > 0.2, `diff=${diffFrac(am0, am1).toFixed(3)}`);
+137	  await key('Tab'); await sleep(700); const am2 = await shot('automap-off');
+138	  check('U2.automap-returns', diffFrac(am0, am2, VIEW) < 0.1, `diff=${diffFrac(am0, am2, VIEW).toFixed(3)}`);
+139	  await key('Escape'); await sleep(800); const esc = await shot('esc-menu');
+140	  check('U3.escape-opens-menu', diffFrac(am2, esc, VIEW) > 0.01, `diff=${diffFrac(am2, esc, VIEW).toFixed(3)}`);
+141	  await key('Escape'); await sleep(800); const esc2 = await shot('esc-closed');
+142	  check('U4.escape-closes-menu', diffFrac(esc, esc2, VIEW) > 0.01, `diff=${diffFrac(esc, esc2, VIEW).toFixed(3)}`);
+143	
+144	  // Soak (R6): scripted input for SOAK seconds; the page must stay alive with no errors/aborts.
+145	  const keys = ['ArrowUp', 'ArrowLeft', 'ArrowRight', 'ArrowDown', 'Control', 'Space', 'Shift'];
+146	  let seed = 12345; const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+147	  const t1 = Date.now(), r2 = await page.evaluate(() => window.__raf); let moved = 0, last = await shot('soak-start');
+148	  while (Date.now() - t1 < SOAK * 1000) {
+149	    const k = keys[Math.floor(rnd() * keys.length)]; await key(k, 100 + Math.floor(rnd() * 600)); await sleep(100);
+150	    if (Math.floor((Date.now() - t1) / 1000) % 20 === 0) { const s = await shot('soak'); if (diffFrac(last, s) > 0.005) moved++; last = s; }
+151	  }
+152	  const r3 = await page.evaluate(() => window.__raf), longMax = await page.evaluate(() => Math.max(0, ...window.__long));
+153	  check('R1.soak-no-errors', !hasCrash() && errors.length === 0, `${SOAK}s; errors=${errors.slice(0, 3).join(' | ')}`);
+154	  check('R2.soak-still-rendering', (r3 - r2) / SOAK >= 20 && stats(last).darkFrac < 0.95, `rAF/s=${((r3 - r2) / SOAK).toFixed(1)} visibleFrame=${stats(last).darkFrac < 0.95}`);
+155	  check('R3.no-long-stalls', longMax < 1500, `max longtask=${longMax.toFixed(0)}ms (must be <1500)`);
+156	  check('R4.soak-frames-changed', moved > 0, `sampled frames that differed: ${moved}`);
+157	} catch (e) {
+158	  rec('X.harness-exception', 'FAIL', String(e && e.stack || e).split('\n').slice(0, 3).join(' '));
+159	}
+160	for (const [id, why] of [['A1.audio', 'scope undecided; an active AudioContext would not prove correct sound/music'],
+161	  ['P1.save-persistence', 'scope undecided'], ['G3.door-use-and-level-exit', 'no stable cross-build oracle; manual/protocol check'],
+162	  ['T2.35-tics-per-second', 'engine tic counter not observable from the page without a coder-provided hook']]) rec(id, 'UNVERIFIED', why);
+163	await page.screenshot({ path: path.join(OUT, 'screens', 'final-page.png') }).catch(() => {});
+164	await browser.close().catch(() => {}); server.close();
+165	finish();
+)
+
+Calling Bash()
+
+Bash response → (
+Makefile:18:           -sEXPORTED_FUNCTIONS=_main,_cap_frame,_cap_ready,_cap_tic_count,_cap_input_event,_cap_input_reset,_cap_bridge_version,_cap_framebuffer_ptr \
+Makefile:19:           -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,HEAPU8 \
+web/index.html:35:      if (!k || !Module.calledRun) return;
+web/index.html:36:      Module._cap_input_event(pressed, k);
+web/index.html:41:    function release() { if (Module.calledRun) Module._cap_input_reset(); }
+web/index.html:44:    var Module = {
+)
+
+Calling Bash()
+
+Bash response → (
+Exit code 1
+ok   shift sign/size: right-moved content => +12
+ok   shift sign: left-moved => -12
+ok   static frames: no spurious shift improvement
+doom.data
+doom.js
+doom.wasm
+index.html
+emcc not found
+)
+
+Calling Bash()
+
+Bash response → (
+0
+rc=
+rc=3
+PASS       B0.dist-present 
+PASS       B1.canvas-640x400 canvas#canvas intrinsic size
+PASS       B2.boot-renders-frame after 153ms colors=240
+PASS       B3.opaque-pixels transparentFrac=0
+PASS       B4.channel-order meanR=109.9 meanB=30.8 (title/menu are warm; swap => blue)
+PASS       B5.no-load-errors 
+PASS       T1.main-thread-responsive 60.0 rAF/s over 3s (need >=20)
+PASS       M1.enter-opens-menu diff=0.234
+PASS       G1.level-started diff-from-menu=0.93 statusbarColors=82
+PASS       B6.level-colors E1M1 view not blue-biased
+PASS       G2.idle-stable diff=0.0000
+PASS       I1.turn-right shift=-213px err=3.8 err0=7.9
+PASS       I2.turn-stops-on-release diff=0.0000
+PASS       I3.turn-left shift=213px
+PASS       I4.forward-moves start-vs-mid=0.689 still-moving=0.599
+PASS       I5.forward-stops-on-release settled=true after 2095ms (momentum allowed up to 4s); later-diff=0.0001
+PASS       I6.backward-returns start-vs-back=0.319 start-vs-fwd=0.531
+PASS       I7a.turn-held-keeps-changing diff=0.3651 (precondition: key effective before blur)
+PASS       I7.blur-releases-keys settled=true after 494ms; later-diff=0.0000 (key still physically down)
+PASS       C1.fire-animates view-diff=0.0286
+PASS       C2.fire-decrements-ammo ammo-region-diff=0.140 (persisting after weapon returns to rest)
+PASS       C3.fire-stops-on-release diff=0.0001
+PASS       U1.automap-toggles diff=0.768
+PASS       U2.automap-returns diff=0.000
+PASS       U3.escape-opens-menu diff=0.240
+PASS       U4.escape-closes-menu diff=0.240
+PASS       T2.35-tics-per-second 34.98 tics/s over 4s (need 35 +/-10%)
+PASS       R1.soak-no-errors 15s; errors=
+PASS       R2.soak-still-rendering rAF/s=60.1 visibleFrame=true
+PASS       R3.no-long-stalls max longtask=0ms (must be <1500)
+PASS       R4.soak-frames-changed sampled frames that differed: 1
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3.door-use-and-level-exit no stable cross-build oracle; manual/protocol check
+playtest: FAIL failed=0 unverified(not-in-scope, listed)=3 QUICK=partial
+)
+
+Calling Bash()
+
+Bash response → "(Bash completed with no output)"
+Status is READY. The verification scripts are in place, but I haven't run the full `tests/verify.sh`, so the 300-second soak and a clean rebuild are untested.
+
+**What changed in `tests/playtest.mjs`**
+- **Settle timing:** the I5, I6 and I7 checks now poll until the view stops changing, with up to 4 seconds allowed. The coder had reported I5/I7 failures as the test's fixed delays being too short for Doom's momentum, and this change fits that explanation.
+- **Blur test:** I7 now holds a turn key instead of the forward key, so running into a wall can't hide a stuck key. A new precondition check, I7a, confirms the key has an effect before the blur.
+- **Tic rate:** T2 now checks that `Module._cap_tic_count()` advances at 35 tics per second, give or take 10%. If the export is missing, it reports UNVERIFIED rather than passing.
+
+**Results**
+- **Selftest:** `node tests/selftest.mjs` passes.
+- **Quick playtest:** I ran it against the existing `dist/`, which is from the earlier build and wasn't rebuilt (`emcc` isn't on the default PATH). It had 0 failures and 3 UNVERIFIED: A1 audio, P1 save persistence and G3 door use / level exit.
+- **Individual checks:** I5 settled in about 2.1 seconds, I7 in about 0.5 seconds, and T2 measured 34.98 tics per second. This is a single run, so I haven't assessed flakiness.
+- **Exit code:** the quick playtest exits with code 3 by design, because a partial run never counts as a pass.
+
+**Open**
+- **Criteria:** they are still agent-proposed. No student-approved criteria existed, and I didn't claim approval.
+- **Undecided scope:** audio, persistence, mouse, other browsers and the definition of faithful play are still undecided for the student.
+- **Role isolation:** it is enforced by instructions only, not by tooling.
+
+Everything is saved in `artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/`: `report.md`, `result.json`, `proposed-criteria.md` (revision 2, with a change log), `playtest-quick.log` and the `playtest-quick/` results, console log and screenshots.

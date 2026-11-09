@@ -1,0 +1,14 @@
+== tooling
+== helper self-test (fault injection on pixel checks)
+ok   good frame: colourful, warm, opaque
+ok   black frame detected
+ok   R/B channel swap detected
+ok   alpha=0 (unfixed BGR0) detected
+ok   identical frames: diff 0
+ok   different frames: diff large
+ok   shift sign/size: right-moved content => +12
+ok   shift sign: left-moved => -12
+ok   static frames: no spurious shift improvement
+ok   shift beyond +-213px window is NOT reported as 240 (documents aliasing)
+ok   150ms-class shift (~90px) measured exactly
+== clean build

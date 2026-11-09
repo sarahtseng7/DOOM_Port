@@ -1,0 +1,297 @@
+
+Calling Bash()
+
+Bash response → (
+artifacts/logs:
+coder_input_audio.6WSU74
+coder_input_audio.6zHSnA
+coder_input_audio.9u4tS4
+coder_input_audio.KWBVgQ
+coder_input_audio.N0e4K8
+coder_input_audio.OwOtK6
+coder_input_audio.PrVlSe
+coder_input_audio.rdvBFz
+coder_input_audio.XSXPrI
+coder_input_audio.YCG1J3
+coder_input_audio.zZGUhu
+coder_render_timing.1ZyeYK
+coder_render_timing.6XCJuY
+coder_render_timing.8nHQTI
+coder_render_timing.cK29OS
+coder_render_timing.i3pFKE
+coder_render_timing.kFsAu7
+coder_render_timing.KuIme0
+coder_render_timing.licfez
+coder_render_timing.mpRUkR
+coder_render_timing.Wkpv1o
+coder_render_timing.y2E5IZ
+coder.1Bi21x
+coder.7cXMRV
+coder.9PHBOq
+coder.CzMECd
+coder.FaD2R7
+coder.GhMtru
+coder.H58uUd
+coder.ICaI0g
+coder.J22PFD
+coder.JMrJmA
+coder.kf3uJJ
+coder.lRueHg
+coder.n6GiEG
+coder.nUFHev
+coder.NWKoK5
+coder.pLDPys
+coder.Q1melD
+coder.s3mRzG
+coder.VgF4Hv
+coder.XGU7Cd
+coder.xIoyo9
+coder.Xl0uaN
+reviewer_gameplay.Bt9KSs
+reviewer_gameplay.dAPDqY
+reviewer_gameplay.facW3H
+reviewer_gameplay.GTAfxW
+reviewer_gameplay.ldSVVs
+reviewer_gameplay.Rw1fcA
+reviewer_gameplay.WeHatJ
+reviewer_gameplay.wHMOB2
+reviewer_gameplay.wQbJ7c
+reviewer_gameplay.Xy92jH
+reviewer_gameplay.ZUZV8O
+reviewer_site.f9dy0D
+reviewer_site.FDoXaA
+reviewer_site.FMO0C9
+reviewer_site.FnUrtZ
+reviewer_site.GwiGfG
+reviewer_site.msvdXx
+reviewer_site.Q4XPrg
+reviewer_site.qWTvbw
+reviewer_site.Rm0IxG
+reviewer_site.U8Ka1G
+reviewer_site.ZELzZH
+tester.3P7z9H
+tester.3Pq6Xx
+tester.8fsQdw
+tester.9SkuzA
+tester.aZlP2G
+tester.bajOBH
+tester.JAaNjg
+tester.oPtvHA
+tester.Q0YUP2
+tester.QcBm5A
+tester.QSq2Uh
+tester.QT7YlR
+tester.w2Z6BS
+verify.2u2qnP
+verify.Gjtb86
+verify.Gm8XQE
+verify.hDJeOV
+verify.ICvgiu
+verify.KBbHyS
+verify.oFQ3cu
+verify.wkzlnA
+verify.xskzsM
+verify.za54Fq
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+(eval):1: no matches found: loop/prompts/*tester*
+# Verification
+
+Keep verification code here, including browser checks, fixtures, and tests
+for the loop itself. You design the checks; no test suite is provided.
+
+See [the acceptance criteria and evidence requirements](../README.md#evaluate-the-system-you-built).
+Document how to run your checks and what each one establishes.
+
+Save test results, logs, screenshots, and recordings in `artifacts/`.
+Keep acceptance checks outside the coder's write permissions using your
+sandbox/tool configuration; a folder name alone does not enforce access.
+
+## Suite (tester-owned; criteria are AGENT-PROPOSED, not student-approved)
+
+Run: `source ~/Developer/emsdk/emsdk_env.sh && tests/verify.sh` (RUN_ID, SOAK_SECONDS, QUICK=1 optional).
+Evidence goes to `artifacts/runs/$RUN_ID/tester/verify-*/` (identity.txt, logs, screenshots, playtest-results.json).
+Exit 0 only when tooling, build, selftest and every required playtest check pass; `QUICK=1` never exits 0.
+
+| File | Establishes |
+| --- | --- |
+| `verify.sh` | tooling check, source identity, selftest, `make clean && make all`, playtest |
+| `selftest.mjs` | pixel helpers FAIL on black, channel-swapped, transparent, static, wrongly shifted frames (no build needed) |
+| `playtest.mjs` | Chromium: load/console errors, boot frame, colors, rAF liveness, menu -> E1M1, turn/move/fire/release, blur, automap, Esc menu, soak |
+| `lib/frames.mjs` | region diff / color stats / horizontal-shift estimation on canvas screenshots |
+
+Limits: outcomes are inferred from pixels (no engine state hook); audio, persistence, door/level-exit and the
+35 tics/s rate are listed as UNVERIFIED in every result. Ammo/status regions assume the stock 320x200 layout.
+Test deps: `npm ci` in `tests/` (network needed once; Playwright 1.49.1, pngjs 7.0.0).
+
+## Rev 3 additions (tester)
+- `I6` is now position-based (`cap_player_x/y`; limit 0.7 unchanged) — TEST CORRECTION: the pixel oracle flaked (0.60-0.79). New: `G1b` (E1M1, health 100 via engine state), `I4b` (forward moves player >=32 units), `I9` (`cap_input_impl==1`, delivered>0, dropped==0), `S1` (canvas stays 16:10 and fits 4 viewports); fault `bad-aspect` must fail S1.
+- Still UNVERIFIED: A1 audio by ear, P1, G3 (no door/sector export), H1.
+
+### H1 manual protocol (real hidden tab; headless cannot do this)
+1. `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist`; open http://127.0.0.1:8000 in headed Chrome, start E1M1.
+2. In the console run `a=Module._cap_tic_count(); t=Date.now()`, switch to another tab for 60 s, return.
+3. Run `(Module._cap_tic_count()-a)/((Date.now()-t)/1000)`. Pass: game did not run >2x real time (<=70 tics/s catch-up burst) and no keys remain stuck (player stands still, `Module._cap_player_x()` stable across 2 s).
+4. Record browser version, result, and screenshot under artifacts/. Not automated; do not report PASS without doing it.
+)
+
+Calling Bash()
+
+Bash response → (
+# Repeatable automated verification
+
+You are `tester`.
+
+Own tests/ verification code (except explicitly student-frozen criteria/baselines).
+Deliver an executable tests/verify.sh that clean-builds and tests the game in
+Chromium, returning 0 only when all required checks genuinely pass. Create missing
+tests and test-only dependencies as needed. Automate browser actions AND assertions
+for loading, level start, controls, key release, responsiveness, and required audio.
+Use existing supplied criteria; if absent, document proposed criteria before first
+using them. Do not silently lower criteria after failures; record test corrections
+with evidence and reasons. Read reviewers' findings and turn reproducible failures
+into regression checks. Use MCP for exploration where helpful; scripts must work
+without an agent interpreting output. Preserve logs and failed evidence. Do not
+fix product source. Report unavailable tooling or unverifiable required audio as
+FINDINGS/nonzero, never skip required behavior and report PASS.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+FINDINGS
+
+`tests/verify.sh` exited 0 (tooling, selftest, clean build, playtest failed=0 incl. 300 s soak, 5/5 fault injections caught). Result is FINDINGS, not PASS, because 4 required behaviors remain UNVERIFIED: A1 audio, P1 persistence, G3 door/level exit, H1 hidden-tab timing.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes; see verify/identity.txt (dirty_diff_sha256 429a585d..., includes my test edits). dist/doom.wasm sha256 prefix 6c93cbf125bd366a. Command: `RUN_ID=tester.3Pq6Xx OUT_DIR=artifacts/logs/tester.3Pq6Xx/verify tests/verify.sh` (emsdk 4.0.18 sourced). Evidence: verify.out, verify/ (build.log, playtest.log, playtest-results.json, faults.log, screens/).
+
+## Work (prior reports read: all six in artifacts/reports/)
+Existing checks preserved; none weakened. Changes in tests/ (tester-owned):
+- **I6 now position-based** (cap_player_x/y), limit 0.7 unchanged. TEST CORRECTION, reason: pixel oracle flaked (0.60-0.79). Pixel values kept in detail. This run: start-to-fwd 409, start-to-back 84 units.
+- **New G1b** (E1M1, health 100 from engine state), **I4b** (forward moves player >=32 units; 409), **I9** (cap_input_impl==1, delivered 46 > 0, dropped 0; was UNVERIFIED), **S1** (canvas stays 16:10 and fits 1280x720, 500x300, 1000x700, 800x600).
+- **New fault bad-aspect** (forces a 640x200 canvas): S1 fails as expected.
+- tests/README.md: rev 3 notes and a manual H1 hidden-tab protocol.
+- No spec/acceptance-criteria file exists; criteria remain the agent-proposed set in artifacts/runs/20261103T002748Z-51080/tester/prepare/attempt-1/proposed-criteria.md plus the additions above.
+
+## Unresolved (owner)
+1. UNVERIFIED A1 audio correctness (student/human: nobody has listened).
+2. UNVERIFIED P1 save persistence (student scope).
+3. UNVERIFIED G3 door use / level exit (coder: a sector/line export would allow a check; no oracle today).
+4. UNVERIFIED H1 real hidden-tab timing (human: run the manual protocol in tests/README.md).
+5. Limits: faults injected browser-side only; criteria agent-proposed, not student-approved; headless Chromium only; non-position outcomes pixel-inferred; no Firefox/Safari/physical HiDPI.
+
+## Assumptions
+Doom default keys. I4b threshold 32 map units chosen from observed ~409. S1 viewports and 3% aspect tolerance chosen by me. Suite run once. No product source touched. Manual interventions: none. Usage: not available.
+
+## Next action
+Human listens to audio and runs the H1 protocol; coder may add a door/sector export so tester can add G3.
+agent.log
+)
+
+Calling Bash()
+
+Bash response → "Command did not complete within its 600s timeout and was moved to the background (ID: bc9v837a9). Output is being written to: /private/tmp/claude-501/-Users-sarahtseng-Projects-fellowship-loop-capstone/930dfbac-490d-4985-969b-663e12082a18/tasks/bc9v837a9.output. You will be notified when it completes. If it is still running after 10m in the background, it will be stopped and you will be notified. It is running now: do not start a second copy while it runs. If it is no longer needed, stop it with TaskStop. No output had been read from it when it was moved. A program that buffers its output, or a pipe into one such as tail, can keep the output file empty until the command finishes. To check interim output, use Read on that file path.\nSession cwd remains /Users/sarahtseng/Projects/fellowship-loop-capstone; directory changes made by the backgrounded command do not apply to subsequent commands."
+PROGRESS: the full suite is still running in the background. It includes a 300 s soak and the fault injections, so I'm waiting for it to finish.
+Calling Bash()
+
+Bash response → "<tool_use_error>Blocked: sleep 420 followed by: tail -5 /Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/tester.bajOBH/verify.out. To wait for a condition, use Monitor with an until-loop (e.g. `until <check>; do sleep 2; done`). To wait for a command you started, use run_in_background: true. Do not chain shorter sleeps to work around this block.</tool_use_error>"
+
+Calling Bash()
+
+Bash response → (
+== fault injection (checks must fail on broken behaviour)
+caught  FAULT=drop-keyup (failed: I2 I5 I6 C3 I7)
+caught  FAULT=drop-blur (failed: I7)
+caught  FAULT=ignore-left (failed: I3 E2a E2b)
+caught  FAULT=swap-rb (failed: B4)
+)
+Nearly done; waiting for the completion notification.
+Calling Monitor()
+
+Monitor response → (
+<tool_use_error>InputValidationError: Monitor failed due to the following issue:
+The required parameter `description` is missing
+
+This tool's schema was not sent to the API — it was not in the discovered-tool set derived from message history. Without the schema in your prompt, typed parameters (arrays, numbers, booleans) get emitted as strings and the client-side parser rejects them. Load the tool first: call ToolSearch with query "select:Monitor", then retry this call. For reference, this tool's input schema is: {"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"description":{"description":"Short human-readable description of what you are monitoring (shown in notifications).","type":"string"},"timeout_ms":{"description":"Kill the monitor after this deadline. Default 300000ms. Deadlines above 600000ms are capped to 600000ms. You are notified at expiry and can re-arm.","default":300000,"type":"number","minimum":1000,"maximum":3600000},"command":{"description":"Shell command or script. Each stdout line is an event; exit ends the watch.","type":"string"},"ws":{"description":"WebSocket to open. Each text frame is an event; binary frames are reported as a placeholder line. Socket close ends the watch. Cannot be combined with command.","type":"object","properties":{"url":{"type":"string"},"protocols":{"type":"array","items":{"type":"string","pattern":"^[!#$%&'*+.^_`|~0-9A-Za-z-]+$"}}},"required":["url"],"additionalProperties":false}},"required":["description","timeout_ms"],"additionalProperties":false}</tool_use_error>
+)
+
+Calling Bash()
+
+Bash response → (
+UNVERIFIED H1.hidden-tab-timing headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)
+playtest: PASS failed=0 unverified(not-in-scope, listed)=4
+== fault injection (checks must fail on broken behaviour)
+caught  FAULT=drop-keyup (failed: I2 I5 I6 C3 I7)
+caught  FAULT=drop-blur (failed: I7)
+caught  FAULT=ignore-left (failed: I3 E2a E2b)
+caught  FAULT=swap-rb (failed: B4)
+caught  FAULT=bad-aspect (failed: S1)
+)
+
+Calling Bash()
+
+Bash response → (
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3.door-use-and-level-exit no door/sector oracle exported (player pos/angle/health/level only); needs coder sector/line export
+UNVERIFIED H1.hidden-tab-timing headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)
+commit: e500c440656622db5ab3f8fb7df73d8b5998eeb3
+dirty_diff_sha256: 2c74d74fd2c699f962fbe4b0efed4edf20edce8dc48292d33a4f5d5951053970
+status:  M loop/agents.yaml
+status:  M loop/loop.sh
+status:  M platform/doomgeneric_wasm.c
+status:  M tests/README.md
+status:  M web/index.html
+status: ?? .claude/
+e500c44
+)
+
+Calling Bash()
+
+Bash response → "(Bash completed with no output)"
+The result is FINDINGS, not PASS. `tests/verify.sh` exited 0 and the playtest had no failures, but four required behaviors remain UNVERIFIED.
+
+- **Passed:** the tooling check, selftest, clean build and playtest all succeeded, with `failed=0`. All 5 fault injections were caught: drop-keyup, drop-blur, ignore-left, swap-rb and bad-aspect.
+- **Regressions:** none against the previous tester run. I changed no tests and no product source.
+- **Source tested:** HEAD `e500c44` plus uncommitted changes (`dirty_diff_sha256` `2c74d74f…`).
+
+The four UNVERIFIED items:
+1. **A1, audio correctness:** nobody has listened, and the audio scope is undecided. The owner is the student or another human.
+2. **P1, save persistence:** the scope is undecided. The owner is the student.
+3. **G3, door use and level exit:** there is no door or sector oracle. The coder needs to add a sector/line export so this can be checked.
+4. **H1, hidden-tab timing:** headless Chromium can't throttle a real background tab. A human needs to run the manual protocol in `tests/README.md`.
+
+The criteria are still the agent-proposed set, not student-approved. The suite ran headless Chromium only.
+
+The report is `artifacts/logs/tester.bajOBH/report.md`. The raw output is `verify.out` and `verify/` in the same folder.

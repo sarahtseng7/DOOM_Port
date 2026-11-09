@@ -1,0 +1,140 @@
+{
+ "res": [
+  {
+   "id": "A.ctx-running-after-gesture-no-autoplay-flag",
+   "ok": true,
+   "d": "before=suspended after=running"
+  },
+  {
+   "id": "A.menu-sfx-and-music-heard",
+   "ok": false,
+   "d": "sfxPlayed=0 musicStarted=2 maxPeak=0.23259180784225464"
+  },
+  {
+   "id": "G.level-entered",
+   "ok": true,
+   "d": "statusbar colours"
+  },
+  {
+   "id": "A.level-music-switched",
+   "ok": true,
+   "d": "{\"ms\":3,\"playing\":true,\"peak\":0.4143654406070709}"
+  },
+  {
+   "id": "T.tic-rate",
+   "ok": true,
+   "d": "35.0 tics/s"
+  },
+  {
+   "id": "M.forward-coasts-then-stops",
+   "ok": true,
+   "d": "0.495,0.357,0.184,0.094,0,0,0,0,0,0,0,0"
+  },
+  {
+   "id": "M.period-strafes",
+   "ok": true,
+   "d": "diff=0.503"
+  },
+  {
+   "id": "M.shift-run-moves",
+   "ok": true,
+   "d": "diff=0.661"
+  },
+  {
+   "id": "C.fire-ammo-and-sfx",
+   "ok": true,
+   "d": "ammoDiff=0.140 sfx 4->5"
+  },
+  {
+   "id": "C.held-fire-repeats-sfx",
+   "ok": true,
+   "d": "5->9"
+  },
+  {
+   "id": "P.menu-freezes-world-by-framediff",
+   "ok": true,
+   "d": "diff over 1.5s with menu open=0.000 (coast without menu was ~0.5 first 250ms)"
+  },
+  {
+   "id": "A.audio-clock-advances",
+   "ok": true,
+   "d": "2.005s per 2s wall"
+  },
+  {
+   "id": "F.blur-stops-turn",
+   "ok": true,
+   "d": "diff=0.000"
+  },
+  {
+   "id": "F.resumes-after-foreground",
+   "ok": true,
+   "d": "35.0 tics/s"
+  }
+ ],
+ "pre": {
+  "sfxRequested": 0,
+  "sfxPlayed": 0,
+  "sfxSuppressed": 0,
+  "sfxBad": 0,
+  "musicRequested": 1,
+  "musicStarted": 1,
+  "notesScheduled": 0,
+  "musicErrors": 0,
+  "maxPeak": 0,
+  "lastPeak": 0,
+  "ctxState": "suspended",
+  "sampleRate": 48000,
+  "sfxChannelsActive": 0,
+  "musicPlaying": true,
+  "musicVoices": 0
+ },
+ "post": {
+  "sfxRequested": 0,
+  "sfxPlayed": 0,
+  "sfxSuppressed": 0,
+  "sfxBad": 0,
+  "musicRequested": 2,
+  "musicStarted": 2,
+  "notesScheduled": 22,
+  "musicErrors": 0,
+  "maxPeak": 0.23259180784225464,
+  "lastPeak": 0.002341496292501688,
+  "ctxState": "running",
+  "sampleRate": 48000,
+  "sfxChannelsActive": 0,
+  "musicPlaying": true,
+  "musicVoices": 3
+ },
+ "fin": {
+  "sfxRequested": 11,
+  "sfxPlayed": 11,
+  "sfxSuppressed": 0,
+  "sfxBad": 0,
+  "musicRequested": 3,
+  "musicStarted": 3,
+  "notesScheduled": 1106,
+  "musicErrors": 0,
+  "maxPeak": 0.4323189854621887,
+  "lastPeak": 0.05290324240922928,
+  "ctxState": "running",
+  "sampleRate": 48000,
+  "sfxChannelsActive": 0,
+  "musicPlaying": true,
+  "musicVoices": 14
+ },
+ "errs": [],
+ "diffs": [
+  0.495,
+  0.357,
+  0.184,
+  0.094,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0
+ ]
+}

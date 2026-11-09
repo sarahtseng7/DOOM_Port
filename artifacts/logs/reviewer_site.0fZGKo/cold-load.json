@@ -1,0 +1,6 @@
+{"note":"Playwright MCP Chromium 1280x720; CDP Network.clearBrowserCache + setCacheDisabled; t = ms since goto start, sampled after domcontentloaded",
+ "responses":[["/",200,"text/html"],["/audio_web.js",200,"text/javascript"],["/input_audio.js",200,"text/javascript"],["/render_timing.js",200,"text/javascript"],["/doom.js",200,"text/javascript"],["/doom.data",200,"application/octet-stream"],["/doom.wasm",200,"application/wasm"]],
+ "fromServiceWorker":false,"requestfailed":[],"pageerrors":[],"console":{"count":35,"errors":0,"warnings":2,"warningText":"AudioContext was not allowed to start (pre-gesture autoplay policy) x2"},
+ "samples_excerpt":[
+  {"t":24,"canvas":"640x400","ready":1,"tic":1,"transparent":0,"meanRGB":[110,50,31],"title":"DOOM Shareware"},
+  {"t":1033,"ready":1,"tic":30},{"t":2007,"ready":1,"tic":64},{"t":3448,"ready":1,"tic":115,"meanRGB":[110,50,31]}]}

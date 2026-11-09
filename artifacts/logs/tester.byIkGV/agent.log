@@ -1,0 +1,327 @@
+
+Calling Bash()
+
+Bash response → (
+# Your agent loop
+
+**Keep all student-created loop code and configuration in this folder.**
+
+This is where you build the system that coordinates the coder, reviewer,
+and tester. The implementation is yours to design; no loop is provided.
+
+## What belongs here
+
+- The orchestrator and its start/resume commands.
+- Role definitions, prompts, and handoff schemas.
+- MCP server/client code, tool definitions, and configuration.
+- Role permissions, sandbox policies, and network allowlists.
+- Dependency manifests and lockfiles for the loop.
+- Loop-specific documentation and configuration examples without secrets.
+
+Use subfolders when they help. For example:
+
+```text
+loop/
+  README.md        # This file
+  prompts/         # Instructions for each role
+  loop.sh          # Bash loop
+  agents.yml	   # Docker Agent team spec
+```
+
+These names are suggestions. Choose your own structure inside `loop/` and
+document the entry point, dependencies, and configuration it needs.
+Resolve paths relative to the repository so the loop works in the sandbox.
+
+## Where everything else goes
+
+| Content | Location |
+| --- | --- |
+| Saved state, handoffs, logs, findings, and run evidence | `artifacts/` |
+| Port implementation and browser page | `platform/`, `web/` |
+| Verification code, including checks for the loop itself | `tests/` |
+| Game data | `assets/` |
+| Generated build output | `build/` or `dist/` |
+| Shared build/toolchain files | Repository root |
+
+Keep reusable prompt templates here; save the actual tasks and responses
+from each run in `artifacts/`. Keep secrets out of the repository and sandbox.
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+(eval):1: no matches found: loop/prompts/tester*
+)
+
+Calling Bash()
+
+Bash response → (
+# Repeatable automated verification
+
+You are `tester`.
+
+Own tests/ verification code (except explicitly student-frozen criteria/baselines).
+Deliver an executable tests/verify.sh that clean-builds and tests the game in
+Chromium, returning 0 only when all required checks genuinely pass. Create missing
+tests and test-only dependencies as needed. Automate browser actions AND assertions
+for loading, level start, controls, key release, responsiveness, and required audio.
+Use existing supplied criteria; if absent, document proposed criteria before first
+using them. Do not silently lower criteria after failures; record test corrections
+with evidence and reasons. Read reviewers' findings and turn reproducible failures
+into regression checks. Use MCP for exploration where helpful; scripts must work
+without an agent interpreting output. Preserve logs and failed evidence. Do not
+fix product source. Report unavailable tooling or unverifiable required audio as
+FINDINGS/nonzero, never skip required behavior and report PASS.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+FINDINGS
+
+`tests/verify.sh` exited 0 (rc=0): clean build, selftest and playtest had 0 failures, and all 6 injected faults were caught. Four required behaviors are still UNVERIFIED (A1, P1, G3c, H1), so the result is FINDINGS, not PASS. I changed no product source or tests.
+
+## Work
+- Read AGENTS.md, README files, loop/prompts/TESTER.md and the prior artifacts/reports/ (tester, reviewer_gameplay, reviewer_site).
+- Ran `RUN_ID=tester.sAC1ys tests/verify.sh` with emsdk 4.0.18: tooling, selftest, `make clean && make all`, playtest (300 s soak), fault injection.
+- Playtest: `failed=0`, 4 UNVERIFIED.
+- Faults caught 6/6: drop-keyup (I2 I5 I6 C3 I7), drop-blur (I7), ignore-left (I3 E2a E2b), swap-rb (B4), bad-aspect (S1), drop-use (G3a).
+
+## Evidence
+- artifacts/logs/tester.sAC1ys/verify.out (ends `rc=0`)
+- Per-check logs and identity: artifacts/runs/tester.sAC1ys/tester/
+- Source: HEAD e500c44 plus uncommitted changes. `git diff HEAD -- . ':!artifacts' | shasum -a 256` = abd25326f8b638767595d1cd24989644dd24b84cf1d2aa0f2b31073794a82808, the same as the previous tester run. tests_sha256 b93cbc85..., WAD sha256 1d7d43be....
+
+## Unresolved (owner)
+1. A1 audio correctness by ear: UNVERIFIED (human). A0, A2 and A3 pass but only show a running AudioContext, no errors and a non-silent peak.
+2. P1 save persistence: UNVERIFIED (student scope decision).
+3. G3c level exit: UNVERIFIED (tester scripted E1M1 route, or a coder level-exit hook). Not built in this run.
+4. H1 real hidden-tab timing: UNVERIFIED (human; protocol in tests/README.md).
+5. Not covered: pickups, damage/death, Firefox, Safari, HiDPI.
+6. reviewer_gameplay's review.mjs result (A.menu-sfx-and-music-heard) is not part of verify.sh and was not rechecked.
+
+## Assumptions
+- Criteria are agent-proposed, not student-approved. No artifacts/specification.md or acceptance-criteria.md exists.
+- Headless Chromium only, no manual steps.
+- I read the summary lines (FAIL, UNVERIFIED, fault results), not every per-check log.
+- I wrote under artifacts/logs/tester.sAC1ys/. verify.sh also writes under artifacts/runs/, build/ and dist/.
+- I did not attempt a test change this run, because nothing failed.
+
+## Next action
+Human: run the A1 listen test (headed) and the H1 protocol. Tester: script the E1M1 route for G3c. Student: decide P1 scope and approve or amend the criteria.
+==> artifacts/reports/reviewer_gameplay.md <==
+- ArrowLeft was held and turning. I then forced `document.hidden=true` and dispatched `visibilitychange` alone, with no blur and no keyup.
+- Over the next 35 tics the angle did not change. Input worked normally after visibility was restored.
+- This exercises the port's handler. It does not show what a real browser does when the tab is actually hidden.
+
+**hidden_tab.mjs** (hidden-tab-{headless,headed,minimize}.{log,json}): **inconclusive.**
+- In all three modes `becameHidden` was false: the page stayed "visible" and kept 35 tics/s while "hidden".
+- Movement during that window came from the deliberately held key on a page that was still visible. It is not a defect.
+- Playwright's Chromium does not hide pages in these setups, so this harness cannot establish H1.
+
+## Unresolved (owner)
+1. UNVERIFIED, human: SFX and music correctness by ear (A1). The counters and peaks show only that audio plays without errors and is not silent.
+2. UNVERIFIED, human: real hidden-tab or minimized timing and audio (H1). Automated hiding failed; see hidden_tab.mjs. Use the protocol in tests/README.md with a normal browser.
+3. Student decision (coder_input_audio if required): the music is an oscillator synth, not GENMIDI/OPL-faithful.
+4. UNVERIFIED, tester: level exit (G3c), pickups, damage and death, Firefox, Safari, HiDPI.
+5. Observation, not judged a defect: music continues in the menu and while paused (13 voices, lastPeak 0.014).
+6. Carried over, student decision: WASD and mouse are not mapped, and volume is not persisted (P1).
+7. Suggestion for the tester (not a defect): visibility_release.mjs could become a protected check for the `visibilitychange` path. Today only `blur` is fault-injected (drop-blur).
+8. No new defects for coder_input_audio, coder_render_timing or coder.
+
+## Assumptions
+- The required controls are Doom's default keys. "Correct momentum" means it matches vanilla thrust and friction within integer-unit rounding. "Turn stops" means the angle changes no more than 3 tics after release.
+- Criteria are agent-proposed, not student-approved. Headless peaks count only as evidence of non-silence.
+- The headed runs opened a Chromium window on this Mac briefly. No other processes were touched.
+- Manual interventions: none. Token usage: not available.
+- I wrote only in this OUTPUT_DIR: scripts, logs, JSON, screens/, server.log, server.pid and report.md.
+
+## Next action
+- **Human:** run the A1 listening test and the H1 protocol with a real tab switch or minimize.
+- **Tester:** optionally adopt visibility_release.mjs and the per-tic coast check.
+- **If the source changes:** rerun this review.
+
+==> artifacts/reports/reviewer_site.md <==
+- Tic rate: tic 3 to 168 over 276 to 4979 ms is 35.08/s. Tic 3 to 18 over 276 to 701 ms is about 35/s. Both are inside the 31.5 to 38.5 band.
+- startup.png (viewed): TITLEPIC with the red sky, blue and gold logo, green armour and yellow id logo. The melt wipe is just starting at the top edge. No channel swap.
+- after-esc.png (viewed): the main menu over the E1M1 demo, with correct HUD and face colours. Escape registered.
+- after-esc2.png (viewed): the menu is closed and the demo continues.
+- viewport-800x600.png (viewed): the canvas is 800x500 at top 50, with no scrollbars (scroll size 800x600).
+
+## Comparison with the prior run
+- First frame took 276 ms this run, against 179 ms before. Both are well under the 2 s criterion. My sampling began after `goto` reached commit, so the timings carry about ±100 ms of sampling error.
+- Console warnings dropped from 1 (AudioContext autoplay) to 0. That warning depends on the browser's autoplay policy, so it is not a defect either way.
+
+## Unresolved (owner)
+1. Cosmetic, coder: the static `<title>` in web/index.html is "Doom (WASM)", but the runtime title is "DOOM Shareware". This is carried over and not blocking.
+2. UNVERIFIED, tester/human: a clean rebuild (the tester did one at 20:59, but I did not), Firefox and Safari, real HiDPI, non-localhost latency, a real hidden tab (H1) and audible audio (A1).
+3. No blocking loading or startup defect, and nothing new to assign to coders.
+
+## Assumptions
+- Startup PASS criteria are agent-proposed, not student-approved, and the same as the prior run:
+  - every asset returns 200 on a cold load, with 0 page and console errors
+  - a non-blank, correctly coloured frame appears within 2 s
+  - the tic rate is within 31.5 to 38.5/s
+  - a key press works at startup
+  - the canvas keeps its aspect ratio
+- "Cold" means a CDP cache clear and disable in the MCP browser profile, not a fresh profile.
+- Colours were judged by eye against known Doom art. The menu continuing over the demo matches vanilla behaviour (vanilla does not pause during demo playback).
+- I transcribed the tic series endpoints into probe.json from the tool result rather than having the browser write them. The full series is in this run's transcript only.
+- Manual interventions: none. Token usage: not available.
+- Writes: only this OUTPUT_DIR, plus the Playwright console capture in artifacts/browser/. I made no source, test, loop or config edits and did not create result.json.
+
+## Next action
+Nothing for coders. Tester or human: rerun `tests/verify.sh` after any source change, then cross-browser, HiDPI, H1 and A1 checks.
+# Verification
+
+Keep verification code here, including browser checks, fixtures, and tests
+for the loop itself. You design the checks; no test suite is provided.
+
+See [the acceptance criteria and evidence requirements](../README.md#evaluate-the-system-you-built).
+Document how to run your checks and what each one establishes.
+
+Save test results, logs, screenshots, and recordings in `artifacts/`.
+Keep acceptance checks outside the coder's write permissions using your
+sandbox/tool configuration; a folder name alone does not enforce access.
+
+## Suite (tester-owned; criteria are AGENT-PROPOSED, not student-approved)
+
+Run: `source ~/Developer/emsdk/emsdk_env.sh && tests/verify.sh` (RUN_ID, SOAK_SECONDS, QUICK=1 optional).
+Evidence goes to `artifacts/runs/$RUN_ID/tester/verify-*/` (identity.txt, logs, screenshots, playtest-results.json).
+Exit 0 only when tooling, build, selftest and every required playtest check pass; `QUICK=1` never exits 0.
+
+| File | Establishes |
+| --- | --- |
+| `verify.sh` | tooling check, source identity, selftest, `make clean && make all`, playtest |
+| `selftest.mjs` | pixel helpers FAIL on black, channel-swapped, transparent, static, wrongly shifted frames (no build needed) |
+| `playtest.mjs` | Chromium: load/console errors, boot frame, colors, rAF liveness, menu -> E1M1, turn/move/fire/release, blur, automap, Esc menu, soak |
+| `lib/frames.mjs` | region diff / color stats / horizontal-shift estimation on canvas screenshots |
+
+Limits: outcomes are inferred from pixels (no engine state hook); audio, persistence, door/level-exit and the
+35 tics/s rate are listed as UNVERIFIED in every result. Ammo/status regions assume the stock 320x200 layout.
+Test deps: `npm ci` in `tests/` (network needed once; Playwright 1.49.1, pngjs 7.0.0).
+
+## Rev 3 additions (tester)
+- `I6` is now position-based (`cap_player_x/y`; limit 0.7 unchanged) — TEST CORRECTION: the pixel oracle flaked (0.60-0.79). New: `G1b` (E1M1, health 100 via engine state), `I4b` (forward moves player >=32 units), `I9` (`cap_input_impl==1`, delivered>0, dropped==0), `S1` (canvas stays 16:10 and fits 4 viewports); fault `bad-aspect` must fail S1.
+- Still UNVERIFIED: A1 audio by ear, P1, G3 (no door/sector export), H1.
+
+### H1 manual protocol (real hidden tab; headless cannot do this)
+1. `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist`; open http://127.0.0.1:8000 in headed Chrome, start E1M1.
+2. In the console run `a=Module._cap_tic_count(); t=Date.now()`, switch to another tab for 60 s, return.
+3. Run `(Module._cap_tic_count()-a)/((Date.now()-t)/1000)`. Pass: game did not run >2x real time (<=70 tics/s catch-up burst) and no keys remain stuck (player stands still, `Module._cap_player_x()` stable across 2 s).
+4. Record browser version, result, and screenshot under artifacts/. Not automated; do not report PASS without doing it.
+
+## Rev 4 additions (tester)
+)
+
+Calling Bash()
+
+Bash response → "Command did not complete within its 600s timeout and was moved to the background (ID: bbbznhst3). Output is being written to: /private/tmp/claude-501/-Users-sarahtseng-Projects-fellowship-loop-capstone/85e2cf0c-a0d8-4048-af6d-675826a1e297/tasks/bbbznhst3.output. You will be notified when it completes. If it is still running after 10m in the background, it will be stopped and you will be notified. It is running now: do not start a second copy while it runs. If it is no longer needed, stop it with TaskStop. No output had been read from it when it was moved. A program that buffers its output, or a pipe into one such as tail, can keep the output file empty until the command finishes. To check interim output, use Read on that file path.\nSession cwd remains /Users/sarahtseng/Projects/fellowship-loop-capstone; directory changes made by the backgrounded command do not apply to subsequent commands."
+PROGRESS: verify.sh is running in the background (300 s soak plus fault injection).
+Calling Monitor()
+
+Monitor response → (
+<tool_use_error>InputValidationError: Monitor failed due to the following issue:
+The required parameter `description` is missing
+
+This tool's schema was not sent to the API — it was not in the discovered-tool set derived from message history. Without the schema in your prompt, typed parameters (arrays, numbers, booleans) get emitted as strings and the client-side parser rejects them. Load the tool first: call ToolSearch with query "select:Monitor", then retry this call. For reference, this tool's input schema is: {"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"description":{"description":"Short human-readable description of what you are monitoring (shown in notifications).","type":"string"},"timeout_ms":{"description":"Kill the monitor after this deadline. Default 300000ms. Deadlines above 600000ms are capped to 600000ms. You are notified at expiry and can re-arm.","default":300000,"type":"number","minimum":1000,"maximum":3600000},"command":{"description":"Shell command or script. Each stdout line is an event; exit ends the watch.","type":"string"},"ws":{"description":"WebSocket to open. Each text frame is an event; binary frames are reported as a placeholder line. Socket close ends the watch. Cannot be combined with command.","type":"object","properties":{"url":{"type":"string"},"protocols":{"type":"array","items":{"type":"string","pattern":"^[!#$%&'*+.^_`|~0-9A-Za-z-]+$"}}},"required":["url"],"additionalProperties":false}},"required":["description","timeout_ms"],"additionalProperties":false}</tool_use_error>
+)
+I'll just wait for the completion notification.
+Calling Bash()
+
+Bash response → "<tool_use_error>Blocked: sleep 240 followed by: tail -5 /private/tmp/claude-501/-Users-sarahtseng-Projects-fellowship-loop-capstone/85e2cf0c-a0d8-4048-af6d-675826a1e297/tasks/bbbznhst3.output. To wait for a condition, use Monitor with an until-loop (e.g. `until <check>; do sleep 2; done`). To wait for a command you started, use run_in_background: true. Do not chain shorter sleeps to work around this block.</tool_use_error>"
+
+Calling Bash()
+
+Bash response → (
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3c.level-exit walking through the door is checked (G3b); no route/oracle yet for finishing E1M1 (needs scripted route or coder level-exit hook)
+UNVERIFIED H1.hidden-tab-timing headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)
+playtest: PASS failed=0 unverified(not-in-scope, listed)=4
+== fault injection (checks must fail on broken behaviour)
+)
+Fault injection is still running; I'll wait for it to finish.
+Calling Bash()
+
+Bash response → "Command did not complete within its 600s timeout and was moved to the background (ID: b7ciiqal2). Output is being written to: /private/tmp/claude-501/-Users-sarahtseng-Projects-fellowship-loop-capstone/85e2cf0c-a0d8-4048-af6d-675826a1e297/tasks/b7ciiqal2.output. You will be notified when it completes. If it is still running after 10m in the background, it will be stopped and you will be notified. It is running now: do not start a second copy while it runs. If it is no longer needed, stop it with TaskStop. No output had been read from it when it was moved. A program that buffers its output, or a pipe into one such as tail, can keep the output file empty until the command finishes. To check interim output, use Read on that file path.\nSession cwd remains /Users/sarahtseng/Projects/fellowship-loop-capstone; directory changes made by the backgrounded command do not apply to subsequent commands."
+
+Calling Bash()
+
+Bash response → (
+UNVERIFIED H1.hidden-tab-timing headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)
+playtest: PASS failed=0 unverified(not-in-scope, listed)=4
+== fault injection (checks must fail on broken behaviour)
+caught  FAULT=drop-keyup (failed: I2 I5 I6 C3 I7)
+caught  FAULT=drop-blur (failed: I7)
+caught  FAULT=ignore-left (failed: I3 E2a E2b)
+caught  FAULT=swap-rb (failed: B4)
+caught  FAULT=bad-aspect (failed: S1)
+)
+
+Calling Bash()
+
+Bash response → "Command running in background with ID: b30zqigfl. Output is being written to: /private/tmp/claude-501/-Users-sarahtseng-Projects-fellowship-loop-capstone/85e2cf0c-a0d8-4048-af6d-675826a1e297/tasks/b30zqigfl.output. You will be notified when it completes. To check interim output, use Read on that file path.\nSession cwd remains /Users/sarahtseng/Projects/fellowship-loop-capstone; directory changes made by the backgrounded command do not apply to subsequent commands."
+The first run was killed at the 10-minute background limit, before the last fault and the exit code. I've restarted it with a longer limit and will report when it finishes.The old waiter task (b7ciiqal2) hit its time limit and was stopped. It only watched the log, so I won't restart it. The rerun (b30zqigfl) is still going, and I'll write the report when it finishes.
+Calling Bash()
+
+Bash response → (
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3c.level-exit walking through the door is checked (G3b); no route/oracle yet for finishing E1M1 (needs scripted route or coder level-exit hook)
+UNVERIFIED H1.hidden-tab-timing headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)
+playtest: PASS failed=0 unverified(not-in-scope, listed)=4
+caught  FAULT=drop-keyup (failed: I2 I5 I6 C3 I7)
+caught  FAULT=drop-blur (failed: I7)
+caught  FAULT=ignore-left (failed: I3 E2a E2b)
+caught  FAULT=swap-rb (failed: B4)
+caught  FAULT=bad-aspect (failed: S1)
+caught  FAULT=drop-use (failed: G3a)
+rc=0
+abd25326f8b638767595d1cd24989644dd24b84cf1d2aa0f2b31073794a82808  -
+e500c44
+)
+
+Calling Write()
+
+Write response → "File created successfully at: /Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/tester.byIkGV/report.md (file state is current in your context — no need to Read it back)"
+**FINDINGS.** The rerun of `tests/verify.sh` exited 0, but four required behaviors are still unverified.
+
+- **Passing:** clean build, selftest and playtest had 0 failures. All 6 injected faults were caught (drop-keyup, drop-blur, ignore-left, swap-rb, bad-aspect, drop-use).
+- **First run:** it was killed by the 10-minute background limit after 5 of 6 faults and has no exit code. Its log is kept as `verify.attempt1-killed.out` and isn't counted as a result.
+- **Unverified:**
+  - **A1:** audio correctness by ear. A human needs to listen.
+  - **P1:** save persistence. This is a scope decision for you.
+  - **G3c:** level exit. It needs a scripted E1M1 route.
+  - **H1:** real hidden-tab timing. It follows the manual protocol in `tests/README.md`.
+- **Not covered:** pickups, damage and death, Firefox, Safari and HiDPI.
+- **Reviewer findings:** the prior reviewer reports had no new reproducible failures, so I added no regression checks.
+- **Criteria:** they are still agent-proposed. No `artifacts/specification.md` or `acceptance-criteria.md` exists, so please approve or amend them.
+- **Source and tests:** I changed no product source or tests. The source diff hash is the same as the previous tester run.
+
+The report is at `artifacts/logs/tester.byIkGV/report.md`, and the passing run's log is `verify.out` in the same folder.

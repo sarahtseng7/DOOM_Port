@@ -1,0 +1,69 @@
+{
+  "status": "FAIL",
+  "quick": false,
+  "soak_seconds": 5,
+  "failed": 1,
+  "unverified": 4,
+  "results": [
+    {
+      "id": "B0.dist-present",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "B1.canvas-640x400",
+      "status": "PASS",
+      "detail": "canvas#canvas intrinsic size"
+    },
+    {
+      "id": "B2.boot-renders-frame",
+      "status": "PASS",
+      "detail": "after 208ms colors=240"
+    },
+    {
+      "id": "B3.opaque-pixels",
+      "status": "PASS",
+      "detail": "transparentFrac=0"
+    },
+    {
+      "id": "B4.channel-order",
+      "status": "PASS",
+      "detail": "meanR=109.8 meanB=30.7 (title/menu are warm; swap => blue)"
+    },
+    {
+      "id": "B5.no-load-errors",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "T1.main-thread-responsive",
+      "status": "PASS",
+      "detail": "60.0 rAF/s over 3s (need >=20)"
+    },
+    {
+      "id": "X.harness-exception",
+      "status": "FAIL",
+      "detail": "locator.screenshot: Target page, context or browser has been closed     at shot (/Users/sarahtseng/Projects/fellowship-loop-capstone/tests/playtest.mjs:70:45)     at /Users/sarahtseng/Projects/fellowship-loop-capstone/tests/playtest.mjs:107:61"
+    },
+    {
+      "id": "A1.audio",
+      "status": "UNVERIFIED",
+      "detail": "scope undecided; an active AudioContext would not prove correct sound/music"
+    },
+    {
+      "id": "P1.save-persistence",
+      "status": "UNVERIFIED",
+      "detail": "scope undecided"
+    },
+    {
+      "id": "G3c.level-exit",
+      "status": "UNVERIFIED",
+      "detail": "walking through the door is checked (G3b); no route/oracle yet for finishing E1M1 (needs scripted route or coder level-exit hook)"
+    },
+    {
+      "id": "H1.hidden-tab-timing",
+      "status": "UNVERIFIED",
+      "detail": "headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)"
+    }
+  ]
+}

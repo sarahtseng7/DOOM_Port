@@ -1,0 +1,7 @@
+level {"tic":387,"x":1056,"y":-3616,"ang":1073741824,"lvl":101}
+PASS P.pause-key-freezes-world {"dPos":0,"dAng":0,"gameticDelta":45}
+PASS P.unpause-resumes-movement {"dPos":96.0052081920559}
+PASS P.menu-freezes-while-key-held {"dPos":0,"gameticDelta":42}
+PASS F.no-coast-or-stuck-after-menu-close {"dPos":8,"note":"momentum from before the menu may resume after close"}
+PASS F.stopped-after-menu-close {"dPos":0}
+PASS E.no-page-errors []

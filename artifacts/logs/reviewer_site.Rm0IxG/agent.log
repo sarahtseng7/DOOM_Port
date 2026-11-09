@@ -1,0 +1,565 @@
+I'll start by reading the project docs, the role prompt, and the prior reports.
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+  the resource usage, manual interventions, and final stopping decision.
+
+Preserve failing evidence as well as passing evidence. Record changes to
+acceptance criteria separately, with a reason. Discuss disagreements and
+missed faults in your write-up.
+
+## Where your work belongs
+
+| Location | Purpose |
+| --- | --- |
+| [`loop/`](loop/README.md) | All loop code, prompts, role definitions, MCP configuration, and design documentation. |
+| [`artifacts/`](artifacts/README.md) | All durable run state, handoffs, logs, review findings, and evidence. Agents must use this folder between runs. |
+| `tests/` | Verification code, including checks for the loop itself. |
+| `platform/`, `web/` | The port and browser page. |
+| `third_party/doomgeneric/` | Supplied engine; platform ports have been removed. |
+| `assets/` | Included shareware `doom1.wad` (Episode 1). |
+| `build/`, `dist/` | Generated build output. |
+
+Keep the root for project documentation and shared build/toolchain files.
+The starter supplies engine source, platform and HTML stubs, the shareware
+WAD, documentation, and an optional Docker toolchain. It supplies no working
+game, build script, loop implementation, or test suite. `artifacts/` starts
+with its README only; students create run evidence there during the project.
+Use the supplied engine and Emscripten. Documentation is allowed; copying an
+existing Doom browser port does not satisfy the assignment.
+
+See [`platform/README.md`](platform/README.md) for engine integration caveats,
+including pixel format, timing, and audio. The supplied game data already
+contains sound effects and music; no additional sound assets are required.
+
+## Agent section for setup
+
+### macOS without Docker
+
+Install the build tools directly on your Mac to compile and test the browser
+port. Docker is not required for this workflow. There is currently no macOS
+setup script; run the steps below manually.
+
+1. **Install prerequisites.** In Terminal, run:
+
+   ```sh
+   xcode-select --install
+   ```
+
+   Finish the installer, then check `git --version` and `python3 --version`.
+   If Python is missing, install it from [python.org](https://www.python.org/downloads/macos/),
+   or run `brew install python` if you already have Homebrew.
+
+2. **Install Emscripten.** Use version `4.0.18` to match the supplied Dockerfile:
+
+   ```sh
+   mkdir -p ~/Developer
+   cd ~/Developer
+   git clone https://github.com/emscripten-core/emsdk.git
+   cd emsdk
+   ./emsdk install 4.0.18
+   ./emsdk activate 4.0.18
+   source ./emsdk_env.sh
+   emcc --version
+   ```
+
+   If you already have an SDK checkout at that location, use it instead of
+   cloning again. In each new Terminal session where you want to compile, run:
+
+   ```sh
+   source ~/Developer/emsdk/emsdk_env.sh
+   ```
+
+   See the [official installation instructions](https://emscripten.org/docs/getting_started/downloads.html).
+
+artifacts/logs:
+coder_input_audio.9u4tS4
+coder_input_audio.KWBVgQ
+coder_input_audio.PrVlSe
+coder_input_audio.XSXPrI
+coder_input_audio.YCG1J3
+coder_input_audio.zZGUhu
+coder_render_timing.1ZyeYK
+coder_render_timing.i3pFKE
+coder_render_timing.kFsAu7
+coder_render_timing.licfez
+coder_render_timing.mpRUkR
+coder_render_timing.y2E5IZ
+coder.1Bi21x
+coder.7cXMRV
+coder.9PHBOq
+coder.GhMtru
+coder.J22PFD
+coder.kf3uJJ
+coder.lRueHg
+coder.pLDPys
+coder.Q1melD
+coder.VgF4Hv
+coder.xIoyo9
+coder.Xl0uaN
+reviewer_gameplay.dAPDqY
+reviewer_gameplay.facW3H
+reviewer_gameplay.ldSVVs
+reviewer_gameplay.Rw1fcA
+reviewer_gameplay.wHMOB2
+reviewer_site.f9dy0D
+reviewer_site.FnUrtZ
+reviewer_site.GwiGfG
+reviewer_site.msvdXx
+reviewer_site.qWTvbw
+reviewer_site.Rm0IxG
+tester.8fsQdw
+tester.9SkuzA
+tester.JAaNjg
+tester.QcBm5A
+tester.QSq2Uh
+tester.QT7YlR
+verify.Gjtb86
+verify.ICvgiu
+verify.oFQ3cu
+verify.wkzlnA
+verify.za54Fq
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+agent.log
+)
+
+Calling Bash()
+
+Bash response → (
+Exit code 1
+# Site and startup review
+
+You are `reviewer_site`.
+
+Review build/startup and actual browser loading at http://localhost:8000.
+Write no source, tests, or build files. You may run the existing build and start a
+local HTTP server without modifying source; stop only a server you started.
+Use Playwright MCP (or existing browser scripts) to verify the page, canvas, fresh
+JS/WASM/WAD loading, console/network failures, initial image, colors, and startup
+responsiveness. Ensure an existing port-8000 server serves this project's current
+build; do not kill an unknown service or accept an unrelated page as evidence.
+Leave movement, combat, and audio depth to reviewer_gameplay. Report actionable
+faults to the relevant coder. PASS requires actual observed startup, not inspection
+alone. Keep evidence in OUTPUT_DIR; screenshots are supporting evidence, not all
+of acceptance. Browser tools do not grant permission to patch files.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+(eval):1: ===== not found
+)
+
+Calling Bash()
+
+Bash response → (
+FINDINGS
+
+Startup observed and working on the current dist/. FINDINGS (not PASS) only because time-to-first-frame precision, other viewports, clean rebuild, and post-gesture audio were not verified, plus one minor audio warning.
+
+## Work
+- Read AGENTS.md, loop/prompts/REVIEWER.md, artifacts/reports/reviewer_site.md (prior run). artifacts/specification.md and acceptance-criteria.md were not consulted/not present in prior run.
+- Port 8000 was free (lsof empty). `make`: "Nothing to be done" (make.log). web/*.{html,js} byte-identical to dist/ (cmp). Source: HEAD e500c44 plus uncommitted changes.
+- Started `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist` (pid 1651); stopped it at the end (curl afterwards returns no response).
+- Playwright fresh load of /?r=fresh1: 6 resources (input_audio.js, audio_web.js, render_timing.js, doom.js, doom.data, doom.wasm) + document, all 200 (server.log). Title "DOOM Shareware". loadEventEnd ~32 ms (page load, not time to first frame).
+- Canvas 640x400, displayed 1152x720 CSS (aspect 1.6 kept). Sampled ~158 distinct colours. Module._rt.frames advanced 317 -> 365 in 1 s, so the main loop runs.
+- startup.png: attract-demo gameplay with HUD, correct colours (no R/B swap), no corruption.
+- Console: 0 errors, 2 warnings (console.txt).
+
+## Evidence (this directory)
+startup.png, console.txt, make.log, server.log, rev.txt, server.pid.
+
+## Findings
+1. Minor, owner coder_input_audio: AudioContext "not allowed to start" warnings (audio_web.js:27, :53) before a user gesture. Expected under autoplay policy; resume after gesture left to reviewer_gameplay.
+
+No actionable startup fault found. Prior report's findings are unchanged.
+
+## Not verified
+Precise time to first frame; clean rebuild (make clean && make); non-Chromium browsers; warm-cache reload; other viewport sizes; audio after a gesture; movement/combat (out of scope).
+
+## Assumptions
+Headless Playwright Chromium via MCP. No spec was supplied, so criteria: page loads, no failed required assets, canvas draws with correct colours, loop advances. "Fresh" = new query string on a fresh browser load; the browser cache state of the Playwright profile was not cleared. Wrote nothing outside OUTPUT_DIR, apart from Playwright captures in artifacts/browser/.
+
+---TESTER
+
+## Source identity
+HEAD e500c44 plus uncommitted changes (verify/identity.txt, dirty_diff_sha256 72688451...). emcc 4.0.18. Clean `make clean && make all` ran inside the script. I changed no product source, tests, or loop files.
+
+## Prior findings read
+artifacts/reports/ (tester, reviewer_gameplay, reviewer_site, coder*). No specification.md or acceptance-criteria.md exists.
+
+## Work and evidence (this dir)
+- verify.out and verify/ (identity.txt, playtest.log, faults.log, verify-result.json): `RUN_ID=tester.JAaNjg OUT_DIR=<abs> tests/verify.sh`, exit=0.
+- Selftest: all helper checks ok.
+- Playtest: failed=0. Every B, T, M, G1/G2, I1-I8, C, U, E and R check passed.
+  - T2: 34.97 tics/s.
+  - R1-R4: 300 s soak with no errors, 60 rAF/s, longtask 0 ms, 24 sampled frames differed.
+- I6.backward-returns passed (start-vs-back=0.368, start-vs-fwd=0.532, ratio ~0.69). The ratio is close to the 0.7 limit. Earlier runs gave 0.79 (fail) and 0.60 (pass), so I6 passed in this run and the earlier fail is unexplained. I did not loosen it.
+- Fault injection caught 4/4: drop-keyup (I2 I5 C3 I7), drop-blur (I7), ignore-left (I3 E2a), swap-rb (B4).
+- verify-attempt1-relative-outdir.out: failing evidence, kept. The first attempt exited 2 because I passed a relative OUT_DIR and verify.sh does `cd tests` before writing to it. This is a script robustness issue, not a product fault. I then reran with an absolute path.
+
+## Unresolved (owner)
+1. I6 is marginal: ratios of 0.60-0.79 against a 0.7 limit. It needs a more stable oracle, such as a position export, a longer backward hold, or a direction-only check (tester).
+2. tests/verify.sh breaks on a relative OUT_DIR, because the `cd tests` steps write to the log through a relative path (tester). Fix by resolving OUT_DIR to an absolute path.
+3. UNVERIFIED, listed by the suite as not in scope:
+   - A1 audio correctness. No human has listened, and an active AudioContext only proves non-silent output (student scope).
+   - P1 save persistence (student scope).
+   - G3 door use and level exit, which have no oracle (tester).
+   - I9 input-module identity. The exports `cap_input_impl`, `cap_input_delivered_count` and `cap_input_dropped_count` exist per coder's report, so this is wiring work for the tester.
+   - H1 hidden-tab timing. Headless Chromium cannot throttle a real background tab (needs a manual protocol).
+4. Faults are injected browser-side only. The criteria are agent-proposed, not student-approved. Only Chromium was tested.
+
+## Assumptions
+Doom default keys; headless Chromium via Playwright; no thresholds changed. I did not change tests. Manual interventions: none. Usage: not available.
+total 24
+drwx------   3 sarahtseng  staff     96 Nov  2 21:01 .
+drwxr-xr-x  49 sarahtseng  staff   1568 Nov  2 21:01 ..
+-rw-r--r--   1 sarahtseng  staff  10602 Nov  2 21:01 agent.log
+e500c440656622db5ab3f8fb7df73d8b5998eeb3
+build:
+platform
+third_party
+
+dist:
+audio_web.js
+doom.data
+doom.js
+doom.wasm
+index.html
+# Doom -> WebAssembly build. Requires Emscripten 4.0.18 (source emsdk_env.sh
+# or use the Dockerfile image). Output: dist/{index.html,doom.js,doom.wasm,doom.data}
+EMCC      ?= emcc
+ENGINE    := third_party/doomgeneric
+BUILD     := build
+DIST      := dist
+WAD       := assets/doom1.wad
+
+# Platform-specific/unused engine files: dummy.c, i_cdmus.c, i_joystick.c are
+# stubs here; net_* sources are absent from this tree.
+ENGINE_EXCLUDE := $(ENGINE)/dummy.c $(ENGINE)/doomgeneric_sdl.c
+ENGINE_SRC := $(filter-out $(ENGINE_EXCLUDE),$(wildcard $(ENGINE)/*.c))
+PLAT_SRC   := $(wildcard platform/*.c)
+OBJS       := $(patsubst %.c,$(BUILD)/%.o,$(ENGINE_SRC) $(PLAT_SRC))
+
+CFLAGS  := -O2 -I$(ENGINE) -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP
+ENGINE_CFLAGS := -w   # silence warnings for the supplied engine only
+LDFLAGS := -O2 -sASYNCIFY -sASYNCIFY_STACK_SIZE=65536 -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=64MB \
+           -sEXPORTED_FUNCTIONS=_main,_cap_ready,_cap_tic_count,_cap_input_event,_cap_input_reset,_cap_bridge_version,_cap_framebuffer_ptr,_cap_input_impl,_cap_input_delivered_count,_cap_input_dropped_count \
+           -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,HEAPU8 \
+           --preload-file $(WAD)@/doom1.wad
+
+.PHONY: all clean
+all: $(DIST)/index.html
+
+$(BUILD)/$(ENGINE)/%.o: $(ENGINE)/%.c
+	@mkdir -p $(dir $@)
+	$(EMCC) $(CFLAGS) $(ENGINE_CFLAGS) -c $< -o $@
+
+$(BUILD)/platform/%.o: platform/%.c
+	@mkdir -p $(dir $@)
+	$(EMCC) $(CFLAGS) -c $< -o $@
+
+-include $(OBJS:.o=.d)
+
+$(DIST)/doom.js: $(OBJS) $(WAD)
+	@mkdir -p $(DIST)
+	$(EMCC) $(OBJS) $(LDFLAGS) -o $@
+
+WEB_FILES := web/index.html web/input_audio.js web/audio_web.js web/render_timing.js
+browser
+logs
+README.md
+reports
+runs
+)
+PROGRESS: building and starting a server. Port 8000 has no listener.
+Calling Bash()
+
+Calling ToolSearch()
+
+Bash response → (
+audio_web.js
+doom.data
+doom.js
+doom.wasm
+index.html
+input_audio.js
+render_timing.js
+make: Nothing to be done for `all'.
+same index.html
+same input_audio.js
+same audio_web.js
+same render_timing.js
+HTTP/1.0 200 OK
+Server: SimpleHTTP Python/3.15.0
+Date: Tue, 03 Nov 2026 05:02:00 GMT
+6970
+)
+
+ToolSearch response → "Completed by external harness."
+
+Calling mcp__playwright__browser_navigate()
+
+Calling mcp__playwright__browser_wait_for()
+
+mcp__playwright__browser_navigate response → (
+### Ran Playwright code
+```js
+await page.goto('http://localhost:8000/?r=fresh2');
+```
+### Page
+- Page URL: http://localhost:8000/?r=fresh2
+- Page Title: DOOM Shareware
+- Console: 0 errors, 2 warnings
+### Snapshot
+- [Snapshot](artifacts/browser/page-2026-11-03T05-02-04-723Z.yml)
+### Events
+- New console entries: artifacts/browser/console-2026-11-03T05-02-04-402Z.log#L1-L35
+)
+
+mcp__playwright__browser_wait_for response → (
+### Result
+Waited for 3 seconds
+### Ran Playwright code
+```js
+await new Promise(f => setTimeout(f, 3 * 1000));
+```
+### Page
+- Page URL: http://localhost:8000/?r=fresh2
+- Page Title: DOOM Shareware
+- Console: 0 errors, 2 warnings
+### Snapshot
+- [Snapshot](artifacts/browser/page-2026-11-03T05-02-08-323Z.yml)
+)
+
+Calling mcp__playwright__browser_evaluate()
+
+Calling mcp__playwright__browser_take_screenshot()
+
+Calling mcp__playwright__browser_console_messages()
+
+mcp__playwright__browser_evaluate response → (
+### Result
+{
+  "w": 640,
+  "h": 400,
+  "cw": 1152,
+  "ch": 720,
+  "f0": 497,
+  "f1": 567,
+  "colors": 91,
+  "ctx": true,
+  "res": [
+    [
+      "input_audio.js",
+      200,
+      4448
+    ],
+    [
+      "audio_web.js",
+      200,
+      18871
+    ],
+    [
+      "render_timing.js",
+      200,
+      1489
+    ],
+    [
+      "doom.js",
+      200,
+      75956
+    ],
+    [
+      "doom.data",
+      200,
+      4196320
+    ],
+    [
+      "doom.wasm",
+      200,
+      555140
+    ]
+  ]
+}
+### Ran Playwright code
+```js
+await page.evaluate('async () => { const c=document.querySelector(\'canvas\'); const f0=Module._rt?Module._rt.frames:null; await new Promise(r=>setTimeout(r,1000)); const f1=Module._rt?Module._rt.frames:null; const x=c.getContext(\'2d\'); let cols=new Set(); if(x){const d=x.getImageData(0,0,c.width,c.height).data; for(let i=0;i<d.length;i+=4*97)cols.add(d[i]+\',\'+d[i+1]+\',\'+d[i+2]);} return {w:c.width,h:c.height,cw:c.clientWidth,ch:c.clientHeight,f0,f1,colors:cols.size,ctx:!!x, res:performance.getEntriesByType(\'resource\').map(e=>[e.name.split(\'/\').pop(),e.responseStatus,e.transferSize])}; }');
+```
+)
+
+mcp__playwright__browser_console_messages response → "### Result\n- [Console](artifacts/logs/reviewer_site.Rm0IxG/console.txt)"
+
+mcp__playwright__browser_take_screenshot response → (
+### Result
+- [Screenshot of viewport](artifacts/logs/reviewer_site.Rm0IxG/startup.png)
+### Ran Playwright code
+```js
+// Screenshot viewport and save it as artifacts/logs/reviewer_site.Rm0IxG/startup.png
+await page.screenshot({
+  path: 'artifacts/logs/reviewer_site.Rm0IxG/startup.png',
+  scale: 'css',
+  type: 'png'
+});
+```
+)
+
+Calling Read()
+
+Calling Bash()
+
+Read response → "Completed by external harness."
+
+Bash response → (
+Total messages: 35 (Errors: 0, Warnings: 2)
+Returning 2 messages for level "warning"
+
+[WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:27
+[WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:53127.0.0.1 - - [02/Nov/2026 21:02:00] "HEAD / HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 21:02:04] "GET /?r=fresh2 HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 21:02:04] "GET /input_audio.js HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 21:02:04] "GET /render_timing.js HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 21:02:04] "GET /audio_web.js HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 21:02:04] "GET /doom.js HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 21:02:04] "GET /doom.data HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 21:02:04] "GET /doom.wasm HTTP/1.1" 200 -
+)
+
+Calling Bash()
+
+Bash response → "server stopped: 0"
+The report is written with a FINDINGS verdict, because a few checks weren't done. The game itself starts and runs correctly at localhost:8000.
+
+- **Server:** Nothing was listening on port 8000, so I started `python3 http.server` on `dist/` and stopped it afterwards. `make` had nothing to rebuild, and the `web/` files match `dist/`.
+- **Loading:** `index.html` and all six resources (`input_audio.js`, `audio_web.js`, `render_timing.js`, `doom.js`, `doom.data`, `doom.wasm`) returned 200. The server log shows every asset was requested, so none came from the browser cache.
+- **Canvas:** It is 640x400, shown at 1152x720 with the aspect ratio kept. The frame counter went from 497 to 567 in one second, so the main loop is running.
+- **Screenshot:** It shows the attract demo with the HUD and "YOU GOT THE SHOTGUN!". The colours look right, with no red/blue swap or corruption.
+- **Console:** There were 0 errors. The 2 warnings say the AudioContext can't start before a user gesture (`audio_web.js:27` and `:53`). That is normal browser behaviour. I left it as a minor note for `coder_input_audio`, the same as in the prior run.
+
+I did not check:
+- precise time to first frame
+- a clean rebuild
+- browsers other than headless Chromium
+- other viewport sizes
+- audio after a user gesture, which belongs to `reviewer_gameplay`
+
+The prior report's findings are unchanged.
+
+I wrote nothing outside the output directory, apart from the Playwright captures in `artifacts/browser/`.
+
+Everything is in `artifacts/logs/reviewer_site.Rm0IxG/`:
+- `report.md`
+- `startup.png`
+- `console.txt`
+- `server.log`

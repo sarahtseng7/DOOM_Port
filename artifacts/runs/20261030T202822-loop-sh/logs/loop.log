@@ -1,0 +1,35 @@
+=== Iteration 1/2 ===
+The following environment variables must be set:
+ - ANTHROPIC_API_KEY
+
+Provide them using any of these sources:
+ - Shell environment:      export ANTHROPIC_API_KEY=<value>
+ - Env file:               docker agent run --env-from-file <file> ...
+ - Docker Agent env file:  docker agent setup (stores the key in ~/.config/cagent/.env)
+
+See https://docs.docker.com/ai/docker-agent/guides/secrets/ for details.
+
+No API key? Run a local model instead: docker agent run --model dmr/ai/qwen3 ...
+(the model is pulled on first use; `docker model ls` shows models already pulled)
+Or run `docker agent setup` to configure a provider or local model interactively.
+Step-by-step model setup (API key or local): https://docker.github.io/docker-agent/getting-started/set-up-a-model/
+
+Tests failed. Starting next iteration...
+=== Iteration 2/2 ===
+The following environment variables must be set:
+ - ANTHROPIC_API_KEY
+
+Provide them using any of these sources:
+ - Shell environment:      export ANTHROPIC_API_KEY=<value>
+ - Env file:               docker agent run --env-from-file <file> ...
+ - Docker Agent env file:  docker agent setup (stores the key in ~/.config/cagent/.env)
+
+See https://docs.docker.com/ai/docker-agent/guides/secrets/ for details.
+
+No API key? Run a local model instead: docker agent run --model dmr/ai/qwen3 ...
+(the model is pulled on first use; `docker model ls` shows models already pulled)
+Or run `docker agent setup` to configure a provider or local model interactively.
+Step-by-step model setup (API key or local): https://docker.github.io/docker-agent/getting-started/set-up-a-model/
+
+Tests failed. Starting next iteration...
+Maximum iterations reached.

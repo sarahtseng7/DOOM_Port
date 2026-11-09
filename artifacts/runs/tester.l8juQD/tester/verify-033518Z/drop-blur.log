@@ -1,0 +1,38 @@
+PASS       B0.dist-present 
+PASS       B1.canvas-640x400 canvas#canvas intrinsic size
+PASS       B2.boot-renders-frame after 209ms colors=240
+PASS       B3.opaque-pixels transparentFrac=0
+PASS       B4.channel-order meanR=109.8 meanB=30.7 (title/menu are warm; swap => blue)
+PASS       B5.no-load-errors 
+PASS       T1.main-thread-responsive 60.0 rAF/s over 3s (need >=20)
+PASS       M1.enter-opens-menu diff=0.234
+PASS       G1.level-started diff-from-menu=0.93 statusbarColors=86
+PASS       B6.level-colors E1M1 view not blue-biased
+PASS       G1b.engine-state-e1m1 {"x":1056,"y":-3616,"angle":1073741824,"health":100,"level":101}
+PASS       G2.idle-stable diff=0.0000
+PASS       I1.turn-right shift=-75px err=3.7 err0=6.4
+PASS       I2.turn-stops-on-release diff=0.0000
+PASS       I3.turn-left shift=75px
+PASS       I4.forward-moves start-vs-mid=0.684 still-moving=0.601
+PASS       I4b.forward-moves-player moved 401 map units (need >=32)
+PASS       I5.forward-stops-on-release settled=true after 2119ms (momentum allowed up to 4s); later-diff=0.0001
+PASS       I6.backward-returns start-to-fwd=401 start-to-back=85 map units (pixel diff for reference: 0.368 vs 0.532)
+PASS       I7a.turn-held-keeps-changing diff=0.3598 (precondition: key effective before blur)
+FAIL       I7.blur-releases-keys settled=false after 4083ms; later-diff=0.3900 (key still physically down)
+PASS       C1.fire-animates view-diff=0.0311
+PASS       C2.fire-decrements-ammo ammo-region-diff=0.140 (persisting after weapon returns to rest)
+PASS       C3.fire-stops-on-release diff=0.0008
+PASS       U1.automap-toggles diff=0.654
+PASS       U2.automap-returns diff=0.000
+PASS       U3.escape-opens-menu diff=0.241
+PASS       U4.escape-closes-menu diff=0.241
+PASS       U5.menu-freezes-player coasting-before-menu=21.5u/120ms; frozen-in-menu moved=0.0u tics=52 over 1.5s
+PASS       E1.browser-shortcuts-not-blocked {"f5":false,"ctrlR":false,"up":true}
+FAIL       E2a.pagehide-releases-keys precondition-turning=true settled=false later-diff=0.7602
+FAIL       E2b.hidden-releases-keys precondition-turning=true settled=false later-diff=0.7409
+FAIL       X.harness-exception locator.screenshot: Target page, context or browser has been closed     at shot (/Users/sarahtseng/Projects/fellowship-loop-capstone/tests/playtest.mjs:70:45)     at settle (/Users/sarahtseng/Projects/fellowship-loop-capstone/tests/playtest.mjs:79:72)
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3c.level-exit walking through the door is checked (G3b); no route/oracle yet for finishing E1M1 (needs scripted route or coder level-exit hook)
+UNVERIFIED H1.hidden-tab-timing headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)
+playtest: FAIL failed=4 unverified(not-in-scope, listed)=4

@@ -1,0 +1,104 @@
+{
+  "status": "FAIL",
+  "quick": false,
+  "soak_seconds": 300,
+  "failed": 1,
+  "unverified": 4,
+  "results": [
+    {
+      "id": "B0.dist-present",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "B1.canvas-640x400",
+      "status": "PASS",
+      "detail": "canvas#canvas intrinsic size"
+    },
+    {
+      "id": "B2.boot-renders-frame",
+      "status": "PASS",
+      "detail": "after 137ms colors=240"
+    },
+    {
+      "id": "B3.opaque-pixels",
+      "status": "PASS",
+      "detail": "transparentFrac=0"
+    },
+    {
+      "id": "B4.channel-order",
+      "status": "PASS",
+      "detail": "meanR=109.8 meanB=30.7 (title/menu are warm; swap => blue)"
+    },
+    {
+      "id": "B5.no-load-errors",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "T1.main-thread-responsive",
+      "status": "PASS",
+      "detail": "43.3 rAF/s over 3s (need >=20)"
+    },
+    {
+      "id": "M1.enter-opens-menu",
+      "status": "PASS",
+      "detail": "diff=0.234"
+    },
+    {
+      "id": "G1.level-started",
+      "status": "PASS",
+      "detail": "diff-from-menu=0.93 statusbarColors=82"
+    },
+    {
+      "id": "B6.level-colors",
+      "status": "PASS",
+      "detail": "E1M1 view not blue-biased"
+    },
+    {
+      "id": "G1b.engine-state-e1m1",
+      "status": "PASS",
+      "detail": "{\"x\":1056,\"y\":-3616,\"angle\":1073741824,\"health\":100,\"level\":101}"
+    },
+    {
+      "id": "G2.idle-stable",
+      "status": "PASS",
+      "detail": "diff=0.0000"
+    },
+    {
+      "id": "I1.turn-right",
+      "status": "PASS",
+      "detail": "shift=-75px err=3.7 err0=6.4"
+    },
+    {
+      "id": "I2.turn-stops-on-release",
+      "status": "PASS",
+      "detail": "diff=0.0000"
+    },
+    {
+      "id": "X.harness-exception",
+      "status": "FAIL",
+      "detail": "locator.screenshot: Timeout 29994.60500000001ms exceeded. Call log: \u001b[2m  - taking element screenshot\u001b[22m"
+    },
+    {
+      "id": "A1.audio",
+      "status": "UNVERIFIED",
+      "detail": "scope undecided; an active AudioContext would not prove correct sound/music"
+    },
+    {
+      "id": "P1.save-persistence",
+      "status": "UNVERIFIED",
+      "detail": "scope undecided"
+    },
+    {
+      "id": "G3.door-use-and-level-exit",
+      "status": "UNVERIFIED",
+      "detail": "no door/sector oracle exported (player pos/angle/health/level only); needs coder sector/line export"
+    },
+    {
+      "id": "H1.hidden-tab-timing",
+      "status": "UNVERIFIED",
+      "detail": "headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)"
+    }
+  ]
+}

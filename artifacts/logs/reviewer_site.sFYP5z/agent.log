@@ -1,0 +1,360 @@
+
+Calling Bash()
+
+Bash response → (
+artifacts/logs/reviewer_site.sFYP5z:
+agent.log
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+)
+
+Calling Bash()
+
+Bash response → (
+# Site and startup review
+
+You are `reviewer_site`.
+
+Review build/startup and actual browser loading at http://localhost:8000.
+Write no source, tests, or build files. You may run the existing build and start a
+local HTTP server without modifying source; stop only a server you started.
+Use Playwright MCP (or existing browser scripts) to verify the page, canvas, fresh
+JS/WASM/WAD loading, console/network failures, initial image, colors, and startup
+responsiveness. Ensure an existing port-8000 server serves this project's current
+build; do not kill an unknown service or accept an unrelated page as evidence.
+Leave movement, combat, and audio depth to reviewer_gameplay. Report actionable
+faults to the relevant coder. PASS requires actual observed startup, not inspection
+alone. Keep evidence in OUTPUT_DIR; screenshots are supporting evidence, not all
+of acceptance. Browser tools do not grant permission to patch files.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+FINDINGS
+
+Startup observed working on the current dist/ build at http://localhost:8000: all assets loaded (HTTP 200), no console errors, healthy render. FINDINGS (not PASS) because the first tic-rate window after load was low again (23/s, third consecutive run) and cold cache, time-to-first-frame, post-gesture audio and other browsers/viewports are unverified.
+
+## Source identity
+HEAD e500c44 + uncommitted changes. `git diff HEAD` sha256 prefix fe88782d1c55d299 and dist/doom.wasm prefix 7afb94fa1ec64b5c, both identical to the prior reports. `make -n`: "Nothing to be done". No rebuild by me.
+
+## Work
+- Read AGENTS.md, loop/prompts/REVIEWER.md, README.md, artifacts/reports/*, Makefile. specification.md and acceptance-criteria.md do not exist.
+- Port 8000 had no listener (lsof empty), so no existing server to validate. I served this project's dist/ with `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist` (PID in server.pid), then stopped it; port confirmed closed.
+- Playwright MCP (headless Chromium) loaded `/?r=site2`: title "DOOM Shareware", canvas 640x400, `cap_ready()`=1.
+- Network: 6 subresources, all 200 (input_audio.js, audio_web.js, render_timing.js, doom.js, doom.data 4.2 MB, doom.wasm 556 KB). server.log has no non-200 responses.
+- Console: 0 errors, 2 warnings (AudioContext not allowed to start before a user gesture, audio_web.js:27 and :53).
+- Canvas: 90 distinct sampled colours (not blank). startup.png (viewed): correct colours (no red/blue swap), HUD intact (49 ammo, 100% health/armor, face, arms, ammo table), "PICKED UP THE ARMOR.", an enemy and a medikit visible, i.e. gameplay or demo already running.
+- Tic rate: first 3 s window 23/s; then 35.0, 35.3, 35.0/s.
+
+## Evidence (this directory)
+startup.png, console.txt, server.log, server.pid. Playwright captures also in artifacts/browser/.
+
+## Findings
+1. Low, owner coder_render_timing: the first tic-rate window after load reads low (17/s, 23/s, 23/s in three runs), then steady 35/s. It is reproducible, so likely real warm-up (wasm compile, asyncify) or headless throttling. I did not isolate the cause. Relevant if startup smoothness is a criterion.
+2. Minor, owner coder_input_audio: AudioContext autoplay warning before a gesture. This is browser policy and expected. Post-gesture audio belongs to reviewer_gameplay or a human.
+3. Cosmetic, owner coder: the previous report says the static title in web/index.html ("Doom (WASM)") differs from the runtime title ("DOOM Shareware"). I observed only the runtime title and did not re-inspect the source.
+4. No blocking loading or startup defect.
+
+## Not verified
+Cold cache (the query string busts only the HTML URL), time to first frame and title screen (I sampled after load, demo already running), clean rebuild (tester ran one), Firefox/Safari, other viewports/HiDPI, audio after a gesture.
+
+## Assumptions
+- Headless Playwright Chromium. Pass criteria: page loads, no required asset fails, canvas shows plausible colours, tic count advances ~35/s.
+- Criteria are agent-proposed, not student-approved.
+- I wrote only into this OUTPUT_DIR plus Playwright captures in artifacts/browser/. No source, tests, loop or config edits; no result.json. Manual interventions: none.
+
+## Next action
+coder_render_timing: investigate the low first-window tic rate. Tester or human: cold-cache, first-frame timing and cross-browser checks.
+
+Calling Bash()
+
+Bash response → (
+artifacts/logs/reviewer_site.sFYP5z:
+agent.log
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+)
+
+Calling Bash()
+build:
+platform
+third_party
+
+dist:
+audio_web.js
+doom.data
+doom.js
+doom.wasm
+index.html
+input_audio.js
+render_timing.js
+
+web:
+audio_web.js
+index.html
+input_audio.js
+render_timing.js
+# Building the Doom WebAssembly port
+
+Toolchain: Emscripten **4.0.18** (`source ~/Developer/emsdk/emsdk_env.sh`), GNU make, Node (tests only).
+
+    make        # builds build/*.o and dist/{index.html,doom.js,doom.wasm,doom.data}
+    make clean  # removes build/ and dist/
+
+- Engine sources: all `third_party/doomgeneric/*.c` except `dummy.c`, `doomgeneric_sdl.c`; platform code: `platform/*.c`.
+- WAD packaging: `assets/doom1.wad` is embedded via `--preload-file` at `/doom1.wad` in `dist/doom.data`.
+- `web/index.html` is copied to `dist/index.html`. Serve `dist/` over HTTP (not `file://`).
+- Audio: built with `-DFEATURE_SOUND -Iplatform/audio_compat` (stub SDL_mixer.h); `web/audio_web.js` provides the Web Audio backend. Scripts load before doom.js: input_audio.js, audio_web.js, render_timing.js.
+- JS/C bridge exports are listed in the Makefile `EXPORTED_FUNCTIONS`; see `platform/capstone_bridge.h`.
+- Bridge v4 adds read-only player diagnostics (`_cap_player_valid/x/y/angle/health`, `_cap_level_id`) for position-based checks.
+- Bridge v5 adds read-only sector exports (`_cap_sector_count/floor/ceiling(i)`, `_cap_player_sector`) so a tester can detect a door opening (ceiling rises) or a lift moving.
+- Acceptance: `tests/verify.sh` (tester-owned); `QUICK=1` is partial and never exits 0.
+
+## Serving
+
+After `make`, serve `dist/` on port 8000 and open <http://localhost:8000/>:
+
+```sh
+python3 -m http.server 8000 --bind 127.0.0.1 --directory dist
+```
+)
+
+Calling Bash()
+
+Bash response → (
+e500c44
+c9b3c829ca2c5a67
+7afb94fa1ec64b5c
+make: Nothing to be done for `all'.
+html-same
+)
+
+Calling Bash()
+
+Calling ToolSearch()
+
+Bash response → "200\n44464"
+
+ToolSearch response → "Completed by external harness."
+
+Calling mcp__playwright__browser_navigate()
+
+mcp__playwright__browser_navigate response → (
+### Ran Playwright code
+```js
+await page.goto('http://localhost:8000/?r=site3');
+```
+### Page
+- Page URL: http://localhost:8000/?r=site3
+- Page Title: DOOM Shareware
+- Console: 0 errors, 2 warnings
+### Snapshot
+- [Snapshot](artifacts/browser/page-2026-11-03T23-50-20-060Z.yml)
+### Events
+- New console entries: artifacts/browser/console-2026-11-03T23-50-19-736Z.log#L1-L35
+)
+Page loaded in Playwright. Next I'm sampling the canvas and tic rate, then I'll take a screenshot.
+Calling mcp__playwright__browser_evaluate()
+
+Calling mcp__playwright__browser_take_screenshot()
+
+Calling mcp__playwright__browser_network_requests()
+
+Calling mcp__playwright__browser_console_messages()
+
+mcp__playwright__browser_evaluate response → (
+### Result
+{
+  "title": "DOOM Shareware",
+  "w": 640,
+  "h": 400,
+  "ready": 1,
+  "colors": 203,
+  "ctx2d": true,
+  "fns": [
+    "_cap_tic_count"
+  ]
+}
+### Ran Playwright code
+```js
+await page.evaluate('async () => { const c=document.querySelector(\'canvas\'); const d=c.getContext(\'2d\')?.getImageData(0,0,c.width,c.height).data; const s=new Set(); if(d) for(let i=0;i<d.length;i+=4*97) s.add(d[i]+\',\'+d[i+1]+\',\'+d[i+2]); return {title:document.title,w:c.width,h:c.height,ready:typeof Module!==\'undefined\'&&Module._cap_ready?Module._cap_ready():null,colors:s.size,ctx2d:!!d, fns:typeof Module!==\'undefined\'?Object.keys(Module).filter(k=>/cap_.*tic/i.test(k)):null}; }');
+```
+)
+
+mcp__playwright__browser_console_messages response → "### Result\n- [Console](artifacts/logs/reviewer_site.sFYP5z/console.txt)"
+
+mcp__playwright__browser_network_requests response → "### Result\n- [Network](artifacts/logs/reviewer_site.sFYP5z/network.txt)"
+
+mcp__playwright__browser_take_screenshot response → (
+### Result
+- [Screenshot of viewport](artifacts/logs/reviewer_site.sFYP5z/startup.png)
+### Ran Playwright code
+```js
+// Screenshot viewport and save it as artifacts/logs/reviewer_site.sFYP5z/startup.png
+await page.screenshot({
+  path: 'artifacts/logs/reviewer_site.sFYP5z/startup.png',
+  scale: 'css',
+  type: 'png'
+});
+```
+)
+
+Calling mcp__playwright__browser_evaluate()
+
+Calling Read()
+
+Calling Bash()
+
+mcp__playwright__browser_evaluate response → (
+### Result
+[
+  35,
+  35,
+  35
+]
+### Ran Playwright code
+```js
+await page.evaluate('async () => { const r=[]; for(let i=0;i<3;i++){const a=Module._cap_tic_count();await new Promise(s=>setTimeout(s,3000));r.push((Module._cap_tic_count()-a)/3);} return r; }');
+```
+)
+
+Read response → "Completed by external harness."
+
+Bash response → (
+1. [GET] http://localhost:8000/?r=site3 => [200] OK
+2. [GET] http://localhost:8000/input_audio.js => [200] OK
+3. [GET] http://localhost:8000/audio_web.js => [200] OK
+4. [GET] http://localhost:8000/render_timing.js => [200] OK
+5. [GET] http://localhost:8000/doom.js => [200] OK
+6. [GET] http://localhost:8000/doom.data => [200] OK
+7. [GET] http://localhost:8000/doom.wasm => [200] OK1
+Total messages: 35 (Errors: 0, Warnings: 2)
+[WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:27
+[WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:53
+   8 200
+)
+The screenshot shows heavy red, blue and yellow column garbage in the 3D view. The prior report called the render healthy, so I'm checking whether this is persistent or a one-frame glitch.
+Calling mcp__playwright__browser_take_screenshot()
+
+Calling mcp__playwright__browser_navigate()
+
+mcp__playwright__browser_take_screenshot response → (
+### Result
+- [Screenshot of viewport](artifacts/logs/reviewer_site.sFYP5z/startup2.png)
+### Ran Playwright code
+```js
+// Screenshot viewport and save it as artifacts/logs/reviewer_site.sFYP5z/startup2.png
+await page.screenshot({
+  path: 'artifacts/logs/reviewer_site.sFYP5z/startup2.png',
+  scale: 'css',
+  type: 'png'
+});
+```
+)
+
+mcp__playwright__browser_navigate response → (
+### Ran Playwright code
+```js
+await page.goto('http://localhost:8000/?r=site4');
+```
+### Page
+- Page URL: http://localhost:8000/?r=site4
+- Page Title: DOOM Shareware
+- Console: 0 errors, 2 warnings
+### Snapshot
+- [Snapshot](artifacts/browser/page-2026-11-03T23-50-43-471Z.yml)
+### Events
+- New console entries: artifacts/browser/console-2026-11-03T23-50-43-333Z.log#L1-L35
+)
+
+Calling mcp__playwright__browser_take_screenshot()
+
+Calling Read()
+
+mcp__playwright__browser_take_screenshot response → (
+### Result
+- [Screenshot of viewport](artifacts/logs/reviewer_site.sFYP5z/startup3_reload.png)
+### Ran Playwright code
+```js
+// Screenshot viewport and save it as artifacts/logs/reviewer_site.sFYP5z/startup3_reload.png
+await page.screenshot({
+  path: 'artifacts/logs/reviewer_site.sFYP5z/startup3_reload.png',
+  scale: 'css',
+  type: 'png'
+});
+```
+)
+
+Read response → "Completed by external harness."
+
+Calling Read()
+
+Read response → "Completed by external harness."
+The garbage frame is just Doom's normal screen-melt wipe from the title logo into the demo, not a render bug. I'm shutting down my server and writing up the report.
+
+
+Calling Bash()
+
+Bash response → (0)
+The result is FINDINGS, not PASS. The page loads and starts correctly on the current `dist/` build, but several checks are still unverified. The report is at `artifacts/logs/reviewer_site.sFYP5z/report.md`.
+
+Port 8000 had no listener, so I served this project's `dist/` myself with `python3 -m http.server` and stopped it afterwards. The port is closed again.
+
+**What I observed in headless Chromium:**
+- **Loading:** the HTML, `doom.js`, `doom.wasm`, `doom.data` and the three helper scripts all returned 200, and the console had 0 errors.
+- **Warnings:** two AudioContext "needs a user gesture" warnings, which are expected browser behaviour.
+- **Startup:** a fresh reload showed the Doom title screen with correct colours. Seconds later, the demo was running with the HUD intact.
+- **Speed:** after settling, the game ran at a steady 35 tics/s.
+- **Corrupt-looking frame:** one early screenshot showed red, blue and yellow strips with no HUD. I judged it to be Doom's normal screen-melt wipe, because a clean frame followed seconds later. I didn't confirm that with frame-by-frame capture.
+
+**Still open or unverified:**
+- **Tic rate at load:** earlier reports saw a low first-window tic rate (17–23/s) at load. I didn't re-measure it, so it stays with `coder_render_timing`.
+- **Not tested:** cold cache, time to first frame, other browsers and viewports, a clean rebuild, and audio after a gesture.
+- **Diff hash:** the `git diff HEAD` hash differs from the prior reports', so tracked files changed since then. I didn't investigate what changed. The built `doom.wasm` is identical to the prior run's, and `make` has nothing to rebuild.
+
+I edited no source, tests or config, only this output directory plus Playwright captures in `artifacts/browser/`.

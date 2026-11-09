@@ -1,0 +1,9 @@
+PASS entered-e1m1 {"tic":388,"lvl":101,"valid":1,"hp":100,"x":1056,"y":-3616,"ang":1073741824,"sec":38,"sfx":3,"mus":3}
+PASS diagonal-forward-plus-strafe-right {"fwd":82,"right":87,"dAng":0}
+PASS arc-forward-plus-turn-left {"dAng":43.95,"moved":113.8}
+PASS reached-door-front {"x":1484,"y":-2488,"ang":358.6}
+PASS closed-door-blocks {"x":1519,"y":-2490}
+PASS door-use-sfx {"sfxDelta":3}
+PASS open-door-passable {"x":1719,"y":-2495,"sec":7}
+PASS no-page-errors []
+SUMMARY pass=8 fail=0

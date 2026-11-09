@@ -1,0 +1,802 @@
+{
+  "note": "window.__samples from cold load; duplicated probe because init script registered twice (first attempt aborted on require)",
+  "samples": [
+    {
+      "t": 6,
+      "ready": null,
+      "tic": null,
+      "transp": 2640,
+      "mean": [
+        0,
+        0,
+        0
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "Doom (WASM)"
+    },
+    {
+      "t": 12,
+      "ready": null,
+      "tic": null,
+      "transp": 2640,
+      "mean": [
+        0,
+        0,
+        0
+      ],
+      "title": "Doom (WASM)"
+    },
+    {
+      "t": 116,
+      "ready": 1,
+      "tic": 2,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 125,
+      "ready": 1,
+      "tic": 2,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 223,
+      "ready": 1,
+      "tic": 6,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 237,
+      "ready": 1,
+      "tic": 6,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 340,
+      "ready": 1,
+      "tic": 10,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 356,
+      "ready": 1,
+      "tic": 10,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 451,
+      "ready": 1,
+      "tic": 14,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 466,
+      "ready": 1,
+      "tic": 14,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 568,
+      "ready": 1,
+      "tic": 18,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 583,
+      "ready": 1,
+      "tic": 18,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 678,
+      "ready": 1,
+      "tic": 22,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 694,
+      "ready": 1,
+      "tic": 22,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 792,
+      "ready": 1,
+      "tic": 26,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 808,
+      "ready": 1,
+      "tic": 26,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 904,
+      "ready": 1,
+      "tic": 30,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 919,
+      "ready": 1,
+      "tic": 30,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 1016,
+      "ready": 1,
+      "tic": 34,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 1041,
+      "ready": 1,
+      "tic": 35,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 1125,
+      "ready": 1,
+      "tic": 38,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 1149,
+      "ready": 1,
+      "tic": 38,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 1243,
+      "ready": 1,
+      "tic": 42,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 1264,
+      "ready": 1,
+      "tic": 42,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 1358,
+      "ready": 1,
+      "tic": 46,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 1377,
+      "ready": 1,
+      "tic": 46,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 1469,
+      "ready": 1,
+      "tic": 50,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 1491,
+      "ready": 1,
+      "tic": 50,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 1584,
+      "ready": 1,
+      "tic": 54,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 1599,
+      "ready": 1,
+      "tic": 54,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 1700,
+      "ready": 1,
+      "tic": 58,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 1715,
+      "ready": 1,
+      "tic": 58,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 1814,
+      "ready": 1,
+      "tic": 62,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 1830,
+      "ready": 1,
+      "tic": 62,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 1931,
+      "ready": 1,
+      "tic": 66,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 1946,
+      "ready": 1,
+      "tic": 66,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 2047,
+      "ready": 1,
+      "tic": 70,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 2061,
+      "ready": 1,
+      "tic": 70,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 2158,
+      "ready": 1,
+      "tic": 74,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 2174,
+      "ready": 1,
+      "tic": 74,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 2273,
+      "ready": 1,
+      "tic": 78,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 2289,
+      "ready": 1,
+      "tic": 78,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 2390,
+      "ready": 1,
+      "tic": 82,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 2407,
+      "ready": 1,
+      "tic": 82,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 2505,
+      "ready": 1,
+      "tic": 86,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 2518,
+      "ready": 1,
+      "tic": 86,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 2616,
+      "ready": 1,
+      "tic": 90,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 2633,
+      "ready": 1,
+      "tic": 90,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 2731,
+      "ready": 1,
+      "tic": 94,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 2747,
+      "ready": 1,
+      "tic": 94,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 2846,
+      "ready": 1,
+      "tic": 98,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 2866,
+      "ready": 1,
+      "tic": 98,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 2959,
+      "ready": 1,
+      "tic": 102,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 2977,
+      "ready": 1,
+      "tic": 102,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 3074,
+      "ready": 1,
+      "tic": 106,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 3091,
+      "ready": 1,
+      "tic": 106,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 3190,
+      "ready": 1,
+      "tic": 110,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "cw": 640,
+      "ch": 400,
+      "title": "DOOM Shareware"
+    },
+    {
+      "t": 3206,
+      "ready": 1,
+      "tic": 111,
+      "transp": 0,
+      "mean": [
+        109,
+        50,
+        30
+      ],
+      "title": "DOOM Shareware"
+    }
+  ],
+  "resources": [
+    {
+      "name": "/input_audio.js",
+      "dur": 3,
+      "size": 4448,
+      "start": 11
+    },
+    {
+      "name": "/audio_web.js",
+      "dur": 3,
+      "size": 18871,
+      "start": 11
+    },
+    {
+      "name": "/render_timing.js",
+      "dur": 4,
+      "size": 1489,
+      "start": 11
+    },
+    {
+      "name": "/doom.js",
+      "dur": 4,
+      "size": 76884,
+      "start": 11
+    },
+    {
+      "name": "/doom.data",
+      "dur": 15,
+      "size": 4196320,
+      "start": 17
+    },
+    {
+      "name": "/doom.wasm",
+      "dur": 3,
+      "size": 555931,
+      "start": 18
+    }
+  ],
+  "nav": {
+    "dcl": 27,
+    "load": 27,
+    "transfer": 1187
+  }
+}

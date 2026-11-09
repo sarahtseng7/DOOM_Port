@@ -1,0 +1,39 @@
+Wed Nov  4 11:02:00 UTC 2026
+e500c440656622db5ab3f8fb7df73d8b5998eeb3
+ M loop/agents.yaml
+ M loop/loop.sh
+ M platform/doomgeneric_wasm.c
+ M tests/README.md
+ M web/index.html
+?? .claude/
+?? .mcp.json
+?? BUILD.md
+?? Makefile
+?? artifacts/browser/
+?? artifacts/logs/
+?? artifacts/reports/
+?? artifacts/runs/
+?? loop/DESIGN_DECISION_QUESTIONS.md
+?? loop/playwright-mcp.sh
+?? loop/prompts/
+?? loop/run-command.py
+?? platform/audio_compat/
+?? platform/audio_web.c
+?? platform/cap_fallback.c
+?? platform/capstone_bridge.h
+?? platform/engine_stubs.c
+?? platform/input_audio.c
+?? platform/input_audio.h
+?? platform/render_timing.c
+?? platform/render_timing.h
+?? tests/faults.sh
+?? tests/lib/
+?? tests/package-lock.json
+?? tests/package.json
+?? tests/playtest.mjs
+?? tests/selftest.mjs
+?? tests/verify.sh
+?? web/audio_web.js
+?? web/input_audio.js
+?? web/render_timing.js
+diff-sha: 92e25d7245a7dafd95654fdf4a5be51c69e9877cb1b2faeea0b516e33a94a67f  -

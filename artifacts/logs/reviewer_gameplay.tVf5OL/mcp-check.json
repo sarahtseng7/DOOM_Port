@@ -1,0 +1,10 @@
+{"note":"Playwright MCP run_code, http://127.0.0.1:8197/, Esc,Enter,Enter,Enter -> new game (default skill)",
+ "s0":{"tic":364,"lvl":101,"x":1056,"y":-3616,"ang":1073741824,"sfx":21},
+ "s1_up_held_700ms":{"tic":389,"x":1055,"y":-3482},
+ "s2_2s_after_release":{"tic":459,"x":1055,"y":-3409},
+ "s3_+500ms":{"tic":477,"x":1055,"y":-3409},
+ "s4_left_500ms_+300ms":{"tic":505,"ang":1723858944},
+ "s5_+700ms":{"tic":530,"ang":1723858944},
+ "s6_ctrl_tap":{"tic":563,"sfx":22},
+ "audio":{"sfxBad":0,"musicErrors":0,"ctxState":"running","maxPeak":0.599,"musicStarted":3},
+ "console":"0 errors, 2 warnings (pre-gesture autoplay)"}

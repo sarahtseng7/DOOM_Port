@@ -1,0 +1,123 @@
+{
+ "audioBeforeGesture": {
+  "state": "suspended",
+  "stats": {
+   "sfxRequested": 0,
+   "sfxPlayed": 0,
+   "sfxSuppressed": 0,
+   "sfxBad": 0,
+   "musicRequested": 1,
+   "musicStarted": 1,
+   "notesScheduled": 0,
+   "musicErrors": 0,
+   "maxPeak": 0,
+   "lastPeak": 0,
+   "ctxState": "suspended",
+   "sampleRate": 48000,
+   "sfxChannelsActive": 0,
+   "musicPlaying": true,
+   "musicVoices": 0
+  },
+  "music": true
+ },
+ "start": {
+  "x": 1056,
+  "y": -3616,
+  "a": 1073741824,
+  "h": 100,
+  "l": 101,
+  "t": 249
+ },
+ "audioInLevel": {
+  "state": "running",
+  "stats": {
+   "sfxRequested": 3,
+   "sfxPlayed": 3,
+   "sfxSuppressed": 0,
+   "sfxBad": 0,
+   "musicRequested": 3,
+   "musicStarted": 3,
+   "notesScheduled": 70,
+   "musicErrors": 0,
+   "maxPeak": 0.41010797023773193,
+   "lastPeak": 0.04162178188562393,
+   "ctxState": "running",
+   "sampleRate": 48000,
+   "sfxChannelsActive": 0,
+   "musicPlaying": true,
+   "musicVoices": 5
+  },
+  "music": true
+ },
+ "speedBeforeBlur": 98,
+ "blur": {
+  "movedAfter": 0,
+  "ticsAdvanced": 28
+ },
+ "turnDeltaBAM": 54.4921875,
+ "fire": {
+  "before": {
+   "sfxRequested": 3,
+   "sfxPlayed": 3,
+   "sfxSuppressed": 0,
+   "sfxBad": 0,
+   "musicRequested": 3,
+   "musicStarted": 3,
+   "notesScheduled": 119,
+   "musicErrors": 0,
+   "maxPeak": 0.41010797023773193,
+   "lastPeak": 0.010296200402081013,
+   "ctxState": "running",
+   "sampleRate": 48000,
+   "sfxChannelsActive": 0,
+   "musicPlaying": true,
+   "musicVoices": 10
+  },
+  "after": {
+   "sfxRequested": 3,
+   "sfxPlayed": 3,
+   "sfxSuppressed": 0,
+   "sfxBad": 0,
+   "musicRequested": 3,
+   "musicStarted": 3,
+   "notesScheduled": 133,
+   "musicErrors": 0,
+   "maxPeak": 0.41010797023773193,
+   "lastPeak": 0.049966033548116684,
+   "ctxState": "running",
+   "sampleRate": 48000,
+   "sfxChannelsActive": 0,
+   "musicPlaying": true,
+   "musicVoices": 14
+  }
+ },
+ "menuOpen": {
+  "ticsAdvancedIn1s": 35
+ },
+ "menuClosed": {
+  "ticsAdvancedIn1s": 35
+ },
+ "audioEnd": {
+  "state": "running",
+  "stats": {
+   "sfxRequested": 5,
+   "sfxPlayed": 5,
+   "sfxSuppressed": 0,
+   "sfxBad": 0,
+   "musicRequested": 3,
+   "musicStarted": 3,
+   "notesScheduled": 195,
+   "musicErrors": 0,
+   "maxPeak": 0.41010797023773193,
+   "lastPeak": 0.29122674465179443,
+   "ctxState": "running",
+   "sampleRate": 48000,
+   "sfxChannelsActive": 0,
+   "musicPlaying": true,
+   "musicVoices": 16
+  },
+  "music": true
+ },
+ "con": [],
+ "conCount": 35
+}

@@ -1,0 +1,231 @@
+
+Calling Bash()
+
+Bash response → (
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+(eval):1: no matches found: loop/prompts/*tester*
+# Verification
+
+Keep verification code here, including browser checks, fixtures, and tests
+for the loop itself. You design the checks; no test suite is provided.
+
+See [the acceptance criteria and evidence requirements](../README.md#evaluate-the-system-you-built).
+Document how to run your checks and what each one establishes.
+
+Save test results, logs, screenshots, and recordings in `artifacts/`.
+Keep acceptance checks outside the coder's write permissions using your
+sandbox/tool configuration; a folder name alone does not enforce access.
+
+## Suite (tester-owned; criteria are AGENT-PROPOSED, not student-approved)
+
+Run: `source ~/Developer/emsdk/emsdk_env.sh && tests/verify.sh` (RUN_ID, SOAK_SECONDS, QUICK=1 optional).
+Evidence goes to `artifacts/runs/$RUN_ID/tester/verify-*/` (identity.txt, logs, screenshots, playtest-results.json).
+Exit 0 only when tooling, build, selftest and every required playtest check pass; `QUICK=1` never exits 0.
+
+| File | Establishes |
+| --- | --- |
+| `verify.sh` | tooling check, source identity, selftest, `make clean && make all`, playtest |
+| `selftest.mjs` | pixel helpers FAIL on black, channel-swapped, transparent, static, wrongly shifted frames (no build needed) |
+| `playtest.mjs` | Chromium: load/console errors, boot frame, colors, rAF liveness, menu -> E1M1, turn/move/fire/release, blur, automap, Esc menu, soak |
+| `lib/frames.mjs` | region diff / color stats / horizontal-shift estimation on canvas screenshots |
+
+Limits: outcomes are inferred from pixels (no engine state hook); audio, persistence, door/level-exit and the
+35 tics/s rate are listed as UNVERIFIED in every result. Ammo/status regions assume the stock 320x200 layout.
+Test deps: `npm ci` in `tests/` (network needed once; Playwright 1.49.1, pngjs 7.0.0).
+)
+
+Calling Bash()
+
+Bash response → (
+# Repeatable automated verification
+
+You are `tester`.
+
+Own tests/ verification code (except explicitly student-frozen criteria/baselines).
+Deliver an executable tests/verify.sh that clean-builds and tests the game in
+Chromium, returning 0 only when all required checks genuinely pass. Create missing
+tests and test-only dependencies as needed. Automate browser actions AND assertions
+for loading, level start, controls, key release, responsiveness, and required audio.
+Use existing supplied criteria; if absent, document proposed criteria before first
+using them. Do not silently lower criteria after failures; record test corrections
+with evidence and reasons. Read reviewers' findings and turn reproducible failures
+into regression checks. Use MCP for exploration where helpful; scripts must work
+without an agent interpreting output. Preserve logs and failed evidence. Do not
+fix product source. Report unavailable tooling or unverifiable required audio as
+FINDINGS/nonzero, never skip required behavior and report PASS.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+FINDINGS
+
+Not PASS: the full `tests/verify.sh` run exited 1 because check I6.backward-returns failed. Four playtest-only reruns passed I6, but all of them were close to the threshold. I judge I6 to be a flaky or marginal check, not a confirmed product regression. I did not change it.
+
+## Source identity
+HEAD e500c440656622db5ab3f8fb7df73d8b5998eeb3 plus uncommitted changes (verify/identity.txt: dirty_diff_sha256 72688451..., tests_sha256 734bd61e...). dist/doom.wasm sha256 prefix a4c6846627bdcb21, the same as prior runs. Clean `make clean && make all` with emsdk 4.0.18. I edited no product source or tests.
+
+## Prior findings read
+artifacts/reports/ (tester, reviewer_gameplay, reviewer_site, coder*). The previous tester run had verify.sh exit 0 on the same wasm hash, and I6 passed there.
+
+## Results (evidence: verify.out, verify/)
+- `tests/verify.sh` (OUT_DIR absolute, SOAK_SECONDS=300): **exit=1**. Tooling, selftest and clean build were OK. Playtest: failed=1, unverified=5. Because the playtest failed, verify.sh skipped fault injection (faults.sh), so fault detection was not exercised in this run.
+- **FAIL I6.backward-returns**: start-vs-back=0.394, start-vs-fwd=0.496. The check requires back < 0.7 * fwd (0.347), and the observed ratio was 0.79. Screens: verify/screens/ (011-move-start through 026+).
+- All other checks passed, including I4/I5, I7/I7a, turn checks, T2 (34.96 tics/s) and the 300 s soak (R1 no errors, R2 60.0 rAF/s, R3 max longtask 0 ms, R4 23 frames differed).
+- Flakiness probe (`SOAK_SECONDS=5 node tests/playtest.mjs`, 4 reruns on the same dist; logs rerun1-4.log): I6 passed all 4 times. The back/fwd ratios were 0.60, 0.67, 0.67 and 0.69, against the 0.7 limit. That is a thin margin, and the failing run's ratio of 0.79 is not far above it.
+
+## Unresolved (owner)
+1. I6 is timing-sensitive (tester). It compares view pixel diffs after a fixed 1.1 s backward hold. Position depends on momentum and on how far the earlier forward move went, so the ratio varies run to run. Product intent (backward moves toward the start) is not clearly broken. I will not loosen the threshold without a decision. A more robust oracle would be a position export, a longer backward hold, or checking only the direction of the change. Needs a tester change with a documented reason, or student sign-off. Until then verify.sh is non-deterministic and cannot give a stable exit 0.
+2. Fault injection was not run in this verify.sh pass. It passed 4/4 in the previous tester run on the same wasm, but there is no fresh evidence for this revision.
+3. Still UNVERIFIED (as before): A1 audio correctness (student scope), P1 save persistence (student), G3 door use and level exit (no oracle), I9 input-module identity (needs a coder diagnostic export), H1 hidden-tab timing (needs a manual protocol).
+4. Faults are browser-side only, and the criteria are agent-proposed, not student-approved.
+
+## Assumptions
+Doom default keys; headless Chromium via Playwright; no thresholds changed. The rerun probe was playtest-only with a 5 s soak, so it is not a substitute for a full verify.sh pass. Manual interventions: none. Usage: not available.
+agent.log
+)
+
+Calling Bash()
+
+Bash response → (
+PASS       B6.level-colors E1M1 view not blue-biased
+PASS       G2.idle-stable diff=0.0000
+PASS       I1.turn-right shift=-75px err=3.7 err0=6.4
+PASS       I2.turn-stops-on-release diff=0.0000
+PASS       I3.turn-left shift=75px
+PASS       I4.forward-moves start-vs-mid=0.690 still-moving=0.594
+PASS       I5.forward-stops-on-release settled=true after 2156ms (momentum allowed up to 4s); later-diff=0.0000
+PASS       I6.backward-returns start-vs-back=0.318 start-vs-fwd=0.532
+PASS       I7a.turn-held-keeps-changing diff=0.3660 (precondition: key effective before blur)
+PASS       I7.blur-releases-keys settled=true after 498ms; later-diff=0.0001 (key still physically down)
+PASS       C1.fire-animates view-diff=0.0288
+PASS       C2.fire-decrements-ammo ammo-region-diff=0.140 (persisting after weapon returns to rest)
+PASS       C3.fire-stops-on-release diff=0.0000
+PASS       U1.automap-toggles diff=0.771
+PASS       U2.automap-returns diff=0.000
+PASS       U3.escape-opens-menu diff=0.241
+PASS       U4.escape-closes-menu diff=0.241
+PASS       E1.browser-shortcuts-not-blocked {"f5":false,"ctrlR":false,"up":true}
+PASS       E2a.pagehide-releases-keys precondition-turning=true settled=true later-diff=0.0000
+PASS       E2b.hidden-releases-keys precondition-turning=true settled=true later-diff=0.0007
+PASS       E3.repeat-after-blur-is-fresh-press diff=0.3909 (view must turn again)
+PASS       E4.dual-ctrl-held-until-both-up held after one up=1, after both=0 (JS state; engine side not observable)
+PASS       I8.render-module-active Module._rt.frames 2777 -> 2847
+PASS       T2.35-tics-per-second 34.96 tics/s over 4s (need 35 +/-10%)
+PASS       R1.soak-no-errors 60s; errors=
+PASS       R2.soak-still-rendering rAF/s=60.4 visibleFrame=true
+PASS       R3.no-long-stalls max longtask=0ms (must be <1500)
+PASS       R4.soak-frames-changed sampled frames that differed: 5
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3.door-use-and-level-exit no stable cross-build oracle; manual/protocol check
+UNVERIFIED I9.input-module-identity input_audio.c has no exported diagnostic (e.g. cap_input_delivered), so a silent fallback queue cannot be told apart; needs coder export (R2-4)
+UNVERIFIED H1.hidden-tab-timing headless Chromium cannot throttle a real background tab; ASYNCIFY setTimeout catch-up unchecked (R2-6)
+playtest: PASS failed=0 unverified(not-in-scope, listed)=5
+== fault injection (checks must fail on broken behaviour)
+caught  FAULT=drop-keyup (failed: I2 I5 C3 I7)
+caught  FAULT=drop-blur (failed: I7)
+caught  FAULT=ignore-left (failed: I3 E2a E2b)
+caught  FAULT=swap-rb (failed: B4)
+exit=0
+)
+
+Calling Bash()
+
+Bash response → (
+== tooling
+== helper self-test (fault injection on pixel checks)
+ok   good frame: colourful, warm, opaque
+ok   black frame detected
+ok   R/B channel swap detected
+ok   alpha=0 (unfixed BGR0) detected
+ok   identical frames: diff 0
+ok   different frames: diff large
+ok   shift sign/size: right-moved content => +12
+ok   shift sign: left-moved => -12
+ok   static frames: no spurious shift improvement
+ok   shift beyond +-213px window is NOT reported as 240 (documents aliasing)
+ok   150ms-class shift (~90px) measured exactly
+== clean build
+== browser playtest
+PASS       B0.dist-present 
+PASS       B1.canvas-640x400 canvas#canvas intrinsic size
+PASS       B2.boot-renders-frame after 334ms colors=240
+PASS       B3.opaque-pixels transparentFrac=0
+PASS       B4.channel-order meanR=109.8 meanB=30.7 (title/menu are warm; swap => blue)
+browser-console.log
+build.log
+dist-sha256.txt
+drop-blur
+drop-blur.log
+drop-keyup
+drop-keyup.log
+faults.log
+identity.txt
+ignore-left
+commit: e500c440656622db5ab3f8fb7df73d8b5998eeb3
+dirty_diff_sha256: 7268845137456e44f4e97796bed13b9a7d40e5e9d4a1bbcb9e29420d58b8aaac
+status:  M loop/agents.yaml
+status:  M loop/loop.sh
+status:  M platform/doomgeneric_wasm.c
+status:  M tests/README.md
+status:  M web/index.html
+status: ?? .claude/
+status: ?? .mcp.json
+status: ?? BUILD.md
+)
+
+Calling Bash()
+
+Bash response → "(Bash completed with no output)"
+Verification finished and the report is written. I'll summarize it below.
+
+`tests/verify.sh` exited 0 with a 60 s soak, but I'm reporting FINDINGS rather than PASS. Five checks remain unverified.
+
+**Results**
+- **Build and selftest:** the tooling check, helper selftest and clean build all passed.
+- **Playtest:** every check passed, with no failures.
+- **I6.backward-returns:** it passed this time, with a back/forward ratio of 0.60 against the 0.7 limit. The previous run failed at 0.79, so I still treat the check as marginal. I didn't change its threshold.
+- **Timing and soak:** T2 measured 34.96 tics/s. The soak rendered at 60.4 frames/s with no long stalls.
+- **Fault injection:** it caught 4 of 4 injected faults.
+
+**Still unverified**
+- **Audio correctness (A1):** the audio scope is undecided.
+- **Save persistence (P1):** the persistence scope is undecided.
+- **Door use and level exit (G3):** there is no oracle for it.
+- **Input-module identity (I9):** it needs a diagnostic export from the coder.
+- **Hidden-tab timing (H1):** it needs a manual protocol.
+
+The soak was 60 s instead of the 300 s used in the prior run, to save time. I changed no product source or tests.
+
+The report is at `artifacts/logs/tester.QcBm5A/report.md`, with the full output in `verify.out` and the evidence in `verify/` alongside it.

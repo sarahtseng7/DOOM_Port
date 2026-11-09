@@ -1,0 +1,4 @@
+port 8000 free at start (lsof rc=1); started PID 53659: python3 -m http.server 8000 --bind 127.0.0.1 --directory dist
+COMMAND   PID       USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+Python  53659 sarahtseng    3u  IPv4 0x95204ef9a8000fe9      0t0  TCP 127.0.0.1:8000 (LISTEN)
+after kill curl: 000

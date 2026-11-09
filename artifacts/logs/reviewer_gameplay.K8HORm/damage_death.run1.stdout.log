@@ -1,0 +1,8 @@
+PASS entered-e1m1 {"tic":392,"valid":1,"lvl":101,"hp":100,"x":1056,"y":-3616,"ang":1073741824,"sfx":3,"sfxReq":3,"sfxBad":0,"mus":3}
+facing 257 1056 -3664
+PASS rocket-splash-damages-player {"firstHit":{"pre":100,"post":36,"sfxDelta":3},"hpTrace":[100,36,36,36,36,36,36,36,36,36,36,36,36]}
+PASS damage-plays-sfx {"note":"launch + explosion/pain expected","firstHit":{"pre":100,"post":36,"sfxDelta":3}}
+FAIL player-dies-at-zero-hp {"dead":null,"hpTrace":[100,36,36,36,36,36,36,36,36,36,36,36,36]}
+PASS audio-counters-clean {"sfxRequested":28,"sfxPlayed":28,"sfxBad":0}
+PASS no-page-errors []
+SUMMARY pass=5 fail=1

@@ -1,0 +1,35 @@
+diff --git a/web/index.html b/web/index.html
+index a894330..259f7c2 100644
+--- a/web/index.html
++++ b/web/index.html
+@@ -2,16 +2,27 @@
+ <html lang="en">
+ <head>
+   <meta charset="utf-8">
+-  <title>Doom (WASM)</title>
++  <title>DOOM Shareware</title>
+   <meta name="viewport" content="width=device-width, initial-scale=1">
++  <link rel="icon" href="data:,">
+   <style>
+     html, body { margin: 0; height: 100%; background: #000; }
+     body { display: flex; align-items: center; justify-content: center; }
+-    canvas { background: #111; }
++    canvas { background: #111; image-rendering: pixelated; image-rendering: crisp-edges; }
+   </style>
+ </head>
+ <body>
+   <canvas id="canvas" width="640" height="400"></canvas>
+-  <!-- Wire your build output in here. -->
++  <script>
++    var Module = {
++      canvas: document.getElementById('canvas'),
++      print: function (t) { console.log(t); },
++      printErr: function (t) { console.warn(t); }
++    };
++  </script>
++  <script src="input_audio.js"></script>
++  <script src="audio_web.js"></script>
++  <script src="render_timing.js"></script>
++  <script src="doom.js"></script>
+ </body>
+ </html>

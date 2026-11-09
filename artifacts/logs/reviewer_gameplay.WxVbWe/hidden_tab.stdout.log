@@ -1,0 +1,51 @@
+{
+ "checks": {
+  "tabReallyHidden": false,
+  "heldTurnStoppedByHide": false,
+  "gameTicksAfterReturn": true,
+  "inputWorksAfterReturn": true,
+  "audioRunningAfterReturn": true,
+  "noErrors": true
+ },
+ "ticsWhileHidden": 70,
+ "turnBeforeSwitch": -36.91,
+ "turnWhileHidden": 113.91,
+ "turnAfterReturn": 173.67,
+ "inputAfterReturn": 40.43,
+ "visEvents": [],
+ "lvl": 101,
+ "audioHidden": {
+  "sfxRequested": 4,
+  "sfxPlayed": 4,
+  "sfxSuppressed": 0,
+  "sfxBad": 0,
+  "musicRequested": 3,
+  "musicStarted": 3,
+  "notesScheduled": 114,
+  "musicErrors": 0,
+  "maxPeak": 0.42579755187034607,
+  "lastPeak": 0.2815905809402466,
+  "ctxState": "running",
+  "sampleRate": 48000,
+  "sfxChannelsActive": 0,
+  "musicPlaying": true,
+  "musicVoices": 14
+ },
+ "audioBack": {
+  "sfxRequested": 4,
+  "sfxPlayed": 4,
+  "sfxSuppressed": 0,
+  "sfxBad": 0,
+  "musicRequested": 3,
+  "musicStarted": 3,
+  "notesScheduled": 156,
+  "musicErrors": 0,
+  "maxPeak": 0.42579755187034607,
+  "lastPeak": 0.08619212359189987,
+  "ctxState": "running",
+  "sampleRate": 48000,
+  "sfxChannelsActive": 0,
+  "musicPlaying": true,
+  "musicVoices": 20
+ }
+}

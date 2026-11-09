@@ -1,0 +1,1 @@
+{"status":"READY","summary":"Verification scripts ready (tests/playtest.mjs updated: settle-polling for I5/I6/I7, wall-proof blur test, T2 tic-rate check via cap_tic_count). Selftest passes; QUICK playtest on existing dist: 0 FAIL, A1/P1/G3 UNVERIFIED. Full verify.sh (rebuild + 300s soak) not run; criteria are agent-proposed, not student-approved."}

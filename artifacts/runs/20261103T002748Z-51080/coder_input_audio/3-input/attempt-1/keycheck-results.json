@@ -1,0 +1,42 @@
+[
+ {
+  "n": "repeat dropped",
+  "ok": true,
+  "d": ""
+ },
+ {
+  "n": "blur resets",
+  "ok": true,
+  "d": ""
+ },
+ {
+  "n": "F2 repeat after blur re-presses",
+  "ok": true,
+  "d": ""
+ },
+ {
+  "n": "F5 not prevented",
+  "ok": true,
+  "d": ""
+ },
+ {
+  "n": "Ctrl+R not prevented",
+  "ok": true,
+  "d": ""
+ },
+ {
+  "n": "ArrowUp prevented",
+  "ok": true,
+  "d": ""
+ },
+ {
+  "n": "L+R ctrl release only at last",
+  "ok": true,
+  "d": "[[1,163]][[0,163]]"
+ },
+ {
+  "n": "hidden resets",
+  "ok": true,
+  "d": ""
+ }
+]

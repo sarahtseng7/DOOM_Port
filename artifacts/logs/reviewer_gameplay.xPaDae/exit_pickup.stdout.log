@@ -1,0 +1,9 @@
+PASS entered-e1m1 {"tic":392,"lvl":101,"valid":1,"hp":100,"x":1056,"y":-3616,"ang":1073741824,"sec":38,"sfx":3,"mus":3}
+PASS pickup-health-bonus {"pre":{"hp":100,"sfx":3,"x":1260,"y":-3507},"post":{"hp":101,"sfx":4,"x":1316,"y":-3520},"nearOk":true,"walkOk":true}
+PASS reached-exit-switch {"x":2956,"y":-4774,"ang":179.3,"sec":82}
+PASS exit-switch-sfx {"sfxDelta":1}
+PASS intermission-shown {"lvl":0,"interDiff":0.692,"musDelta":1}
+PASS next-level-e1m2 {"lvl":102,"hp":101,"x":-32,"y":-240,"musDelta":2}
+PASS movement-in-e1m2 {"moved":149}
+PASS no-page-errors []
+SUMMARY pass=8 fail=0

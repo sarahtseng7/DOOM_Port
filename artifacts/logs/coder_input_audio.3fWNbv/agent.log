@@ -1,0 +1,390 @@
+
+Calling Bash()
+
+Bash response → (
+artifacts/logs:
+coder_input_audio.3fWNbv
+coder_input_audio.6WSU74
+coder_input_audio.6zHSnA
+coder_input_audio.9u4tS4
+coder_input_audio.KWBVgQ
+coder_input_audio.N0e4K8
+coder_input_audio.OwOtK6
+coder_input_audio.PrVlSe
+coder_input_audio.rdvBFz
+coder_input_audio.XSXPrI
+coder_input_audio.YCG1J3
+coder_input_audio.zZGUhu
+coder_render_timing.1ZyeYK
+coder_render_timing.6XCJuY
+coder_render_timing.8nHQTI
+coder_render_timing.cK29OS
+coder_render_timing.i3pFKE
+coder_render_timing.kFsAu7
+coder_render_timing.KuIme0
+coder_render_timing.licfez
+coder_render_timing.mpRUkR
+coder_render_timing.Wkpv1o
+coder_render_timing.y2E5IZ
+coder_render_timing.zWYUzc
+coder.1Bi21x
+coder.7cXMRV
+coder.9PHBOq
+coder.CzMECd
+coder.FaD2R7
+coder.GhMtru
+coder.H58uUd
+coder.HPqFrt
+coder.ICaI0g
+coder.J22PFD
+coder.JMrJmA
+coder.kf3uJJ
+coder.lRueHg
+coder.n6GiEG
+coder.nUFHev
+coder.NWKoK5
+coder.pLDPys
+coder.Q1melD
+coder.s3mRzG
+coder.VgF4Hv
+coder.XGU7Cd
+coder.xIoyo9
+coder.Xl0uaN
+reviewer_gameplay.Bt9KSs
+reviewer_gameplay.dAPDqY
+reviewer_gameplay.facW3H
+reviewer_gameplay.GTAfxW
+reviewer_gameplay.ldSVVs
+reviewer_gameplay.Rw1fcA
+reviewer_gameplay.WeHatJ
+reviewer_gameplay.wHMOB2
+reviewer_gameplay.wQbJ7c
+reviewer_gameplay.Xy92jH
+reviewer_gameplay.ZUZV8O
+reviewer_site.f9dy0D
+reviewer_site.FDoXaA
+reviewer_site.FMO0C9
+reviewer_site.FnUrtZ
+reviewer_site.GwiGfG
+reviewer_site.msvdXx
+reviewer_site.Q4XPrg
+reviewer_site.qWTvbw
+reviewer_site.Rm0IxG
+reviewer_site.U8Ka1G
+reviewer_site.ZELzZH
+tester.3P7z9H
+tester.3Pq6Xx
+tester.8fsQdw
+tester.9SkuzA
+tester.aZlP2G
+tester.bajOBH
+tester.JAaNjg
+tester.oPtvHA
+tester.Q0YUP2
+tester.QcBm5A
+tester.QSq2Uh
+tester.QT7YlR
+tester.w2Z6BS
+verify.2u2qnP
+verify.B9OMLq
+verify.Gjtb86
+verify.Gm8XQE
+verify.hDJeOV
+verify.ICvgiu
+verify.KBbHyS
+verify.oFQ3cu
+verify.wkzlnA
+verify.xskzsM
+verify.za54Fq
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+(eval):1: no matches found: loop/prompts/*input_audio*
+)
+
+Calling Bash()
+
+Bash response → (
+# Controls and audio
+
+You are `coder_input_audio`.
+
+Deliver reliable controls, key release/focus behavior, and working game audio.
+Own platform/input_audio.c, platform/input_audio.h, web/input_audio.js, plus new
+platform/audio_* and web/audio_* files. Request build/header/HTML changes from coder.
+Make movement, turning, firing, use, and menus work. Implement sound effects and
+music from the supplied WAD; distinguish genuine output from a merely initialized
+audio context. Choose a practical permitted backend; report unmet music fidelity
+or synthesis requirements honestly. Persistence follows supplied scope; otherwise
+record your assumption. Do not change rendering/timing or tests.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+=== coder_input_audio
+FINDINGS
+
+No defect found in my scope; I changed no source files. FINDINGS because nobody has listened to the output, music is not OPL/GENMIDI-accurate, and I did not re-run controls or tests/verify.sh.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes. `git diff HEAD` sha256 prefix 2c74d74fd2c699f9. dist/doom.wasm sha256 prefix 7afb94fa1ec64b5c (the v5 sector-export build; the previous audio run tested 6c93cbf125bd366a). web/{index.html,input_audio.js,audio_web.js,render_timing.js} are cmp-identical to dist/. `make -n`: nothing to do. artifacts/specification.md and acceptance-criteria.md do not exist.
+
+## Prior findings read
+All six files in artifacts/reports/. Nothing open in my file ownership. Coder's v5 change touched no input/audio code, but the wasm hash changed, so I re-measured audio.
+
+## Evidence (this dir)
+check.mjs (copied from coder_input_audio.zZGUhu; headless Chromium, no autoplay flag; not a protected check) against dist/ -> audio_result.json, check.err (empty), exit 0:
+- Before any key: context `suspended`, 0 notes scheduled, peak 0. An initialised context is not output.
+- After Enter presses and Ctrl fire: context `running`, SFX 5 requested / 5 played / 0 suppressed / 0 bad, 3 songs started, 73 notes scheduled, 5 music voices, 0 music errors, peak 0.394, 0 page errors.
+- Controls not re-run by me. I rely on tester's playtest/fault injection and reviewer_gameplay's position checks, which ran on 6c93cbf125bd366a, not this hash; unverified on 7afb94fa1ec64b5c.
+
+## Unresolved (owner)
+1. UNVERIFIED, student/human: no one has listened. Peak and note counts show only non-silent output.
+2. Unmet, student decision: music is a GM-family oscillator synth, not GENMIDI/OPL.
+3. UNVERIFIED, tester: tests/verify.sh on 7afb94fa1ec64b5c; door use, pickups, damage, other E1 songs, SFX/music balance, real hidden tab, Firefox/Safari.
+4. Known limits (mine, unfixed): linked-sound pitch ignored; first SFX before a gesture is dropped (autoplay console warnings); WASD and mouse not mapped.
+
+## Assumptions
+- Did not gate AudioContext creation behind a gesture: a song requested before the first key press would be lost.
+- Persistence out of scope (none supplied); volumes reset on load.
+- Doom default key bindings are the control requirement.
+- Manual interventions: none. Usage: not available.
+
+## Next action
+Tester reruns tests/verify.sh on hash 7afb94fa1ec64b5c; a human listens to SFX and music.
+=== reviewer_gameplay
+FINDINGS
+
+Door use (the open G3 gap) is now observed working on the current build. This is still FINDINGS, not PASS: audio correctness, walking through the opened door, pickups, damage, a real hidden tab and non-Chromium browsers remain unverified.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes. `git diff HEAD` sha256 prefix 2c74d74fd2c699f9. dist/doom.wasm sha256 prefix 7afb94fa1ec64b5c (bridge v5, with sector exports). `make -n`: nothing to do, so I did not rebuild. artifacts/specification.md and acceptance-criteria.md do not exist.
+
+## Prior findings read
+All six files in artifacts/reports/. The earlier reviewer_gameplay run found no door because no oracle existed. Coder's v5 sector exports now provide one. I did not repeat the movement or audio measurements.
+
+## Work and evidence (this directory)
+Scripts are my own, not protected checks. They use headless Chromium via Playwright against a throwaway local server that exits with the script.
+- **Door location:** I read the E1M1 LINEDEFS from assets/doom1.wad (read only). Door lines (special 1) belong to sectors 4, 68, 76 and 81. The engine export at level start reports exactly these four sectors with floor == ceiling (closed), which agrees with the WAD.
+- **door5.mjs, with Use:** steered from the start (1056,-3616) toward the sector 4 door at about (1544,-2496) using cap_player_x/y/angle, pressing Space while walking. The player reached (1519,-2484) in sector 3. Sector 4's ceiling then went 0 -> 16 -> 68, so the door opened. Health 100, level 101, no console errors. See door5-use-results.json and door5-use-final.png.
+- **door5ctl.mjs, control with Space removed:** same route, 90 steps, 0 sector changes. So the opening is caused by Use and not by walking up to the door.
+- **Movement and turning:** the steering depended on turning and on stopping, and both worked. The player turned toward the target and ended within about 25 units of the door.
+- **Console:** no errors or page errors in either run (35 console lines each, warnings only).
+
+## Unresolved (owner)
+1. UNVERIFIED, tester: walking through the opened door. door5pass.mjs (door5pass-results.json) did not reach the far side. Its steering ended with the player at (1519,-2449) and no further sector events. That is a limit of my greedy steering, not evidence that the door blocks the player. The tester can add a G3 check from this recipe: steer to (1519,-2490) facing east, press Space, and assert cap_sector_ceiling(4) > 0.
+2. UNVERIFIED, student/human: audio correctness. No one has listened. I did not retest audio. The coder_input_audio report on this same wasm hash shows a running context, 5 of 5 SFX played and peak 0.394, which proves non-silent output only.
+3. UNVERIFIED, tester: pickups, damage and death, level exit, a real hidden tab (headless cannot background a tab), Firefox, Safari.
+4. Known limits from earlier reports, unchanged: music is an oscillator synth, not GENMIDI/OPL. WASD and mouse are not mapped. The first SFX before a gesture is dropped.
+
+## Assumptions
+- Doom default keys (arrows, Space for Use) are the control requirement.
+- Position and sector exports are trusted as engine state. The WAD cross-check supports the sector list.
+- An opening ceiling in a door sector is taken to mean the door opened.
+- I used the first 220 steering steps as the budget. I stopped once the door event was seen.
+- Manual interventions: none. Usage: not available. I wrote nothing outside this directory.
+
+## Next action
+Tester adds a position-based G3 door check using the recipe above. A human listens to SFX and music.
+=== tester
+FINDINGS
+
+`tests/verify.sh` exited 0 (tooling, selftest, clean build, playtest failed=0, 5/5 fault injections caught). Result is FINDINGS, not PASS, because 4 required behaviors remain UNVERIFIED.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes; dirty_diff_sha256 2c74d74f... (verify/identity.txt). Command: `RUN_ID=tester.bajOBH OUT_DIR=artifacts/logs/tester.bajOBH/verify tests/verify.sh` (emsdk sourced). Evidence: verify.out, verify/ (identity.txt, build/playtest logs, playtest-results.json, faults.log).
+
+## Work
+Read artifacts/reports/tester.md (prior run) and loop/prompts/TESTER.md. Re-ran the full suite unchanged; no tests edited or weakened, no product source touched. Faults caught: drop-keyup (I2 I5 I6 C3 I7), drop-blur (I7), ignore-left (I3 E2a E2b), swap-rb (B4), bad-aspect (S1).
+
+## Unresolved (owner)
+1. UNVERIFIED A1 audio correctness (student/human: nobody has listened).
+2. UNVERIFIED P1 save persistence (student scope decision).
+3. UNVERIFIED G3 door use / level exit (coder: needs sector/line export).
+4. UNVERIFIED H1 real hidden-tab timing (human: manual protocol in tests/README.md).
+Limits: headless Chromium only; criteria agent-proposed, not student-approved; non-position outcomes pixel-inferred.
+
+## Assumptions
+Criteria as in prior tester report. Suite run once; no regressions versus the previous run. Usage: not available.
+
+## Next action
+Human listens to audio and runs H1; coder adds door/sector export so G3 can be checked.
+=== reviewer_site
+FINDINGS
+
+Startup was observed working on the current dist/ build (fresh load, 0 failed requests, 0 console errors, canvas drawing, loop advancing). The result is FINDINGS rather than PASS because several checks were not done (see Not verified), plus one minor audio warning carried over from earlier reviews.
+
+## Work
+- Read AGENTS.md, loop/prompts/REVIEWER.md and artifacts/reports/* (including the prior reviewer_site.md). No specification.md or acceptance-criteria.md exists.
+- Port 8000 had no listener. I started `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist` (pid in server.pid) and stopped it afterwards. Port confirmed free.
+- `make -n` reports "Nothing to be done", so dist/ is current. web/{index.html,input_audio.js,audio_web.js,render_timing.js} are byte-identical to dist/ (cmp). Source is HEAD e500c44 plus uncommitted changes (rev.txt).
+- Playwright loaded /?r=site7. Six resources, all HTTP 200: input_audio.js, audio_web.js, render_timing.js, doom.js (~77 KB), doom.data (~4.2 MB), doom.wasm (~556 KB). server.log: 8 responses at 200, none other.
+- Title "DOOM Shareware". Canvas 640x400, shown at 1152x720 CSS (16:10).
+- 101 distinct colours in a sparse sample. Module._rt.frames went 749 -> 819 in 1 s, so the render loop advances (headless Chromium).
+- startup.png (viewed): in-game 3D view with HUD, a monster and a corpse, and "Picked up an armor bonus." HUD shows ammo 1, health 92%, armor 98%. Colours look correct, there is no corruption, and the image is letterboxed.
+- Console: 0 errors, 2 warnings (console.txt).
+
+## Evidence (this directory)
+startup.png, console.txt, server.log, server.pid, rev.txt. Playwright captures are in artifacts/browser/.
+
+## Findings
+1. Minor, owner coder_input_audio: the AudioContext "not allowed to start" warning appears twice (audio_web.js:27 and :53) before a user gesture. This is expected under the autoplay policy. I did not verify that audio resumes after the first gesture. Same as prior reviews.
+2. Informational, for the tester/coordinator: dist/doom.wasm sha256 prefix is 7afb94fa1ec64b5c. The prior reviewer_site and tester reports record 6c93cbf125bd366a, and the git diff hash also differs. The build has changed since those reports, so their evidence does not cover this build. I did not investigate why.
+3. Unexplained, needs checking: the first screenshot (a few seconds after load) shows mid-gameplay state (damaged player, killed monster, armor pickup), not a title screen or fresh E1M1 start. This is probably the attract demo, but I did not confirm that. Owner: coder_render_timing / coordinator, to confirm intended startup behaviour.
+
+No failed-load or console-error fault was found.
+
+## Not verified
+- Precise time to first frame; first frame content (see finding 3).
+- Clean rebuild; non-Chromium browsers; warm-cache reload; other viewports.
+- Audio after a gesture.
+- Movement and combat (out of scope).
+
+## Assumptions
+- Headless Playwright Chromium via MCP. Criteria were: the page loads, no required asset fails, the canvas draws with plausible colours, and the loop advances.
+- "Fresh" means a new query string (?r=site7). I did not clear the browser cache, but server.log shows every asset requested.
+- I wrote nothing outside OUTPUT_DIR apart from the Playwright captures in artifacts/browser/. I modified no source, tests or loop files.
+- Same OUTPUT_DIR as the prior run's layout; the older reviewer_site.md in artifacts/reports/ was left untouched.
+agent.log
+)
+
+Calling Bash()
+
+Bash response → (
+2c74d74fd2c699f9
+7afb94fa1ec64b5c
+make: Nothing to be done for `all'.
+artifacts/logs/coder_input_audio.XSXPrI:
+agent.log
+audio_result.json
+build
+check.err
+check.mjs
+dist
+report.md
+
+artifacts/logs/coder_input_audio.zZGUhu:
+agent.log
+audio_result.json
+build
+check.mjs
+dist
+report.md
+ M platform/doomgeneric_wasm.c
+ M web/index.html
+?? platform/audio_compat/
+?? platform/audio_web.c
+?? platform/cap_fallback.c
+?? platform/capstone_bridge.h
+?? platform/engine_stubs.c
+?? platform/input_audio.c
+?? platform/input_audio.h
+?? platform/render_timing.c
+)
+Source is unchanged since the last run (same hashes). I'll re-run the audio check against the current build.
+Calling Bash()
+
+Bash response → (
+1:import { chromium } from '/Users/sarahtseng/Projects/fellowship-loop-capstone/tests/node_modules/playwright/index.mjs';
+2:import http from 'http'; import fs from 'fs'; import path from 'path';
+3:const root=process.argv[2];
+5:const srv=http.createServer((q,r)=>{const f=path.join(root,q.url==='/'?'index.html':q.url.split('?')[0]);fs.readFile(f,(e,d)=>{if(e){r.writeHead(404);r.end();return}r.writeHead(200,{'content-type':types[path.extname(f)]||'application/octet-stream'});r.end(d)})}).listen(0);
+exit 1
+node:internal/errors:543
+      throw error;
+      ^
+
+TypeError [ERR_INVALID_ARG_TYPE]: The "path" argument must be of type string. Received undefined
+)
+
+Calling Bash()
+
+Bash response → (
+exit 0
+{
+ "pre": {
+  "sfxRequested": 0,
+  "sfxPlayed": 0,
+  "sfxSuppressed": 0,
+  "sfxBad": 0,
+  "musicRequested": 1,
+  "musicStarted": 1,
+  "notesScheduled": 0,
+  "musicErrors": 0,
+  "maxPeak": 0,
+  "lastPeak": 0,
+  "ctxState": "suspended",
+  "sampleRate": 48000,
+  "sfxChannelsActive": 0,
+  "musicPlaying": true,
+  "musicVoices": 0
+ },
+ "post": {
+  "sfxRequested": 4,
+  "sfxPlayed": 4,
+  "sfxSuppressed": 0,
+  "sfxBad": 0,
+  "musicRequested": 3,
+  "musicStarted": 3,
+  "notesScheduled": 73,
+  "musicErrors": 0,
+  "maxPeak": 0.39390361309051514,
+  "lastPeak": 0.0366462767124176,
+  "ctxState": "running",
+  "sampleRate": 48000,
+  "sfxChannelsActive": 0,
+  "musicPlaying": true,
+  "musicVoices": 5
+ },
+ "errs": []
+}
+)
+
+Calling Bash()
+
+Bash response → "(Bash completed with no output)"
+FINDINGS. I changed no source files, because I found nothing in my scope to repair. The report is at `artifacts/logs/coder_input_audio.3fWNbv/report.md`.
+
+**Evidence:** I re-ran the headless Chromium audio check against the current `dist/` build.
+- **Before any key press:** the audio context was `suspended` and no sound had played.
+- **After key presses:** the context was `running`, and all 4 sound effects requested were played. 3 songs started, 73 notes were scheduled, and peak level reached 0.394. There were no errors.
+- **Not re-checked:** I did not re-run the controls or `tests/verify.sh`. Earlier runs on this same build observed arrows, fire, use and door opening working.
+
+**Still open:**
+- **Nobody has listened to the audio.** The numbers show non-silent output, not correct sound.
+- **Music is an oscillator synth, not the game's original OPL/GENMIDI sound.** Whether that is acceptable is your call.
+- **Known limits:**
+  - The first sound effect before a key press is dropped.
+  - Linked-sound pitch is ignored.
+  - WASD and mouse are not mapped.
+- **Next steps:** the tester should re-run `tests/verify.sh` on this build, and someone should listen to the sound effects and music.

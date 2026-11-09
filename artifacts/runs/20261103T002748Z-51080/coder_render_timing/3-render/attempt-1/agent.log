@@ -1,0 +1,779 @@
+I'll start by reading the required docs and earlier run artifacts.
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+  the resource usage, manual interventions, and final stopping decision.
+
+Preserve failing evidence as well as passing evidence. Record changes to
+acceptance criteria separately, with a reason. Discuss disagreements and
+missed faults in your write-up.
+
+## Where your work belongs
+
+| Location | Purpose |
+| --- | --- |
+| [`loop/`](loop/README.md) | All loop code, prompts, role definitions, MCP configuration, and design documentation. |
+| [`artifacts/`](artifacts/README.md) | All durable run state, handoffs, logs, review findings, and evidence. Agents must use this folder between runs. |
+| `tests/` | Verification code, including checks for the loop itself. |
+| `platform/`, `web/` | The port and browser page. |
+| `third_party/doomgeneric/` | Supplied engine; platform ports have been removed. |
+| `assets/` | Included shareware `doom1.wad` (Episode 1). |
+| `build/`, `dist/` | Generated build output. |
+
+Keep the root for project documentation and shared build/toolchain files.
+The starter supplies engine source, platform and HTML stubs, the shareware
+WAD, documentation, and an optional Docker toolchain. It supplies no working
+game, build script, loop implementation, or test suite. `artifacts/` starts
+with its README only; students create run evidence there during the project.
+Use the supplied engine and Emscripten. Documentation is allowed; copying an
+existing Doom browser port does not satisfy the assignment.
+
+See [`platform/README.md`](platform/README.md) for engine integration caveats,
+including pixel format, timing, and audio. The supplied game data already
+contains sound effects and music; no additional sound assets are required.
+
+## Agent section for setup
+
+### macOS without Docker
+
+Install the build tools directly on your Mac to compile and test the browser
+port. Docker is not required for this workflow. There is currently no macOS
+setup script; run the steps below manually.
+
+1. **Install prerequisites.** In Terminal, run:
+
+   ```sh
+   xcode-select --install
+   ```
+
+   Finish the installer, then check `git --version` and `python3 --version`.
+   If Python is missing, install it from [python.org](https://www.python.org/downloads/macos/),
+   or run `brew install python` if you already have Homebrew.
+
+2. **Install Emscripten.** Use version `4.0.18` to match the supplied Dockerfile:
+
+   ```sh
+   mkdir -p ~/Developer
+   cd ~/Developer
+   git clone https://github.com/emscripten-core/emsdk.git
+   cd emsdk
+   ./emsdk install 4.0.18
+   ./emsdk activate 4.0.18
+   source ./emsdk_env.sh
+   emcc --version
+   ```
+
+   If you already have an SDK checkout at that location, use it instead of
+   cloning again. In each new Terminal session where you want to compile, run:
+
+   ```sh
+   source ~/Developer/emsdk/emsdk_env.sh
+   ```
+
+   See the [official installation instructions](https://emscripten.org/docs/getting_started/downloads.html).
+
+artifacts/runs/20261103T002748Z-51080/tester/verify-005841Z/identity.txt
+artifacts/runs/20261103T002748Z-51080/tester/verify-005841Z/verify.log
+artifacts/runs/20261103T002748Z-51080/tester/verify-013807Z/identity.txt
+artifacts/runs/20261103T002748Z-51080/tester/verify-013807Z/verify.log
+
+artifacts:
+README.md
+runs
+
+artifacts/runs/20261103T002748Z-51080:
+coder
+coder_input_audio
+coder_render_timing
+manifest.txt
+reviewer
+reviewer_requirements
+tester
+verification-1.log
+verification-2.log
+
+artifacts/runs/20261103T002748Z-51080/coder_input_audio/1-input/attempt-1:
+agent.log
+build.log
+dist-sha256.txt
+invocation.txt
+playtest
+playtest.log
+qtest.log
+report.md
+result.json
+source-commit.txt
+source-status.txt
+
+artifacts/runs/20261103T002748Z-51080/coder_input_audio/2-input/attempt-1:
+agent.log
+dist-sha256.txt
+input_audio.js.snapshot
+invocation.txt
+playtest
+playtest.log
+report.md
+result.json
+source-commit.txt
+source-status.txt
+
+artifacts/runs/20261103T002748Z-51080/coder_render_timing/1-render/attempt-1:
+agent.log
+dist-sha256.txt
+invocation.txt
+playtest
+playtest.log
+report.md
+result.json
+source-status.txt
+
+artifacts/runs/20261103T002748Z-51080/coder_render_timing/2-render/attempt-1:
+agent.log
+build.log
+dist-sha256.txt
+invocation.txt
+playtest
+playtest.log
+report.md
+result.json
+source-commit.txt
+source-diff-sha256.txt
+source-status.txt
+
+artifacts/runs/20261103T002748Z-51080/coder_render_timing/3-render/attempt-1:
+agent.log
+invocation.txt
+
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1:
+agent.log
+build.log
+dist-sha256.txt
+invocation.txt
+report.md
+result.json
+verify-full
+verify-full.log
+
+artifacts/runs/20261103T002748Z-51080/coder/1-integrate/attempt-1:
+agent.log
+dist-sha256.txt
+invocation.txt
+report.md
+result.json
+source-commit.txt
+source-status.txt
+verify-full
+verify-full.log
+
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1:
+agent.log
+invocation.txt
+report.md
+result.json
+source-commit.txt
+source-dirty.patch
+source-status.txt
+verify-exit.txt
+verify-full
+verify-full.log
+
+artifacts/runs/20261103T002748Z-51080/coder/2-integrate/attempt-1:
+agent.log
+dist-sha256.txt
+invocation.txt
+report.md
+rerun-1
+rerun-1.log
+rerun-2
+rerun-2.log
+rerun-3
+rerun-3.log
+result.json
+source-commit.txt
+source-dirty.patch
+source-status.txt
+verify-exit-2.txt
+verify-exit.txt
+verify-full
+verify-full-2
+verify-full-2.log
+verify-full.log
+
+artifacts/runs/20261103T002748Z-51080/coder/3-build/attempt-1:
+agent.log
+build.log
+dist-sha256.txt
+invocation.txt
+report.md
+result.json
+source-commit.txt
+source-dirty.patch
+source-files-sha256.txt
+source-files.txt
+source-snapshot.tgz
+source-status.txt
+verify-exit.txt
+verify-full
+verify-full.log
+
+artifacts/runs/20261103T002748Z-51080/coder/plan/attempt-1:
+agent.log
+interface-contract.md
+invocation.txt
+proposed-spec.md
+report.md
+result.json
+source-status.txt
+
+artifacts/runs/20261103T002748Z-51080/reviewer_requirements/1-audit/attempt-1:
+agent.log
+invocation.txt
+report.md
+result.json
+
+artifacts/runs/20261103T002748Z-51080/reviewer_requirements/2-audit/attempt-1:
+agent.log
+invocation.txt
+report.md
+result.json
+
+artifacts/runs/20261103T002748Z-51080/reviewer/1-review/attempt-1:
+agent.log
+invocation.txt
+report.md
+result.json
+
+artifacts/runs/20261103T002748Z-51080/reviewer/2-review/attempt-1:
+agent.log
+dist-sha256-at-review.txt
+invocation.txt
+quick-1
+quick-1.log
+quick-2
+quick-2.log
+quick-3
+quick-3.log
+report.md
+result.json
+
+artifacts/runs/20261103T002748Z-51080/tester/1-test/attempt-1:
+agent.log
+invocation.txt
+report.md
+result.json
+source-commit.txt
+source-dirty.patch
+source-status.txt
+verify
+verify-exit.txt
+verify-run0-exit.txt
+verify-run0-relpath-invocation-error
+verify-run0-stdout.log
+verify-stdout.log
+
+artifacts/runs/20261103T002748Z-51080/tester/2-test/attempt-1:
+agent.log
+invocation.txt
+report.md
+result.json
+source-commit.txt
+source-dirty.patch
+source-status.txt
+verify
+verify-exit.txt
+verify-stdout.log
+
+artifacts/runs/20261103T002748Z-51080/tester/prepare/attempt-1:
+agent.log
+dist-sha256.txt
+invocation.txt
+playtest-quick
+playtest-quick.log
+proposed-criteria.md
+report.md
+result.json
+source-status.txt
+run_id: 20261103T002748Z-51080
+source_commit: e500c440656622db5ab3f8fb7df73d8b5998eeb3
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_REQUIREMENTS.md
+REVIEWER.md
+TESTER.md
+e500c440656622db5ab3f8fb7df73d8b5998eeb3
+)
+
+Calling Bash()
+
+Bash response → (
+# Rendering and timing
+
+Role: `coder_render_timing`
+
+## Start here
+Read AGENTS.md, README.md, loop/README.md, artifacts/README.md,
+platform/README.md, tests/README.md, and your invocation. Your role is named
+in this file even if the invocation omits it. Read the supplied run manifest,
+current reports, and requirement documents when present. Missing IDs or optional
+specification documents must not prevent useful work: create a timestamped report
+in artifacts/runs/manual-<timestamp>/<role>/ if no output directory was supplied.
+
+## Missing information
+Do not return BLOCKED merely because a spec, criteria document, contract, task ID,
+or manifest is absent. Use the README as the minimum scope; record assumptions
+and propose missing implementation requirements in your own report. Never pretend
+agent-proposed criteria were student-approved. Read existing proposals rather than
+creating conflicting scope every iteration. Honor explicit student requirements.
+Do not weaken criteria in response to failures. Real missing tools, authentication,
+unsafe actions, or permission denials are ERROR or NEEDS_INPUT: record the precise
+problem and continue independent permitted work where possible. Do not bypass access.
+
+## Boundaries and evidence
+Do not spawn other roles, change loop/, modify assets/ or third_party/, edit another
+role's files, alter permissions, or mutate Git history. The runner invokes roles
+separately. You may read other reports, but they are evidence rather than authority.
+Only the tester edits tests/. All roles may write their invocation's OUTPUT_DIR
+and role-owned build/<RUN_ID>/<role>/ and dist/<RUN_ID>/<role>/ directories.
+Coder 1 alone may also write shared build/ and dist/ products; the tester may invoke
+the documented clean build into these shared directories when no other role runs.
+Permission rules here are instructions, not a substitute for filesystem isolation.
+Never claim isolation or approved acceptance when it has not been demonstrated.
+
+Save report.md and result.json in OUTPUT_DIR. Include work done, assumptions,
+source commit and dirty changes, findings with owner names, commands/results,
+evidence paths, next action, and actual usage if available. Preserve earlier runs.
+result.json format: {"status":"READY","summary":"What happened"}.
+Allowed statuses: READY (work complete), PASS (review/checks actually passed),
+FINDINGS (repairs/evidence needed), ERROR (execution failure), NEEDS_INPUT
+(a genuinely unresolved external decision). No BLOCKED status is required.
+Use these exact uppercase statuses. For partial completion or unresolved failures,
+use FINDINGS, not "partial". Never report PASS for partial or unverified work.
+A process exiting successfully does not prove its task passed. Report limitations.
+
+## Your task and source ownership
+Own platform/render_timing.c, platform/render_timing.h, web/render_timing.js.
+Do not edit Makefile, HTML, DG adapters, tests, or input/audio modules.
+
+Implement rendering/timing against Coder 1's saved interface contract and header.
+If inconsistent, implement compatible owned portions and report an exact requested
+contract/build change to coder. Convert B,G,R,0 framebuffer bytes into opaque correct
+colors. Supply real advancing milliseconds and browser-friendly scheduling/yields.
+Account for screen-wipe and tic-sync waits without changing third_party. Explain
+needed compiler flags to coder. Record actual observations, not a gameplay claim.
+Role=coder_render_timing RUN_ID=20261103T002748Z-51080 TASK_ID=3-render ATTEMPT_ID=attempt-1.
+OUTPUT_DIR=artifacts/runs/20261103T002748Z-51080/coder_render_timing/3-render/attempt-1. Manifest: artifacts/runs/20261103T002748Z-51080/manifest.txt. Task: Implement/repair owned rendering and timing.
+Follow your configured role prompt. Read earlier findings under artifacts/runs/.
+Use artifacts/specification.md, artifacts/acceptance-criteria.md and
+artifacts/interface-contract.md if present. Otherwise use proposals under
+artifacts/runs/20261103T002748Z-51080/coder/plan/attempt-1/ and artifacts/runs/20261103T002748Z-51080/tester/prepare/attempt-1/.
+Record reasonable assumptions if optional documents are absent; do not invent approval.
+Save report.md and result.json in OUTPUT_DIR. Partial work is FINDINGS, not PASS.
+# coder_render_timing 2-render attempt-1 (run 20261103T002748Z-51080)
+Status: FINDINGS (owned code re-verified; nothing new to repair; open items remain outside my scope).
+Source: commit e500c44 + uncommitted changes (source-commit.txt, source-status.txt, source-diff-sha256.txt). Criteria/contract are AGENT-PROPOSED; no student-approved spec exists.
+
+## Work done
+- Re-read the 1-render report, reviewer 1-review, tester 1-test, coder 2-build. None of their findings targets platform/render_timing.{c,h}; the reviewer confirmed the BGR(0)->RGBA conversion and the nonzero first `cap_time_ms`.
+- No source edits this attempt. platform/render_timing.c/.h are unchanged. web/render_timing.js is still not created (all logic is in EM_JS; index.html/Makefile are not mine).
+- Corrected the process deviation from 1-render: built into role-owned dirs only (`make BUILD=build/<RUN>/coder_render_timing DIST=dist/<RUN>/coder_render_timing all`), not the shared build/ or dist/.
+
+## Verification (observations, not a gameplay claim)
+- emcc 4.0.18. Build exit 0 with the current Makefile (ASYNCIFY_STACK_SIZE=65536, -MMD). build.log.
+- Override check: `rt_js_put` appears in the built doom.js, `cap_js_present` (fallback) does not.
+- `tests/playtest.mjs` against that dist, SOAK_SECONDS=60: exit 0, `failed=0`, 3 UNVERIFIED (A1, P1, G3). Includes T2 35.21 tics/s, R2 rAF/s 60.4, R3 no long task, R4 frames change. Evidence: playtest.log, playtest/, dist-sha256.txt.
+- Not run: full tests/verify.sh (it runs `make clean` on the shared dirs; the tester owns it). Coder 2-build already ran it with exit 0 on the same render code.
+
+## Limits
+- The fallback renderer also passed these checks, so they show no regression, not that the wasm-side conversion is better or faster; speed was not measured.
+- Hidden-tab behavior (setTimeout throttling slows the ASYNCIFY loop and tic catch-up) is untested. Headless Chromium only; one 60 s run.
+- A1 audio, P1 persistence, G3 door/exit remain UNVERIFIED.
+
+## Findings / owners
+- Coder (web/index.html): reviewer F8 `canvas { image-rendering: pixelated; }` and scaling is still not done. It is a request, not a blocker.
+- Tester: add a hidden-tab/visibilitychange timing check and an implementation-identity check (`Module._rt` exists, i.e. render_timing active), which also supports the regression-injection evaluation.
+- Student: approve criteria; decide audio/persistence scope.
+
+## Next action
+Tester runs full verify.sh on the current tree; reviewer re-checks. Usage: not available. Manual interventions: none.
+{"status":"FINDINGS","summary":"No new defects in render_timing; rebuilt in role-owned dirs (emcc 4.0.18) and 60s playtest passed failed=0. No source edits. Hidden-tab timing untested, A1/P1/G3 unverified, full verify.sh not run by this role, F8 canvas CSS open (coder)."}
+artifacts/runs/20261103T002748Z-51080/tester/1-test:
+attempt-1
+
+artifacts/runs/20261103T002748Z-51080/tester/2-test:
+attempt-1
+
+artifacts/runs/20261103T002748Z-51080/tester/prepare:
+attempt-1
+
+artifacts/runs/20261103T002748Z-51080/tester/verify-005841Z:
+identity.txt
+verify.log
+
+artifacts/runs/20261103T002748Z-51080/tester/verify-013807Z:
+identity.txt
+verify.log
+# tester 2-test attempt-1 (run 20261103T002748Z-51080)
+
+Status: FINDINGS. The unchanged suite FAILED (exit 1): `I3.turn-left shift=-116px`. All other required checks passed. A1, P1 and G3 are UNVERIFIED. The criteria are agent-proposed, not student-approved.
+
+## Source
+- Commit e500c440656622db5ab3f8fb7df73d8b5998eeb3 plus uncommitted changes: source-status.txt, source-dirty.patch (untracked files are not in the patch).
+- Identity (tests_sha256, dirty_diff_sha256, wad_sha256, emcc): verify/identity.txt.
+- No tests/ files were modified, and no thresholds were changed.
+
+## Assumptions
+- No artifacts/specification.md, acceptance-criteria.md or interface-contract.md exists. I used the proposals in coder/plan/attempt-1/ and tester/prepare/attempt-1/. None is student-approved.
+
+## Commands and results
+- `source ~/Developer/emsdk/emsdk_env.sh && RUN_ID=... OUT_DIR=<abs> tests/verify.sh`: exit 1 (verify-exit.txt).
+- Tooling, selftest and `make clean && make all` passed.
+- Playtest: 29 PASS, 1 FAIL (I3), 3 UNVERIFIED (A1, P1, G3). This includes the 300s soak (R1-R4) and 34.96 tics/s.
+- Evidence: verify/ (verify.log, selftest.log, build.log, dist-sha256.txt, playtest-results.json, screenshots), verify-stdout.log.
+
+## Findings
+1. FAIL I3.turn-left (owner: tester for the check; coder only if the cause turns out to be in the product).
+   - Same-build history: coder 2-integrate failed 1 of 5 runs, the reviewer 2 of 3, and now this full run failed (the earlier tester 1-test run passed). That is at least 4 failures in about 10 runs.
+   - I1 (turn-right) gave -200px every time, with a consistent sign. I3 gives +204px when it passes and -116px when it fails. A mirrored result of about 200px that comes out as -116px suggests bestShift aliasing (or turn timing), not the game ignoring ArrowLeft. This is a hypothesis, unconfirmed.
+   - I did not change the check, because I have no authorization to rewrite checks after prepare. I preserved the failing run. Do not report PASS while I3 is intermittent.
+2. UNVERIFIED (owner: student): A1 audio and P1 persistence have no decided scope.
+3. UNVERIFIED (owner: tester/student): G3 door use and level exit have no oracle.
+4. Owner tester, proposed only: the reviewer's R2-3 and R2-4 checks (key edge cases, implementation identity).
+5. Owner student: approve or replace the proposed criteria.
+
+## Limits
+Headless Chromium only. Outcomes are inferred from pixels. Mouse, touch and non-Chromium browsers were not tested. Usage: not available.
+
+## Next action
+Student authorizes a fix for the I3 measurement (e.g. a larger bestShift search range, or an angle-independent turn-left oracle, with no lowered threshold). Tester then runs 10 repeat runs to measure the failure rate. Student decides the audio/persistence scope and approves the criteria.
+F2 (re-press of a key still held after refocus) and F3 (F5/F11/F12 and Ctrl+letter not default-prevented) are in `web/input_audio.js` but no check exercises them. Still untested: `visibilitychange`, `pagehide`, `contextmenu`, Meta, L+R Ctrl, auto-repeat. Expected validation: Playwright cases that dispatch `keydown{repeat:true}` after blur and assert `defaultPrevented===false` for F5 and Ctrl+R.
+
+### R2-4 (medium, owner: tester, with coder) Silent fallback hides a regression
+`cap_fallback.c` still ships a complete second renderer and queue. If `render_timing.c` or `input_audio.c` stops linking, the build passes and no check notices. Expected validation: a test asserting `Module._rt` exists (render module) and an exported diagnostic from `input_audio.c` such as `cap_input_delivered`. This matters for the injected-regression evaluation, because dropping a module is an obvious fault to inject.
+
+### R2-5 (medium, owner: coder_input_audio / student) Save and config persistence is absent
+Files go to the in-memory FS and are lost on reload. P1 is UNVERIFIED and unscoped. I did not exercise saving in this review, so I make no claim about whether in-session save and load work.
+
+### R2-6 (low-medium, owner: tester) Hidden-tab behaviour is unchecked
+The main loop is ASYNCIFY with `setTimeout`-based sleeps. Browsers throttle timers in background tabs, so the game will run slowly or stall while hidden and catch up on return. The input code releases keys on hide, but nothing tests timing after a hide/show cycle. Report it as unverified, not as a defect.
+
+### R2-7 (low, owner: coder / runner) Candidate source is not reproducible from artifacts
+`coder/2-integrate/.../source-dirty.patch` covers tracked files only. platform/*.c, web/input_audio.js, Makefile and tests/* are untracked, so another agent cannot recreate the exact tested tree. This was prior finding F9 and is only partly fixed. Expected: a snapshot or tree hash that includes untracked files, or a commit.
+
+### R2-8 (low, owner: coder_render_timing) Per-frame allocation
+`rt_js_put` allocates a new `Uint8ClampedArray` and `ImageData` every frame, and `cap_render_present` also copies 256k pixels in C. T2 and rAF checks show it keeps up (35 tics/s, 60 rAF/s headless), so this is only a GC and efficiency note. Not measured on slower hardware.
+
+### R2-9 (process, owner: student/runner) Runner verification failed to run
+`verification-1.log` reads `VERIFY FAIL: emcc missing (source emsdk 4.0.18 env)` and the run continued. `loop/` is read-only for me, so I only report it: the runner's own verify step does not source emsdk, so its independent check produced no evidence for this run.
+
+## Coverage limits
+This review does not certify gameplay or the final submission. Not established: audio, persistence, door use and level exit (G3), mouse, browsers other than headless Chromium, HiDPI, flakiness beyond the runs listed, and fidelity to original Doom (no demo or determinism oracle). The student has not approved any criteria.
+
+## Commands and results
+- `shasum -a 256 dist/*` compared with `coder/2-integrate` hashes: identical.
+- `QUICK=1 OUT_DIR=<abs> node tests/playtest.mjs` ×3 on that dist: exit 1, 1, 3. Failures only in I3, as above. Evidence: `quick-N.log`, `quick-N/` (screens, results json).
+- Read: platform/*, web/*, Makefile, tests/lib/frames.mjs, tests/playtest.mjs (lines 100-113), i_input.c, i_timer.c, doomfeatures.h, all role reports under this run.
+
+## Next action
+Tester: fix I3 (R2-1) and repeat 10 runs; add R2-3 and R2-4 checks. Student: decide audio/persistence scope (R2-2, R2-5) and approve criteria. Coder: preserve a full source snapshot (R2-7). Reviewer re-check after those land. Manual interventions: none. Usage: not available.
+# coder 3-build attempt-1 (run 20261103T002748Z-51080)
+Status: PASS for owned scope (build, startup, WAD packaging). Project NOT complete (see Limits).
+
+## Source
+Commit e500c440 + uncommitted changes. This attempt preserves untracked files too (reviewer R2-7): `source-snapshot.tgz` (19 files: Makefile, BUILD.md, platform/, web/, tests/ excluding node_modules), `source-files.txt`, `source-files-sha256.txt`, `source-dirty.patch` (tracked diff), `source-status.txt`, `source-commit.txt`.
+Criteria are AGENT-PROPOSED; no student-approved specification/criteria/contract exists in artifacts/. I did not invent approval.
+
+## What I did
+- Found that the runner's verification (`verification-1/2.log`: "emcc missing") produced no evidence because emsdk was not sourced. I sourced `~/Developer/emsdk/emsdk_env.sh` (emcc 4.0.18) myself. The runner fix is in loop/, which I may not edit: reported to the student (R2-9).
+- Clean rebuild: `make clean && make all` exit 0, 0 warnings (build.log). No Makefile/source changes were needed this attempt.
+- WAD packaging: `dist/doom.data` sha256 equals `assets/doom1.wad` (1d7d43be...), so the preload embeds the unmodified WAD at /doom1.wad. Hashes: dist-sha256.txt.
+- Full `tests/verify.sh` (selftest, clean build, playtest, 300 s soak): exit 0, `playtest: PASS failed=0 unverified=3`, T2 34.98 tics/s. Evidence: verify-full.log, verify-full/, verify-exit.txt.
+
+## Limits / open
+- Unverified: A1 audio, P1 persistence, G3 door/level exit.
+- Earlier tester run 2 saw I3.turn-left FAIL and the reviewer saw it flaky (tester-owned check, R2-1). It passed in this single run; that does not show the flake is fixed. Needs repeated runs by the tester.
+- Open outside my scope: R2-3 (tester), R2-4 silent fallback in cap_fallback.c (tester+coder), R2-5 persistence scope (student), R2-6 hidden-tab, R2-8 per-frame allocation.
+- Headless Chromium only, one run. Passing shows no regression, not fault detection.
+- I did not modify tests/, loop/, assets/, third_party/. Manual interventions: none. Usage: not available.
+
+## Next action
+Tester: repeat verify >=10x to assess I3 flakiness, add R2-3/R2-4 checks. Student: fix runner emsdk sourcing, approve criteria, decide audio/persistence scope.
+)
+
+Calling Bash()
+
+Bash response → (
+// Rendering and timing for the WebAssembly port (coder_render_timing-owned).
+// Strong definitions of the cap_render_* / cap_time_ms / cap_sleep_ms /
+// cap_set_title hooks; they override the weak defaults in cap_fallback.c.
+// Contract: platform/capstone_bridge.h (version 2).
+
+#include <stdint.h>
+
+#include <emscripten.h>
+
+#include "capstone_bridge.h"
+#include "render_timing.h"
+
+// Engine framebuffer bytes are B,G,R,0; canvas ImageData wants R,G,B,A.
+// On little-endian wasm the source word is 0x00RRGGBB and the output word
+// must be 0xAABBGGRR with A forced to 255.
+static uint32_t rgba[CAP_FB_WIDTH * CAP_FB_HEIGHT];
+
+static uint32_t frames_presented;
+
+EM_JS(int, rt_js_init, (int w, int h), {
+    var c = Module.canvas || document.getElementById('canvas');
+    if (!c) return 0;
+    // alpha:false lets the browser skip compositing against the page.
+    var ctx = c.getContext('2d', { alpha: false });
+    if (!ctx) return 0;
+    ctx.imageSmoothingEnabled = false;
+    Module._rt = { ctx: ctx, w: w, h: h, frames: 0, lastPresent: 0 };
+    // Observable by tests: Module._rt.frames increments once per DG_DrawFrame.
+    return 1;
+});
+
+EM_JS(void, rt_js_put, (const void *px, int w, int h), {
+    var rt = Module._rt;
+    if (!rt) return;
+    // Rebuild the view every frame: ALLOW_MEMORY_GROWTH replaces the buffer.
+    var data = new Uint8ClampedArray(HEAPU8.buffer, px, w * h * 4);
+    rt.ctx.putImageData(new ImageData(data, w, h), 0, 0);
+    rt.frames++;
+    rt.lastPresent = performance.now();
+});
+
+EM_JS(void, rt_js_title, (const char *t), { document.title = UTF8ToString(t); });
+
+void cap_render_init(void)
+{
+    frames_presented = 0;
+    rt_js_init(CAP_FB_WIDTH, CAP_FB_HEIGHT);
+}
+
+void cap_render_present(const pixel_t *fb)
+{
+    const uint32_t *src = (const uint32_t *)fb;
+    for (int i = 0; i < CAP_FB_WIDTH * CAP_FB_HEIGHT; i++) {
+        uint32_t s = src[i];
+        rgba[i] = 0xFF000000u | ((s & 0xFFu) << 16) | (s & 0xFF00u) | ((s >> 16) & 0xFFu);
+    }
+    rt_js_put(rgba, CAP_FB_WIDTH, CAP_FB_HEIGHT);
+    frames_presented++;
+}
+
+uint32_t cap_time_ms(void)
+{
+    // Milliseconds since page start (monotonic). +1 keeps the first call
+    // nonzero: i_timer.c treats basetime==0 as unset.
+    return (uint32_t)emscripten_get_now() + 1;
+}
+
+// The engine only sleeps in 1 ms polls (wipe loop in d_main.c, tic wait in
+// d_loop.c) and a 100 ms retry in d_loop.c. With ASYNCIFY, emscripten_sleep
+// returns control to the event loop via setTimeout, so input, rAF and
+// painting keep running while the engine waits and real time advances.
+void cap_sleep_ms(uint32_t ms)
+{
+    emscripten_sleep(ms);
+}
+
+void cap_set_title(const char *title)
+{
+    rt_js_title(title);
+}
+
+uint32_t cap_render_frames(void)
+{
+    return frames_presented;
+}
+// Private header for platform/render_timing.c (coder_render_timing-owned).
+// The cross-module hooks are declared in capstone_bridge.h; only extras here.
+#ifndef RENDER_TIMING_H
+#define RENDER_TIMING_H
+
+#include <stdint.h>
+
+// Number of frames passed to cap_render_present since cap_render_init.
+uint32_t cap_render_frames(void);
+
+#endif // RENDER_TIMING_H
+ M loop/agents.yaml
+ M loop/loop.sh
+ M platform/doomgeneric_wasm.c
+ M tests/README.md
+ M web/index.html
+?? BUILD.md
+?? Makefile
+?? artifacts/runs/
+?? loop/DESIGN_DECISION_QUESTIONS.md
+?? loop/prompts/
+?? platform/cap_fallback.c
+?? platform/capstone_bridge.h
+?? platform/engine_stubs.c
+?? platform/input_audio.c
+?? platform/input_audio.h
+?? platform/render_timing.c
+?? platform/render_timing.h
+?? tests/lib/
+?? tests/package-lock.json
+?? tests/package.json
+?? tests/playtest.mjs
+?? tests/selftest.mjs
+?? tests/verify.sh
+?? web/input_audio.js
+)
+Only R2-8 (per-frame allocation) is still open in my files; I'm fixing it next by reusing the ImageData while the wasm heap buffer stays the same, then rebuilding and testing.
+
+
+Calling Bash()
+
+Bash response → (
+emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 4.0.18 (fae107463db4d20a276a27ede393048deaeebf76)
+build=0
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -MMD -MP -c platform/render_timing.c -o build/20261103T002748Z-51080/coder_render_timing/platform/render_timing.o
+emcc build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/am_map.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/d_event.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/d_items.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/d_iwad.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/d_loop.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/d_main.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/d_mode.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/d_net.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/doomdef.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/doomgeneric.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/doomstat.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/dstrings.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/f_finale.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/f_wipe.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/g_game.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/gusconf.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/hu_lib.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/hu_stuff.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/i_cdmus.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/i_endoom.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/i_input.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/i_joystick.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/i_scale.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/i_sound.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/i_system.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/i_timer.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/i_video.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/icon.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/info.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/m_argv.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/m_bbox.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/m_cheat.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/m_config.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/m_controls.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/m_fixed.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/m_menu.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/m_misc.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/m_random.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/memio.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/mus2mid.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/p_ceilng.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/p_doors.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/p_enemy.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/p_floor.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/p_inter.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/p_lights.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/p_map.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/p_maputl.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/p_mobj.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/p_plats.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/p_pspr.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/p_saveg.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/p_setup.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/p_sight.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/p_spec.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/p_switch.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/p_telept.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/p_tick.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/p_user.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/r_bsp.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/r_data.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/r_draw.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/r_main.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/r_plane.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/r_segs.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/r_sky.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/r_things.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/s_sound.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/sha1.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/sounds.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/st_lib.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/st_stuff.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/statdump.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/tables.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/v_video.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/w_checksum.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/w_file_stdc.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/w_file.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/w_main.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/w_wad.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/wi_stuff.o build/20261103T002748Z-51080/coder_render_timing/third_party/doomgeneric/z_zone.o build/20261103T002748Z-51080/coder_render_timing/platform/cap_fallback.o build/20261103T002748Z-51080/coder_render_timing/platform/doomgeneric_wasm.o build/20261103T002748Z-51080/coder_render_timing/platform/engine_stubs.o build/20261103T002748Z-51080/coder_render_timing/platform/input_audio.o build/20261103T002748Z-51080/coder_render_timing/platform/render_timing.o -O2 -sASYNCIFY -sASYNCIFY_STACK_SIZE=65536 -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=64MB -sEXPORTED_FUNCTIONS=_main,_cap_ready,_cap_tic_count,_cap_input_event,_cap_input_reset,_cap_bridge_version,_cap_framebuffer_ptr -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,HEAPU8 --preload-file assets/doom1.wad@/doom1.wad -o dist/20261103T002748Z-51080/coder_render_timing/doom.js
+cp web/index.html web/input_audio.js dist/20261103T002748Z-51080/coder_render_timing/
+3:// check passes. Env: DIST_DIR (default dist), OUT_DIR (evidence), SOAK_SECONDS (default 300),
+11:const DIST = path.resolve(root, process.env.DIST_DIR || 'dist');
+12:const OUT = path.resolve(root, process.env.OUT_DIR || `artifacts/runs/manual-${Date.now()}/tester/playtest`);
+13:const QUICK = process.env.QUICK === '1';
+14:const SOAK = QUICK ? 15 : Number(process.env.SOAK_SECONDS || 300);
+25:  const out = { status: code === 0 ? 'PASS' : 'FAIL', quick: QUICK, soak_seconds: SOAK, failed, unverified, results, ...extra };
+33:for (const f of ['index.html', 'doom.wasm']) if (!fs.existsSync(path.join(DIST, f))) { rec('B0.dist-present', 'FAIL', `${path.join(DIST, f)} missing`); finish(); }
+39:  const p = path.join(DIST, decodeURIComponent(new URL(req.url, 'http://x').pathname).replace(/^\/$/, '/index.html'));
+40:  if (!p.startsWith(DIST) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) { badResponses.push(`404 ${req.url}`); res.writeHead(404).end(); return; }
+160:  // Soak (R6): scripted input for SOAK seconds; the page must stay alive with no errors/aborts.
+164:  while (Date.now() - t1 < SOAK * 1000) {
+169:  check('R1.soak-no-errors', !hasCrash() && errors.length === 0, `${SOAK}s; errors=${errors.slice(0, 3).join(' | ')}`);
+170:  check('R2.soak-still-rendering', (r3 - r2) / SOAK >= 20 && stats(last).darkFrac < 0.95, `rAF/s=${((r3 - r2) / SOAK).toFixed(1)} visibleFrame=${stats(last).darkFrac < 0.95}`);
+)
+
+Calling Bash()
+
+Bash response → (
+1
+0
+run1 exit=0
+PASS       T2.35-tics-per-second 34.98 tics/s over 4s (need 35 +/-10%)
+PASS       R2.soak-still-rendering rAF/s=60.4 visibleFrame=true
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3.door-use-and-level-exit no stable cross-build oracle; manual/protocol check
+playtest: PASS failed=0 unverified(not-in-scope, listed)=3
+Command did not complete within its 120s timeout and was moved to the background (ID: bbzb44a4m). Output is being written to: /private/tmp/claude-501/-Users-sarahtseng-Projects-fellowship-loop-capstone/ad55dda5-8335-4b99-8e9f-5e6bd16b172f/tasks/bbzb44a4m.output. You will be notified when it completes. If it is still running after 10m in the background, it will be stopped and you will be notified. It is running now: do not start a second copy while it runs. If it is no longer needed, stop it with TaskStop. To check interim output, use Read on that file path.
+Session cwd remains /Users/sarahtseng/Projects/fellowship-loop-capstone; directory changes made by the backgrounded command do not apply to subsequent commands.
+)
+
+Calling Bash()
+
+Bash response → (
+PASS       I3.turn-left shift=213px
+playtest: PASS failed=0 unverified(not-in-scope, listed)=3
+agent.log
+build.log
+dist-sha256.txt
+invocation.txt
+playtest-1
+playtest-1.log
+playtest-2
+playtest-2.log
+source-commit.txt
+source-status.txt
+)
+Both runs passed. I'll write the report and result.
+Calling Bash()
+
+Bash response → "PASS       T2.35-tics-per-second 34.97 tics/s over 4s (need 35 +/-10%)\nPASS       R2.soak-still-rendering rAF/s=60.5 visibleFrame=true"
+I made one change to my owned files and rebuilt and tested it. The status is FINDINGS, not PASS, because several items are still unverified.
+
+- **Change:** the reviewer's R2-8 finding said `rt_js_put` in `platform/render_timing.c` allocated a new `Uint8ClampedArray` and `ImageData` every frame. It now keeps the `ImageData` and rebuilds it only when the wasm heap buffer or the pixel pointer changes. The memory-growth case was not exercised. The BGR→RGBA conversion and the timing and sleep code are unchanged. I left `web/render_timing.js` uncreated.
+- **Build:** emcc 4.0.18 built cleanly into the role-owned `build/` and `dist/` directories. The built `doom.js` contains the new code and no `cap_js_present` fallback symbol, so `render_timing.c` is the active renderer.
+- **Playtest:** two 60-second runs both exited 0 with `failed=0`. Rendering ran at about 60.5 frames/s and the game at about 35 tics/s. The I3 turn-left check passed in the one run I checked (213px).
+- **Not shown:** the checks passed before the change too, so they only show no regression. I did not measure the allocation saving.
+- **Still unverified:** A1 audio, P1 persistence and G3 door/exit, plus hidden-tab timing, which I didn't test. I didn't run the full `tests/verify.sh`, which belongs to the tester. The I3 flake is a tester-owned item, and two passes here don't clear it.
+- **Process:** the criteria and contract are agent-proposed, not student-approved. I didn't touch `tests/`, `loop/`, `assets/`, `third_party/`, the Makefile or the HTML.
+- **Next:** the tester runs the full `verify.sh` on the current tree and adds hidden-tab, `Module._rt` identity and memory-growth checks. The reviewer re-checks the R2-8 change.
+
+Everything is in `artifacts/runs/20261103T002748Z-51080/coder_render_timing/3-render/attempt-1/`. `report.md` and `result.json` are the main files, next to the build log, playtest logs, dist hashes and source status.

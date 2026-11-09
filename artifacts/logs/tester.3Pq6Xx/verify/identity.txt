@@ -1,0 +1,37 @@
+commit: e500c440656622db5ab3f8fb7df73d8b5998eeb3
+dirty_diff_sha256: 429a585d27a59ce4d9aef69880f4022521339feb4e8ba8999e0ec7c7c2851e33
+status:  M loop/agents.yaml
+status:  M loop/loop.sh
+status:  M platform/doomgeneric_wasm.c
+status:  M tests/README.md
+status:  M web/index.html
+status: ?? .claude/
+status: ?? .mcp.json
+status: ?? BUILD.md
+status: ?? Makefile
+status: ?? loop/DESIGN_DECISION_QUESTIONS.md
+status: ?? loop/playwright-mcp.sh
+status: ?? loop/prompts/
+status: ?? loop/run-command.py
+status: ?? platform/audio_compat/
+status: ?? platform/audio_web.c
+status: ?? platform/cap_fallback.c
+status: ?? platform/capstone_bridge.h
+status: ?? platform/engine_stubs.c
+status: ?? platform/input_audio.c
+status: ?? platform/input_audio.h
+status: ?? platform/render_timing.c
+status: ?? platform/render_timing.h
+status: ?? tests/faults.sh
+status: ?? tests/lib/
+status: ?? tests/package-lock.json
+status: ?? tests/package.json
+status: ?? tests/playtest.mjs
+status: ?? tests/selftest.mjs
+status: ?? tests/verify.sh
+status: ?? web/audio_web.js
+status: ?? web/input_audio.js
+status: ?? web/render_timing.js
+tests_sha256: 62bef44d9eb27465146887d498837340450ff4ac35b90d636774310881c59b99
+wad_sha256: 1d7d43be501e67d927e415e0b8f3e29c3bf33075e859721816f652a526cac771
+emcc: emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 4.0.18 (fae107463db4d20a276a27ede393048deaeebf76)

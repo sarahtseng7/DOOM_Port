@@ -1,0 +1,9 @@
+{"note":"transcribed from Playwright MCP run_code return value; CDP clearBrowserCache + setCacheDisabled; viewport 1280x720; URL /?fresh=1793807486002",
+ "responses":[["/",200,"text/html"],["/render_timing.js",200,"text/javascript"],["/input_audio.js",200,"text/javascript"],["/audio_web.js",200,"text/javascript"],["/doom.js",200,"text/javascript"],["/doom.data",200,"application/octet-stream"],["/doom.wasm",200,"application/wasm"]],
+ "fromServiceWorker":false,"requestfailed":[],"pageerrors":[],
+ "samples":[{"t_ms":206,"ready":1,"tic":1,"meanRGB":[111,50,30],"transparent":"0/2560","title":"DOOM Shareware","canvas":[640,400]},
+  {"t_ms":305,"tic":4},{"t_ms":514,"tic":12},{"t_ms":809,"tic":22},{"t_ms":1008,"tic":29},{"t_ms":1512,"tic":46},{"t_ms":2006,"tic":64},{"t_ms":3006,"tic":99,"meanRGB":[111,50,30],"transparent":"0/2560"}],
+ "first_sample_note":"first evaluate returned at 206 ms (requested 100 ms; evaluate waits for the page context), engine already ready with tic 1",
+ "tic_rate_1s_to_3s":"(99-29)/2.0 = 35.0 tics/s",
+ "console_non_log":["warning: AudioContext was not allowed to start (x2, pre-gesture)"],
+ "raw_console":"artifacts/browser/console-2026-11-04T15-51-25-993Z.log"}

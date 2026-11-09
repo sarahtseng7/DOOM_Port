@@ -1,0 +1,963 @@
+
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+  the resource usage, manual interventions, and final stopping decision.
+
+Preserve failing evidence as well as passing evidence. Record changes to
+acceptance criteria separately, with a reason. Discuss disagreements and
+missed faults in your write-up.
+
+## Where your work belongs
+
+| Location | Purpose |
+| --- | --- |
+| [`loop/`](loop/README.md) | All loop code, prompts, role definitions, MCP configuration, and design documentation. |
+| [`artifacts/`](artifacts/README.md) | All durable run state, handoffs, logs, review findings, and evidence. Agents must use this folder between runs. |
+| `tests/` | Verification code, including checks for the loop itself. |
+| `platform/`, `web/` | The port and browser page. |
+| `third_party/doomgeneric/` | Supplied engine; platform ports have been removed. |
+| `assets/` | Included shareware `doom1.wad` (Episode 1). |
+| `build/`, `dist/` | Generated build output. |
+
+Keep the root for project documentation and shared build/toolchain files.
+The starter supplies engine source, platform and HTML stubs, the shareware
+WAD, documentation, and an optional Docker toolchain. It supplies no working
+game, build script, loop implementation, or test suite. `artifacts/` starts
+with its README only; students create run evidence there during the project.
+Use the supplied engine and Emscripten. Documentation is allowed; copying an
+existing Doom browser port does not satisfy the assignment.
+
+See [`platform/README.md`](platform/README.md) for engine integration caveats,
+including pixel format, timing, and audio. The supplied game data already
+contains sound effects and music; no additional sound assets are required.
+
+## Agent section for setup
+
+### macOS without Docker
+
+Install the build tools directly on your Mac to compile and test the browser
+port. Docker is not required for this workflow. There is currently no macOS
+setup script; run the steps below manually.
+
+1. **Install prerequisites.** In Terminal, run:
+
+   ```sh
+   xcode-select --install
+   ```
+
+   Finish the installer, then check `git --version` and `python3 --version`.
+   If Python is missing, install it from [python.org](https://www.python.org/downloads/macos/),
+   or run `brew install python` if you already have Homebrew.
+
+2. **Install Emscripten.** Use version `4.0.18` to match the supplied Dockerfile:
+
+   ```sh
+   mkdir -p ~/Developer
+   cd ~/Developer
+   git clone https://github.com/emscripten-core/emsdk.git
+   cd emsdk
+   ./emsdk install 4.0.18
+   ./emsdk activate 4.0.18
+   source ./emsdk_env.sh
+   emcc --version
+   ```
+
+   If you already have an SDK checkout at that location, use it instead of
+   cloning again. In each new Terminal session where you want to compile, run:
+
+   ```sh
+   source ~/Developer/emsdk/emsdk_env.sh
+   ```
+
+   See the [official installation instructions](https://emscripten.org/docs/getting_started/downloads.html).
+
+3. **Verify the compiler and browser workflow.** Return to this repository's
+   root directory, then run:
+
+   ```sh
+   mkdir -p build/smoke
+   cat > build/smoke/hello.c <<'EOF'
+   #include <stdio.h>
+   int main(void) {
+       printf("Emscripten works!\n");
+       return 0;
+   }
+   EOF
+
+   emcc build/smoke/hello.c -o build/smoke/index.html
+   python3 -m http.server 8000 --bind 127.0.0.1 --directory build/smoke
+   ```
+
+   Open <http://localhost:8000>. The generated page should print
+   `Emscripten works!`. Press **Control-C** in Terminal to stop the server.
+   This verifies the toolchain and local serving, not the game.
+
+4. **Have your agents implement and build the game.** The supplied platform callbacks are
+   empty, there is no entry point or build script, and the HTML does not yet
+   load a compiled module. These are student implementation tasks; see
+   [platform/README.md](platform/README.md). Document the actual build command
+   once implemented. A completed build could produce:
+
+   ```text
+   dist/
+     index.html
+     doom.js
+     doom.wasm
+     doom.data
+   ```
+
+   The exact filenames depend on the build configuration. For example,
+   `doom.data` could contain the packaged shareware WAD. The build must make
+   that WAD available to the engine inside the browser module.
+
+5. **Test the completed game locally.** Once the build output is in `dist/`,
+   run this from the repository root:
+
+   ```sh
+   python3 -m http.server 8000 --bind 127.0.0.1 --directory dist
+   ```
+
+   Open <http://localhost:8000> and exercise the game's behavior. Use a local
+   web server rather than opening the HTML file directly, as explained in
+   [Emscripten's deployment documentation](https://emscripten.org/docs/compiling/Deploying-Pages.html).
+
+artifacts/logs:
+coder_input_audio.0yubr6
+coder_input_audio.1EbASm
+coder_input_audio.1TaZlK
+coder_input_audio.3fWNbv
+coder_input_audio.3MXh6A
+coder_input_audio.5wrkFk
+coder_input_audio.6WSU74
+coder_input_audio.6zHSnA
+coder_input_audio.7uDQyJ
+coder_input_audio.9u4tS4
+coder_input_audio.a8DgOL
+coder_input_audio.bfdKbw
+coder_input_audio.dGtwHr
+coder_input_audio.DUI82V
+coder_input_audio.Ew3ETW
+coder_input_audio.g90qsB
+coder_input_audio.gRFlNu
+coder_input_audio.GUXhIX
+coder_input_audio.gVnY6U
+coder_input_audio.hlDobF
+coder_input_audio.JcM7SB
+coder_input_audio.kjW35H
+coder_input_audio.KqlYco
+coder_input_audio.KWBVgQ
+coder_input_audio.N0e4K8
+coder_input_audio.niQiMB
+coder_input_audio.OKDYKj
+coder_input_audio.OwOtK6
+coder_input_audio.PrVlSe
+coder_input_audio.RB2acD
+coder_input_audio.rdvBFz
+coder_input_audio.RfUwSi
+coder_input_audio.SEwuBm
+coder_input_audio.vSI2GO
+coder_input_audio.x4sbYD
+coder_input_audio.XJqG3c
+coder_input_audio.XSXPrI
+coder_input_audio.YCG1J3
+coder_input_audio.yleZko
+coder_input_audio.YoKls9
+coder_input_audio.zZGUhu
+coder_render_timing.0MFb7w
+coder_render_timing.1ZyeYK
+coder_render_timing.6XCJuY
+coder_render_timing.6ZxIHL
+coder_render_timing.8nHQTI
+coder_render_timing.atrTJx
+coder_render_timing.BUwXJm
+coder_render_timing.cK29OS
+coder_render_timing.Dy4Q1i
+coder_render_timing.EeozLd
+coder_render_timing.EEYKNe
+coder_render_timing.EjeWNb
+coder_render_timing.El3oAP
+coder_render_timing.EqHAI4
+coder_render_timing.Fwzc9q
+coder_render_timing.HgDIMK
+coder_render_timing.HwUXVM
+coder_render_timing.i3pFKE
+coder_render_timing.iH0AwM
+coder_render_timing.iIikTI
+coder_render_timing.j49cjx
+coder_render_timing.kFsAu7
+coder_render_timing.KuIme0
+coder_render_timing.licfez
+coder_render_timing.lpNQaR
+coder_render_timing.mobiWy
+coder_render_timing.mpRUkR
+coder_render_timing.Pct78q
+coder_render_timing.sbbbAi
+coder_render_timing.T2WY45
+coder_render_timing.TqIUTQ
+coder_render_timing.vhFGrK
+coder_render_timing.vyC811
+coder_render_timing.WB04Nu
+coder_render_timing.wbiVKQ
+coder_render_timing.Wkpv1o
+coder_render_timing.xSCZrJ
+coder_render_timing.Xt27oG
+coder_render_timing.y2E5IZ
+coder_render_timing.yJ4J8e
+coder_render_timing.zWYUzc
+coder.03woB7
+coder.1Bi21x
+coder.4nrv6e
+coder.5cbI3A
+coder.72fg2O
+coder.7cXMRV
+coder.7RfYKW
+coder.8JOBA4
+coder.8NI43t
+coder.9PHBOq
+coder.acGoDX
+coder.ACrcCc
+coder.b0xh2K
+coder.caQaH6
+coder.cRMV3j
+coder.cwCqji
+coder.CXEdjj
+coder.CzMECd
+coder.diUW6i
+coder.f60Esm
+coder.FaD2R7
+coder.GhMtru
+coder.H58uUd
+coder.HgewO7
+coder.HPqFrt
+coder.Hq7OD9
+coder.HT7Mh0
+coder.i9iFY7
+coder.ICaI0g
+coder.J22PFD
+coder.Jk1TRZ
+coder.JMrJmA
+coder.joHsE4
+coder.kf3uJJ
+coder.KoXm1s
+coder.kpfpV0
+coder.KQZPBB
+coder.KvCoMT
+coder.l3P8AO
+coder.L6tVZi
+coder.ljYx2Z
+coder.lRueHg
+coder.MB4v9E
+coder.mfefCt
+coder.mtnqTz
+coder.n6GiEG
+coder.nTcUZh
+coder.nUFHev
+coder.NWKoK5
+coder.O0vxbS
+coder.OCtXnf
+coder.OPvVkW
+coder.oWCDg7
+coder.pDUl9g
+coder.pLDPys
+coder.Q1melD
+coder.qdu038
+coder.rRdM6A
+coder.rRGfb0
+coder.s3mRzG
+coder.SdeFAX
+coder.UAUPuD
+coder.UVP1dP
+coder.UWFAhI
+coder.UwvRwk
+coder.uzo58Q
+coder.VDHNTr
+coder.VgF4Hv
+coder.vipQHN
+coder.vMC7jW
+coder.vtsyOC
+coder.X6XMnq
+coder.XbhNOg
+coder.XGU7Cd
+coder.Xh7QBy
+coder.xIoyo9
+coder.Xl0uaN
+coder.xM6chO
+coder.XTOgLt
+coder.yjG9kc
+coder.zfCpSd
+coder.ZVJU9U
+reviewer_gameplay.3rXq3f
+reviewer_gameplay.6SoKWH
+reviewer_gameplay.6zun55
+reviewer_gameplay.9WUqPT
+reviewer_gameplay.aln28c
+reviewer_gameplay.Bt9KSs
+reviewer_gameplay.dAPDqY
+reviewer_gameplay.dMs6Vo
+reviewer_gameplay.E8OE8y
+reviewer_gameplay.EGn2Bb
+reviewer_gameplay.EqGhpV
+reviewer_gameplay.F2duYo
+reviewer_gameplay.facW3H
+reviewer_gameplay.GMLSL6
+reviewer_gameplay.GTAfxW
+reviewer_gameplay.GV2v4U
+reviewer_gameplay.HCHqDZ
+reviewer_gameplay.j2SZgT
+reviewer_gameplay.K8HORm
+reviewer_gameplay.ldSVVs
+reviewer_gameplay.LPg0t8
+reviewer_gameplay.Lw1bQv
+reviewer_gameplay.Njlpzg
+reviewer_gameplay.nRdKS9
+reviewer_gameplay.oH1nxw
+reviewer_gameplay.PEszG3
+reviewer_gameplay.q0AKMe
+reviewer_gameplay.rhBDEY
+reviewer_gameplay.Rw1fcA
+reviewer_gameplay.T486PX
+reviewer_gameplay.tJuPwN
+reviewer_gameplay.tVf5OL
+reviewer_gameplay.WeHatJ
+reviewer_gameplay.wHMOB2
+reviewer_gameplay.wQbJ7c
+reviewer_gameplay.WxVbWe
+reviewer_gameplay.XkfiAZ
+reviewer_gameplay.xPaDae
+reviewer_gameplay.Xy92jH
+reviewer_gameplay.ZIYPuo
+reviewer_gameplay.ZUZV8O
+reviewer_site.0fZGKo
+reviewer_site.32cQhq
+reviewer_site.7RuKMK
+reviewer_site.9wJ6HG
+reviewer_site.aZiFrh
+reviewer_site.B6IHWG
+reviewer_site.cdLCtG
+reviewer_site.f9dy0D
+reviewer_site.fC4DPq
+reviewer_site.FDoXaA
+reviewer_site.FMO0C9
+reviewer_site.FnUrtZ
+reviewer_site.GLdumE
+reviewer_site.GwiGfG
+reviewer_site.HSI496
+reviewer_site.Hwj708
+reviewer_site.inVZde
+reviewer_site.JBMgao
+reviewer_site.lFGon0
+reviewer_site.lWGySs
+reviewer_site.M9x4Dk
+reviewer_site.msvdXx
+reviewer_site.NOQPIi
+reviewer_site.nSpEMa
+reviewer_site.Ox5ZuG
+reviewer_site.p97OZ1
+reviewer_site.pWAMB0
+reviewer_site.Q4XPrg
+reviewer_site.qchn1m
+reviewer_site.qSiYJ9
+reviewer_site.qWTvbw
+reviewer_site.RLrOVV
+reviewer_site.Rm0IxG
+reviewer_site.RUjcrA
+reviewer_site.sFYP5z
+reviewer_site.sLn6b5
+reviewer_site.U8Ka1G
+reviewer_site.UpTuZG
+reviewer_site.uU7oaT
+reviewer_site.w91AQ9
+reviewer_site.ZELzZH
+tester.06TdYY
+tester.1JMTzK
+tester.2eMWge
+tester.3P7z9H
+tester.3Pq6Xx
+tester.4fEyMa
+tester.4StVeO
+tester.6hWyX9
+tester.7sHdq1
+tester.8DASDy
+tester.8fsQdw
+tester.98BZhM
+tester.9SkuzA
+tester.aZlP2G
+tester.bajOBH
+tester.bj22dE
+tester.BNf9ts
+tester.byIkGV
+tester.clYVda
+tester.fIhcMO
+tester.gkbn63
+tester.I2eTl9
+tester.InaBUN
+tester.JAaNjg
+tester.jQ8WOj
+tester.l8juQD
+tester.nJZO5N
+tester.NRC192
+tester.oPtvHA
+tester.PLOvPR
+tester.puK0iM
+tester.Q0YUP2
+tester.qBOVWc
+tester.QcBm5A
+tester.QSq2Uh
+tester.QT7YlR
+tester.rMyy2B
+tester.s4m9oQ
+tester.sAC1ys
+tester.SytnGa
+tester.VItFj8
+tester.w2Z6BS
+tester.WCxTyj
+tester.wO71Dk
+tester.yX1CIJ
+verify.2u2qnP
+verify.4qQKgm
+verify.69kwht
+verify.8rMyby
+verify.8SnUwc
+verify.B9OMLq
+verify.BZpuG9
+verify.C0hQ9F
+verify.EYGmlB
+verify.f8X5Tq
+verify.fc6cQr
+verify.FdoEfO
+verify.Gjtb86
+verify.Gm8XQE
+verify.hDJeOV
+verify.ICvgiu
+verify.IyPdrJ
+verify.jfRFOF
+verify.KBbHyS
+verify.KEqrSN
+verify.kUtnpP
+verify.MIBmV2
+verify.NNY4oS
+verify.oFQ3cu
+verify.pE5sQx
+verify.Px69Yu
+verify.Q4Cioh
+verify.ritpV3
+verify.RZPoxv
+verify.T1Swwb
+verify.v7aj9s
+verify.WDjDxF
+verify.wkzlnA
+verify.XOoz2M
+verify.xskzsM
+verify.XSzOzq
+verify.za54Fq
+verify.ZC3dO1
+verify.ZS3tau
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+29:  reviewer_gameplay:
+30:    description: Gameplay and audio review
+31-    harness:
+32-      type: claude-code
+33-      model: opus
+34:    instruction: Read loop/prompts/REVIEWER_GAMEPLAY.md. Follow the role and permissions there.
+35-  tester:
+36-    description: Repeatable automated verification
+37-    harness:
+38-      type: claude-code
+39-      model: sonnet
+40-    instruction: Read loop/prompts/TESTER.md. Follow the role and permissions there.
+)
+
+Calling Bash()
+
+Bash response → (
+# Gameplay and audio review
+
+You are `reviewer_gameplay`.
+
+Review the playable game: level entry, movement, turning, stopping after release,
+focus loss, fire/use, menus, timing during play, sound effects, and music.
+Write no source, tests, or build files. You may run the existing build and serve
+its output locally; stop only processes you started. Use Playwright MCP or browser
+scripts for actual interactions and observations. Account for normal Doom momentum
+rather than assuming instantaneous stopping. Coordinate startup concerns through
+reviewer_site's report rather than duplicating its full review. Assign controls/
+audio faults to coder_input_audio, timing/display faults to coder_render_timing,
+and integration faults to coder. Audio output that cannot be established remains
+unverified. PASS requires observed required behavior; a loaded page is insufficient.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+----
+FINDINGS
+
+reviewer_gameplay Njlpzg, 2026-11-04 ~17:09–17:25 UTC. I found no defect in movement, playability or the audio pipeline, so nothing is assigned to a coder.
+- I re-ran 8 inherited probes against the current build myself. All passed; I did not rely on the earlier results.
+- I added one new probe, door_combined.mjs, 8 PASS / 0 FAIL. It covers a manual door that blocks while closed, makes a sound on Use, and lets the player through once open. It also covers holding two keys at once: forward plus strafe moves diagonally, and forward plus turn moves in an arc.
+
+The result stays FINDINGS only because A1 (audio by ear), H1 (a real hidden tab) and other browsers still need a human.
+
+## Source identity (source-identity.txt, dist-hashes.txt)
+- HEAD e500c44 plus uncommitted changes. `git diff HEAD -- . ':!artifacts' | shasum -a 256` = 441e441ad5dfcd52…. This is the same hash as reviewer_gameplay xPaDae, reviewer_site Ox5ZuG, the tester and all three coder reports.
+- The dist/ hashes match xPaDae exactly: doom.wasm 7afb94fa…, doom.js 0090630e…, doom.data 1d7d43be…, index.html 43a15c63…, plus the 3 helper JS files.
+- `find platform web Makefile -newer dist/doom.wasm` is empty. I did not rebuild.
+- artifacts/specification.md and artifacts/acceptance-criteria.md are absent.
+
+## Work
+- Read AGENTS.md, the READMEs, my role prompt and all 6 reports in artifacts/reports/.
+- reviewer_site Ox5ZuG is PASS for startup on this hash, so I did not repeat the startup review.
+- Server:
+  - Port 8207 was free before I started (lsof printed nothing).
+  - I ran `python3 -m http.server 8207 --bind 127.0.0.1 --directory dist`, PID in server.pid.
+  - server.log has 71 requests, all 200.
+  - At the end I killed only that PID. curl then returned 000 (server-stopped.txt).
+- Probes:
+  - The 8 probes were copied unchanged from reviewer_gameplay.xPaDae. probes-provenance.txt holds their sha256 hashes, which are byte-identical to xPaDae's.
+  - I ran them serially with `node <probe>.mjs <OUT> 8207` in headless Chromium.
+  - All exited 0 (probe-rcs.txt).
+
+## Results: inherited probes (re-run, all pass)
+| Probe | Result |
+| --- | --- |
+| review_state | 32 PASS / 0 FAIL / 2 NOTE. The NOTEs are the same as before: Use at a wall plays "oof", and music keeps playing in the menu, as in vanilla. |
+| coast_pertic | 0 multi-tic gaps. Stopped 44 tics after release, peak 7 u/tic, which matches vanilla friction. |
+| pause_check | 6 PASS: pause and the menu freeze the world, and nothing coasts or sticks after the menu closes. |
+| visibility_release / blur_open | pass=true / pass=true. After blur, movement coasts 44 tics and then stops (0 movement in the final 1 s), and input still works afterwards. |
+| cheats_weapons | 12 PASS: every weapon fires with SFX and uses ammo; IDCLEV changes the level and restarts music. |
+| damage_death | 10 PASS: damage, death, no movement while dead, Use respawns. |
+| exit_pickup | 8 PASS: health bonus 100→101 with SFX, the E1M1 exit switch leads to the intermission and then E1M2, and the player moves in E1M2. |
+
+Details from review_state:
+- Movement: forward moves along the facing direction and backward moves opposite it. Coasting then stopping takes 47 tics.
+- Turning: turns about 40° per 15 tics while held, with 0° of drift after release.
+- Strafing: `,`, `.` and Alt+arrows all strafe.
+- Running: Shift raises speed from 1.94 to 5.91 u/tic.
+- Fire: firing uses ammo and plays SFX. Held fire repeats, then stops after release.
+- Focus: blur stops held turning and held forward movement.
+- Automap toggles without moving the player.
+- Tic rate is 35.0 tics/s.
+- Audio counters: SFX requested 20 = played 20, with sfxBad 0, musicErrors 0 and maxPeak 0.44. The AudioContext is running after the first gesture.
+
+## Results: new probe door_combined.mjs (door_combined.stdout.log, door-combined.json, wad-doors.json, screens/ep-dr-*.png)
+| Check | Result |
+| --- | --- |
+| diagonal-forward-plus-strafe-right | Up+`.` held 300 ms moved 82 units forward and 87 right, with 0° of turn. |
+| arc-forward-plus-turn-left | Up+Left held 400 ms turned 43.95° and moved 113.8 units. |
+| reached-door-front | Clipping on at (1484,−2488), facing 358.6°. ep-dr-01 (viewed) shows the closed door. |
+| closed-door-blocks | Holding forward stops at x=1519, which is the door line at x=1536 minus the player's 16-unit radius. |
+| door-use-sfx | Use played 3 SFX (see the note below). |
+| open-door-passable | After the door opened, walking forward reached x=1719 in sector 7, so the player went through. ep-dr-03 (viewed) shows the open door and the room beyond in correct colours. |
+| no-page-errors | 0 |
+
+- The door was found by a read-only parse of assets/doom1.wad (wad_doors.py → wad-doors.json): linedef 151, special 1 (DR door), front side to the west, back sector 4 with floor and ceiling both at 0, i.e. closed.
+- Noclip (IDSPISPOPD) was used only to travel to the door. Clipping was back on, as the "NO CLIPPING MODE OFF" message in ep-dr-01 shows, before the blocking, Use and pass-through checks.
+- Probe error, kept as evidence: the first run failed with a SyntaxError (duplicate `s0`) because I copied too many helper lines from exit_pickup.mjs. I deleted those lines and re-ran. This was not a product fault.
+- Note: the 3 SFX from one Use is most likely the door sound plus the sight sounds of the two zombiemen who become visible (ep-dr-03). I did not attribute each sound, because the counter reports totals only. Health stayed at 100.
+
+## Unresolved (owner)
+1. UNVERIFIED, human: A1, whether SFX and music sound correct by ear. The counters and peaks prove only that playback is non-silent.
+2. UNVERIFIED, human: H1, a real hidden or minimized tab. Playwright only overrides visibility and blur.
+3. UNVERIFIED, tester/human: Firefox, Safari, HiDPI, the episode end, and a full walked route with no noclip.
+4. Tester (carried over, not re-checked this run):
+   - Switch E2b to `_cap_player_angle`.
+   - Automate G3c with the route in exit_pickup.mjs.
+   - Fix the faults.sh expectations.
+   - Run verify.sh in the background on 441e441a.
+   - The door check in door_combined.mjs could also be adopted as a protected check.
+5. Student decisions (carried over): music is an oscillator synth, not OPL-faithful; WASD and mouse are not mapped; volume is not persisted.
+6. No new defects for coder_input_audio, coder_render_timing or coder.
+
+## Assumptions
+- The required controls are Doom's default keys.
+- Correct momentum means a vanilla friction stop about 40–47 tics after release.
+- Engine state hooks (`_cap_*`) outrank pixel diffs.
+- I did not re-run e2b_repeat this run. It is a tester-owned stress check that passed 10/10 in xPaDae on this same hash.
+- All criteria are agent-proposed, not student-approved. I tested only headless Chromium on one macOS machine.
+- Manual interventions: none. Token usage: not available.
+- Writes: this OUTPUT_DIR only, including probes, logs, JSON and screens. I made no source, test, build, loop or artifacts/browser edits, wrote no result.json, and did not touch agent.log.
+
+## Next action
+- **Human:** run A1 and H1 (protocol in tests/README.md).
+- **Tester:** take the engine-state checks for E2b, G3c and the door, then run verify.sh.
+- **If the dist hashes change:** re-run `node <probe>.mjs <OUT> <PORT>` for the 9 probes in this directory.
+----
+total 32
+drwx------    3 sarahtseng  staff     96 Nov  4 10:12 .
+drwxr-xr-x  333 sarahtseng  staff  10656 Nov  4 10:12 ..
+-rw-r--r--    1 sarahtseng  staff  15695 Nov  4 10:12 agent.log
+)
+
+Calling Bash()
+
+Bash response → (
+e500c44
+441e441ad5dfcd5275842d7aab3debe4296d3dce9c6a5b4df54769a006bb5d9c  -
+total 9576
+drwxr-xr-x   9 sarahtseng  staff      288 Nov  4 09:41 .
+drwxr-xr-x@ 24 sarahtseng  staff      768 Nov  4 09:41 ..
+-rw-r--r--@  1 sarahtseng  staff    18571 Nov  4 09:41 audio_web.js
+-rw-r--r--   1 sarahtseng  staff  4196020 Nov  4 09:41 doom.data
+-rw-r--r--   1 sarahtseng  staff    76584 Nov  4 09:41 doom.js
+-rwxr-xr-x   1 sarahtseng  staff   555631 Nov  4 09:41 doom.wasm
+-rw-r--r--@  1 sarahtseng  staff      890 Nov  4 09:41 index.html
+-rw-r--r--@  1 sarahtseng  staff     4148 Nov  4 09:41 input_audio.js
+-rw-r--r--@  1 sarahtseng  staff     1189 Nov  4 09:41 render_timing.js
+09969002dba66a000b5c427998ddd8ff1805262e4de58da25dcb5d6f6eb8c353  dist/audio_web.js
+1d7d43be501e67d927e415e0b8f3e29c3bf33075e859721816f652a526cac771  dist/doom.data
+0090630eeaf16a87c258ca960b7649e63a475c3e862196d873fd123b8fbcdc05  dist/doom.js
+7afb94fa1ec64b5c67fe6bcec5310d8212bbe2ae241b30ff57202bd366010642  dist/doom.wasm
+43a15c63d134b538dfb4d12f93dae761feb71c5ac270333e7f1c9d0f70fd4813  dist/index.html
+cc5e94829d3893bfb7416df6e7d33614890ae76935b56f8c01457f36907b2bec  dist/input_audio.js
+e4114e9951ad4ed1b189722e604847a3d83d5b22b98756abf7a0a8cb1740f40f  dist/render_timing.js
+agent.log
+blur_open.mjs
+blur_open.stdout.log
+blur-open.json
+cheat_repeat.mjs
+cheats_weapons.mjs
+cheats_weapons.stdout.log
+cheats-weapons.json
+coast_pertic.mjs
+coast_pertic.stdout.log
+coast-pertic.json
+damage_death.mjs
+damage_death.stdout.log
+damage-death.json
+dist-hashes.txt
+door_combined.mjs
+door_combined.stdout.log
+door-combined.json
+e2b_repeat.mjs
+exit_pickup.mjs
+exit_pickup.stdout.log
+exit-pickup.json
+pause_check.mjs
+pause_check.stdout.log
+pause-results.json
+pixel_diff.mjs
+probe-rcs.txt
+probes-provenance.txt
+report.md
+review_state.mjs
+review_state.stdout.log
+review-results.json
+screens
+server-stopped.txt
+server.log
+server.pid
+source-identity.txt
+visibility_release.mjs
+visibility_release.stdout.log
+visibility-release.json
+wad_doors.py
+wad_e1m1.py
+wad-doors.json
+reviewer_gameplay.aln28c
+reviewer_site.RUjcrA
+coder.uzo58Q
+coder_input_audio.dGtwHr
+coder_render_timing.iH0AwM
+coder.SdeFAX
+verify.BZpuG9
+tester.NRC192
+reviewer_gameplay.Njlpzg
+reviewer_site.Ox5ZuG
+coder.Xh7QBy
+coder_input_audio.x4sbYD
+== artifacts/reports/coder_input_audio.md
+FINDINGS
+
+No source edits this run. The prior reports in artifacts/reports/ name no reproducible defect in my files (platform/input_audio.*, platform/audio_*, web/input_audio.js, web/audio_*). The result is FINDINGS because audio by ear (A1) and a real hidden tab (H1) are still UNVERIFIED.
+441e441ad5dfcd52
+== artifacts/reports/coder_render_timing.md
+FINDINGS
+
+No source edits. Re-checked the prior reports in artifacts/reports/. None names a reproducible rendering or timing defect, and the source and dist hashes are identical to the previous run (source-identity.txt). The result is FINDINGS because a hidden tab, other browsers and HiDPI are still UNVERIFIED.
+441e441ad5dfcd52
+== artifacts/reports/coder.md
+FINDINGS
+
+No source edits. No report in artifacts/reports/ names a defect in a coder-owned file, so the integration needs no change. The result is FINDINGS because other checks are still UNVERIFIED and owned by others.
+441e441ad5dfcd52
+== artifacts/reports/reviewer_gameplay.md
+FINDINGS
+
+reviewer_gameplay Njlpzg, 2026-11-04 ~17:09–17:25 UTC. I found no defect in movement, playability or the audio pipeline, so nothing is assigned to a coder.
+441e441ad5dfcd52…
+441e441a
+== artifacts/reports/reviewer_site.md
+PASS
+
+reviewer_site RUjcrA, 2026-11-04 ~18:10–18:16 UTC. I loaded the current dist/ build cold at http://localhost:8000 in Playwright MCP Chromium (1280x720) and watched it start. I found no loading or startup defect. The build is byte-identical to the one Ox5ZuG passed, and this run observed startup again on its own rather than relying on that report.
+441e441ad5dfcd52…
+== artifacts/reports/tester.md
+FINDINGS
+
+The one-command `tests/verify.sh` finished with rc=0: tooling, clean build, selftest, playtest (failed=0) and all 7 injected faults caught. The result is still FINDINGS because 4 required behaviors remain UNVERIFIED (A1, P1, G3c, H1). I changed no product source and no tests.
+441e441a
+artifacts/README.md
+)
+
+Calling Bash()
+
+Bash response → (
+// reviewer_gameplay EGn2Bb: copied from ZIYPuo; forward-blur check now records pre-blur motion and is NOTE (inconclusive) if the player was not moving.
+// reviewer_gameplay (copied from HCHqDZ/F2duYo): gameplay/audio review using read-only engine-state hooks (bridge v5).
+// Usage: node review_state.mjs <OUT_DIR> <PORT>
+import { createRequire } from 'node:module'; import fs from 'node:fs';
+const root = '/Users/sarahtseng/Projects/fellowship-loop-capstone';
+const require = createRequire(root + '/tests/package.json');
+const { chromium } = require('playwright');
+const { PNG } = require('pngjs');
+const { diffFrac, AMMO } = await import(root + '/tests/lib/frames.mjs');
+const OUT = process.argv[2]; const PORT = process.argv[3] || '8191';
+fs.mkdirSync(OUT + '/screens', { recursive: true });
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+const res = []; const rec = (id, ok, d) => { res.push({ id, ok, d }); console.log(ok ? 'PASS' : 'FAIL', id, typeof d === 'string' ? d : JSON.stringify(d)); };
+const note = (id, d) => { res.push({ id, ok: null, d }); console.log('NOTE', id, typeof d === 'string' ? d : JSON.stringify(d)); };
+
+const b = await chromium.launch(); // no autoplay-policy flag
+const page = await (await b.newContext({ viewport: { width: 800, height: 600 } })).newPage();
+const errs = []; page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+await page.goto(`http://127.0.0.1:${PORT}/`); await sleep(4000);
+let n = 0; const shot = async (nm) => { const buf = await page.locator('#canvas').screenshot(); fs.writeFileSync(`${OUT}/screens/${String(++n).padStart(2,'0')}-${nm}.png`, buf); return PNG.sync.read(buf); };
+01-level.png
+02-fire-pre.png
+03-fire-post.png
+04-menu.png
+05-automap.png
+blur-open-after.png
+cw-00-pistol.png
+cw-01-after-idkfa.png
+cw-02-chaingun.png
+cw-02-plasma.png
+)
+Provenance matches. Starting the server and running the probes.
+Calling Bash()
+
+Bash response → (
+200
+review_state rc=0
+coast_pertic rc=0
+pause_check rc=0
+visibility_release rc=0
+blur_open rc=0
+cheats_weapons rc=0
+damage_death rc=0
+exit_pickup rc=0
+door_combined rc=0
+/Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/reviewer_gameplay.aln28c/blur_open.stdout.log:0
+/Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/reviewer_gameplay.aln28c/cheats_weapons.stdout.log:12
+/Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/reviewer_gameplay.aln28c/coast_pertic.stdout.log:0
+/Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/reviewer_gameplay.aln28c/damage_death.stdout.log:10
+/Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/reviewer_gameplay.aln28c/exit_pickup.stdout.log:8
+/Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/reviewer_gameplay.aln28c/door_combined.stdout.log:8
+/Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/reviewer_gameplay.aln28c/pause_check.stdout.log:6
+/Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/reviewer_gameplay.aln28c/review_state.stdout.log:32
+/Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/reviewer_gameplay.aln28c/visibility_release.stdout.log:0
+NOTE C.use-sfx-at-wall {"sfxDelta":1,"at":{"tic":1416,"valid":1,"x":1138,"y":-2932,"ang":1073741824,"hp":100,"lvl":101,"sec":38}}
+NOTE A.music-in-menu {"musicPlaying":true,"voices":13,"lastPeak":0.020719777792692184}
+)
+
+Calling Bash()
+
+Bash response → (
+==> coast_pertic.stdout.log <==
+{"relTic":408,"ticsSampled":108,"multiTicGaps":0,"stoppedTicsAfterRelease":44,"peakSpeed":7,"decayRatios":[0.833,1,0.8,1.25,0.6,1,1,1,1,0.667,1,1,0.5,0.5,0.5],"medianRatio":1,"errs":[]}
+
+==> visibility_release.stdout.log <==
+  "inputWorksAfter": true,
+  "errs": []
+ },
+ "pass": true
+}
+
+==> blur_open.stdout.log <==
+  "movedFinal1s": 0,
+  "inputWorksAfter": 149
+ },
+ "errs": []
+}
+PASS A.title-music-nonsilent musicStarted=2 maxPeak=0.20687468349933624
+PASS A.menu-nav-sfx sfxPlayed 0->2 (2 cursor moves)
+PASS T.tic-rate 35.0 tics/s
+PASS M.forward-coasts-then-stops {"coastUnits":65,"stoppedAfterTics":47,"stepsPerSample":"6 5 5 5 4 4 3 3 3 3 2 2 2"}
+PASS M.turn-ArrowRight-stops-on-release {"degAfterRelease":0,"lastChangeTicAfterRelease":0}
+PASS M.turn-ArrowLeft-stops-on-release {"degAfterRelease":0,"lastChangeTicAfterRelease":0}
+PASS C.fire-ammo-and-sfx {"ammoDiff":0.14,"sfx":"9->10"}
+PASS C.held-fire-repeats-and-stops {"during":4,"after1200ms":0}
+NOTE C.use-sfx-at-wall {"sfxDelta":1,"at":{"tic":1416,"valid":1,"x":1138,"y":-2932,"ang":1073741824,"hp":100,"lvl":101,"sec":38}}
+NOTE A.music-in-menu {"musicPlaying":true,"voices":13,"lastPeak":0.020719777792692184}
+PASS A.ingame-menu-nav-sfx 16->17
+PASS F.blur-stops-held-turn {"degBlurLatency":0,"degAfterBlur1s":0}
+PASS F.blur-stops-held-forward {"movedBeforeBlur":31,"coastAfterBlur":50.2,"movedLast800ms":0}
+final audio {"sfxRequested":19,"sfxPlayed":19,"sfxSuppressed":0,"sfxBad":0,"musicRequested":3,"musicStarted":3,"notesScheduled":1184,"musicErrors":0,"maxPeak":0.43302595615386963,"lastPeak":0.04561284929513931,"ctxState":"running","sampleRate":48000,"sfxChannelsActive":0,"musicPlaying":true,"musicVoices":14}
+PASS A.no-bad-sfx-or-music-errors {"sfxPlayed":19,"sfxRequested":19,"sfxSuppressed":0,"sfxBad":0,"musicErrors":0,"maxPeak":0.43302595615386963}
+)
+
+Calling Bash()
+
+Bash response → (
+34
+01-level.png
+ep-05-e1m2.png
+ep-dr-03-door-open.png
+)
+
+Calling Read()
+
+Calling Read()
+
+Read response → "Completed by external harness."
+
+Read response → "Completed by external harness."
+Both screenshots render correctly. Stopping my server and writing the report.
+Calling Bash()
+
+Bash response → (
+000
+      71
+71
+2026-11-04T18:19:01Z
+)
+
+Calling Write()
+
+Write response → "File created successfully at: /Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/reviewer_gameplay.aln28c/report.md (file state is current in your context — no need to Read it back)"
+The review result is **FINDINGS**: I found no defects in movement, playability or the audio pipeline. It can't be PASS because some checks still need a person or other browsers. The report is in `artifacts/logs/reviewer_gameplay.aln28c/report.md`.
+
+- **Same build as before:** the source and the built game are unchanged since the previous gameplay review and the other roles' latest reports. I didn't rebuild.
+- **What I ran:** the 9 gameplay test scripts from the previous review, unchanged, against my own local server in headless Chromium. All 9 completed without failures, and the two recorded notes are expected Doom behaviour.
+  - **Movement:** after you let go of forward, the player slides and stops after about 47 tics, as Doom's normal friction should. Turning stops dead when the key is released. Moving diagonally and in arcs works.
+  - **Focus loss:** when the window loses focus, held turning and forward movement stop, and the keys work again afterwards.
+  - **Fire, use and doors:** firing uses ammo and plays a sound, and holding fire repeats until release. A closed door blocks the player, Use opens it, and the player can walk through.
+  - **Rest of the game:** pause, damage, death and respawn work. The level exit leads to the next level, E1M2, and the player can move there.
+  - **Timing and audio:** the game runs at the correct 35 tics per second. All 19 requested sound effects played, and music started 3 of 3 times with no errors.
+- **Screenshots:** I looked at the open door and the E1M2 level; both draw correctly.
+
+**Still unverified:**
+- Whether the sound effects and music sound right when you listen to them. The tests only prove the audio isn't silent.
+- How the game behaves in a genuinely hidden or minimized tab.
+- Firefox, Safari, high-resolution screens, the end of the episode, and a full walkthrough without the no-clipping cheat.
+
+**Limits of this review:**
+- I didn't re-read the test scripts' logic; I only confirmed they are identical to the previous run's, so any mistake in them carries over.
+- Testing was headless Chromium only, on this Mac.
+- Nothing is assigned to a coder.
+
+I stopped the server I started.
+
+**Next steps:** a person should check the audio by ear and try a hidden tab, using the protocol in `tests/README.md`. The tester still has the carried-over work of turning these gameplay checks into protected acceptance checks.

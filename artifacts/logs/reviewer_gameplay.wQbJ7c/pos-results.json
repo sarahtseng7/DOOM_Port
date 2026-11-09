@@ -1,0 +1,48 @@
+{
+ "start": {
+  "v": 1,
+  "x": 1056,
+  "y": -3616,
+  "a": 1073741824,
+  "h": 100,
+  "l": 101,
+  "t": 261
+ },
+ "after_turn": {
+  "v": 1,
+  "x": 1056,
+  "y": -3616,
+  "a": -163577856,
+  "h": 100,
+  "l": 101,
+  "t": 400
+ },
+ "walk400": {
+  "moveDuring": 55.78530272392541,
+  "coastAfter": 43.174066289845804,
+  "stopMsAfterRelease": 800,
+  "driftLast1s": 0,
+  "angleDelta": 0
+ },
+ "run400": {
+  "moveDuring": 112.05802068571442,
+  "coastAfter": 51.03920062069938,
+  "stopMsAfterRelease": 600,
+  "driftLast1s": 0,
+  "angleDelta": 0
+ },
+ "blur_held": {
+  "movedBeforeBlur": 56.753854494650845,
+  "movedAfterBlur": 59.66573556070519,
+  "drift800ms": 0
+ },
+ "final": {
+  "v": 1,
+  "x": 940,
+  "y": -3554,
+  "a": -163577856,
+  "h": 100,
+  "l": 101,
+  "t": 1021
+ }
+}

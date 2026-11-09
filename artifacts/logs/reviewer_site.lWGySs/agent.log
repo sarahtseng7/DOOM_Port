@@ -1,0 +1,331 @@
+
+Calling Bash()
+
+Bash response → (
+artifacts/logs:
+coder_input_audio.1EbASm
+coder_input_audio.1TaZlK
+coder_input_audio.3fWNbv
+coder_input_audio.6WSU74
+coder_input_audio.6zHSnA
+coder_input_audio.9u4tS4
+coder_input_audio.a8DgOL
+coder_input_audio.DUI82V
+coder_input_audio.g90qsB
+coder_input_audio.GUXhIX
+coder_input_audio.gVnY6U
+coder_input_audio.kjW35H
+coder_input_audio.KqlYco
+coder_input_audio.KWBVgQ
+coder_input_audio.N0e4K8
+coder_input_audio.OKDYKj
+coder_input_audio.OwOtK6
+coder_input_audio.PrVlSe
+coder_input_audio.RB2acD
+coder_input_audio.rdvBFz
+coder_input_audio.RfUwSi
+coder_input_audio.XJqG3c
+coder_input_audio.XSXPrI
+coder_input_audio.YCG1J3
+coder_input_audio.zZGUhu
+coder_render_timing.1ZyeYK
+coder_render_timing.6XCJuY
+coder_render_timing.8nHQTI
+coder_render_timing.cK29OS
+coder_render_timing.El3oAP
+coder_render_timing.EqHAI4
+coder_render_timing.HgDIMK
+coder_render_timing.HwUXVM
+coder_render_timing.i3pFKE
+coder_render_timing.kFsAu7
+coder_render_timing.KuIme0
+coder_render_timing.licfez
+coder_render_timing.lpNQaR
+coder_render_timing.mobiWy
+coder_render_timing.mpRUkR
+coder_render_timing.Pct78q
+coder_render_timing.TqIUTQ
+coder_render_timing.vyC811
+coder_render_timing.WB04Nu
+coder_render_timing.wbiVKQ
+coder_render_timing.Wkpv1o
+coder_render_timing.xSCZrJ
+coder_render_timing.Xt27oG
+coder_render_timing.y2E5IZ
+(eval):1: no matches found: loop/prompts/*site*
+)
+
+Calling Bash()
+
+Bash response → (
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+loop/prompts/CODER_RENDER_TIMING.md
+loop/prompts/REVIEWER.md
+loop/prompts/REVIEWER_GAMEPLAY.md
+loop/prompts/TESTER.md
+)
+
+Calling Bash()
+
+Bash response → (
+Exit code 7
+# Site and startup review
+
+You are `reviewer_site`.
+
+Review build/startup and actual browser loading at http://localhost:8000.
+Write no source, tests, or build files. You may run the existing build and start a
+local HTTP server without modifying source; stop only a server you started.
+Use Playwright MCP (or existing browser scripts) to verify the page, canvas, fresh
+JS/WASM/WAD loading, console/network failures, initial image, colors, and startup
+responsiveness. Ensure an existing port-8000 server serves this project's current
+build; do not kill an unknown service or accept an unrelated page as evidence.
+Leave movement, combat, and audio depth to reviewer_gameplay. Report actionable
+faults to the relevant coder. PASS requires actual observed startup, not inspection
+alone. Keep evidence in OUTPUT_DIR; screenshots are supporting evidence, not all
+of acceptance. Browser tools do not grant permission to patch files.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+------
+FINDINGS
+
+Startup observed working on this project's current dist/ build at http://localhost:8000: page, canvas, and JS/WASM/WAD all load (HTTP 200), 0 console errors, and the game renders in correct colours. FINDINGS (not PASS) only because cold cache, time-to-first-frame, tic rate, post-gesture audio, other browsers/viewports remain unverified this run.
+
+## Source identity
+HEAD e500c44 + uncommitted changes; `git diff HEAD` sha256 prefix c9b3c829ca2c5a67 (same as the previous reviewer_site run). dist/doom.wasm prefix 7afb94fa1ec64b5c. dist/index.html identical to web/index.html. `make -n`: "Nothing to be done". I did not rebuild.
+
+## Work
+- Read AGENTS.md, README.md, loop/prompts/REVIEWER.md, artifacts/reports/reviewer_site.md and tester.md. specification.md and acceptance-criteria.md are absent.
+- Port 8000 had no listener (curl and lsof), so there was no existing server to validate. I started `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist` (PID in server.pid) and stopped it afterwards; port confirmed closed.
+- Playwright loaded /?r=m9x4 and waited 5 s: title "DOOM Shareware", canvas 640x400.
+- Resource timing: input_audio.js, audio_web.js, render_timing.js, doom.js, doom.data, doom.wasm all 200, all finished by ~25 ms (localhost); TTFB 3 ms.
+- Console (console.txt): 35 messages, 0 errors, 2 warnings (AudioContext before user gesture, audio_web.js:27 and :53), expected browser policy.
+- Canvas: 104 distinct sampled colours (not blank).
+- startup.png (viewed): demo gameplay, "YOU GOT THE SHOTGUN!", HUD intact, plausible Doom colours (no red/blue swap), letterboxed 16:10 canvas.
+- server.log: all requests 200.
+
+## Findings
+1. Low, owner coder_render_timing: earlier reports saw a low first tic-rate window; I did not measure tic rate this run, so still open.
+2. Minor, owner coder_input_audio: AudioContext autoplay warning; browser policy. Audio after a gesture is for reviewer_gameplay or a human.
+3. Cosmetic, owner coder: dist/index.html <title> is "Doom (WASM)" but the runtime title is "DOOM Shareware"; the page title is changed at runtime.
+4. No blocking loading or startup defect.
+
+## Not verified
+Cold cache (a fresh Playwright session was used but I did not confirm an empty profile), time to first frame, tic rate, clean rebuild, Firefox/Safari, other viewports/HiDPI, audio after a gesture.
+
+## Assumptions
+- Headless/MCP Playwright Chromium. Pass criteria: page loads, no required asset fails, no console errors, canvas shows plausible colours. Agent-proposed, not student-approved.
+- cap_ready was not exposed on Module (typeof "undefined"); I did not look further, since rendering was observed directly.
+- I wrote only into this OUTPUT_DIR plus Playwright captures in artifacts/browser/. No source, tests, loop or config edits; no result.json.
+
+## Next action
+coder_render_timing: confirm first-window tic rate. Tester or human: cold-cache, first-frame and cross-browser checks.
+-----
+FINDINGS
+
+No test failures, and `tests/verify.sh` exited 0 in a single invocation (the first time that is confirmed; the prior run hit a timeout). Four required behaviors remain UNVERIFIED (A1, P1, G3c, H1), so this is FINDINGS, not PASS. Product source and tests were not modified.
+
+## Work
+- Read AGENTS.md, README.md, loop/README.md, artifacts/README.md, the TESTER role prompt, and all six reports in artifacts/reports/. No reproducible failure was open, so I added no regression checks. specification.md and acceptance-criteria.md do not exist.
+- Ran `RUN_ID=tester.4StVeO tests/verify.sh` (detached, ~20 min): tooling install, selftest, `make clean && make all`, playtest (300 s soak) and fault injection all completed. verify-result.json: `{"exit": 0}`.
+- Playtest: failed=0, 4 UNVERIFIED listed. Fault injection: 6/6 caught (drop-keyup: I2 I5 I6 C3 I7; drop-blur: I7; ignore-left: I3 E2a E2b; swap-rb: B4; bad-aspect: S1; drop-use: G3a).
+
+## Evidence
+- artifacts/logs/tester.4StVeO/verify.out (full console output)
+- artifacts/runs/tester.4StVeO/tester/verify-004342Z/ (identity.txt, verify-result.json, playtest and fault logs, dist-sha256.txt)
+- Source: HEAD e500c44 + uncommitted changes, dirty_diff_sha256 c9b3c829ca2c5a6735e26393a138ceec201decfc08065ea424d0a25eb8e2430f (identity.txt, same as prior reports).
+
+## Notable results
+T2 35.22 tics/s; A0 AudioContext running; A2 sfxPlayed 9, sfxBad 0, musicErrors 0; A3 peak 0.418 (non-silence only); G3a door opens and G3b walk-through PASS; R1-R4 300 s soak PASS (60 rAF/s, no long tasks).
+
+## Unresolved (owner)
+1. A1 audio correctness by ear: UNVERIFIED (human). Peak only shows non-silence.
+2. P1 save persistence: UNVERIFIED (student scope decision).
+3. G3c level exit: UNVERIFIED (tester route, or a coder level-exit hook). I did not build one this run.
+4. H1 real hidden-tab timing: UNVERIFIED (human; protocol in tests/README.md). Headless Chromium cannot background a tab.
+5. Not covered: pickups, damage/death, Firefox, Safari, HiDPI. G3a/G3b steering is greedy and could flake on slow machines.
+6. reviewer_gameplay's review.mjs check A.menu-sfx-and-music-heard fails every run, probably a wrong expectation (no SFX is due on the title screen). It is not part of verify.sh and I did not confirm or change it.
+
+## Assumptions
+- Criteria are agent-proposed, not student-approved.
+- Headless Chromium only. No manual interventions. Token usage not available.
+- I wrote only to this OUTPUT_DIR and artifacts/runs/tester.4StVeO/.
+
+## Next action
+Human: listen to audio headed (A1) and run the H1 hidden-tab protocol. Tester: scripted E1M1 route for G3c. Student: decide P1 scope and approve or amend criteria.
+000
+)
+
+Calling Bash()
+
+Calling ToolSearch()
+
+Bash response → (
+e500c44
+c9b3c829ca2c5a67
+7afb94fa1ec64b5c
+same
+make: Nothing to be done for `all'.
+200
+)
+
+ToolSearch response → "Completed by external harness."
+
+Calling mcp__playwright__browser_navigate()
+
+Calling mcp__playwright__browser_wait_for()
+
+mcp__playwright__browser_navigate response → (
+### Ran Playwright code
+```js
+await page.goto('http://localhost:8000/?r=lWGySs');
+```
+### Page
+- Page URL: http://localhost:8000/?r=lWGySs
+- Page Title: DOOM Shareware
+- Console: 0 errors, 2 warnings
+### Snapshot
+- [Snapshot](artifacts/browser/page-2026-11-04T01-31-43-453Z.yml)
+### Events
+- New console entries: artifacts/browser/console-2026-11-04T01-31-43-238Z.log#L1-L35
+)
+
+mcp__playwright__browser_wait_for response → (
+### Result
+Waited for 5 seconds
+### Ran Playwright code
+```js
+await new Promise(f => setTimeout(f, 5 * 1000));
+```
+### Page
+- Page URL: http://localhost:8000/?r=lWGySs
+- Page Title: DOOM Shareware
+- Console: 0 errors, 2 warnings
+### Snapshot
+- [Snapshot](artifacts/browser/page-2026-11-04T01-31-48-989Z.yml)
+)
+PROGRESS: page loaded with 0 console errors. Next I'll collect the canvas and resource timing, take a screenshot, then write the report.
+Calling mcp__playwright__browser_evaluate()
+
+Calling mcp__playwright__browser_take_screenshot()
+
+mcp__playwright__browser_evaluate response → (
+### Result
+{
+  "title": "DOOM Shareware",
+  "w": 640,
+  "h": 400,
+  "colors": 89,
+  "res": [
+    [
+      "input_audio.js",
+      200,
+      9
+    ],
+    [
+      "render_timing.js",
+      200,
+      9
+    ],
+    [
+      "audio_web.js",
+      200,
+      9
+    ],
+    [
+      "doom.js",
+      200,
+      10
+    ],
+    [
+      "doom.data",
+      200,
+      27
+    ],
+    [
+      "doom.wasm",
+      200,
+      23
+    ]
+  ],
+  "ttfb": 3
+}
+### Ran Playwright code
+```js
+await page.evaluate('() => { const c=document.querySelector(\'canvas\'); const g=document.createElement(\'canvas\'); g.width=c.width; g.height=c.height; const x=g.getContext(\'2d\'); x.drawImage(c,0,0); const d=x.getImageData(0,0,c.width,c.height).data; const s=new Set(); for(let i=0;i<d.length;i+=4*97) s.add(d[i]+\',\'+d[i+1]+\',\'+d[i+2]); return {title:document.title,w:c.width,h:c.height,colors:s.size,res:performance.getEntriesByType(\'resource\').map(r=>[r.name.split(\'/\').pop(),r.responseStatus,Math.round(r.responseEnd)]),ttfb:Math.round(performance.getEntriesByType(\'navigation\')[0].responseStart)}; }');
+```
+)
+
+mcp__playwright__browser_take_screenshot response → (
+### Result
+- [Screenshot of viewport](artifacts/logs/reviewer_site.lWGySs/startup.png)
+### Ran Playwright code
+```js
+// Screenshot viewport and save it as artifacts/logs/reviewer_site.lWGySs/startup.png
+await page.screenshot({
+  path: 'artifacts/logs/reviewer_site.lWGySs/startup.png',
+  scale: 'css',
+  type: 'png'
+});
+```
+)
+
+Calling Read()
+
+Calling Bash()
+
+Read response → "Completed by external harness."
+
+Bash response → (8)
+Colours look right. Stopping the server I started and writing the report.
+Calling Bash()
+
+Bash response → "port8000 after stop: 000"
+FINDINGS. Startup works on the current build, but a few things I couldn't check keep this from a PASS.
+
+Nothing was listening on port 8000, so I started `python3 -m http.server` on `dist/` and stopped it afterwards. I did not rebuild. `make -n` reported nothing to do, and the `dist/` wasm and the working-tree diff match the earlier reports.
+
+- **Loading:** the page loads as "DOOM Shareware" with a 640x400 canvas. `doom.js`, `doom.wasm`, `doom.data` and the three helper scripts all returned 200, and every server request was a 200.
+- **Console:** 0 errors, and 2 warnings about the AudioContext starting before a user gesture, which is browser policy.
+- **Rendering:** the canvas isn't blank (89 sampled colours). `startup.png` shows the demo with the HUD intact and no red/blue swap.
+
+Still unverified: tic rate in the first window, an empty-profile cold cache, time to first frame, other browsers, viewports and HiDPI, and audio after a gesture.
+
+Two small findings:
+- **Owner `coder_render_timing`:** confirm the first-window tic rate. The tester measured 35.22 tics/s over a longer run.
+- **Cosmetic, owner `coder`:** `dist/index.html` has the title "Doom (WASM)", which gets replaced at runtime. This is carried from the previous report, and I did not re-read the file.
+
+The report and evidence (`startup.png`, `console.txt`, `server.log`) are in `artifacts/logs/reviewer_site.lWGySs/`; the report is `report.md`.

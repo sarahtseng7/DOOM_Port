@@ -1,0 +1,1 @@
+{"status":"READY","summary":"Wrote proposed-criteria.md plus tests/verify.sh, playtest.mjs, selftest.mjs, lib/frames.mjs (Playwright 1.49.1). Selftest passes 9/9; playtest fails correctly on missing/blank builds. Full run not possible yet: no Makefile, emcc not installed; thresholds untuned against a real build. Criteria are agent-proposed, not student-approved."}

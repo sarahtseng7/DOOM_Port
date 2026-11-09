@@ -1,0 +1,171 @@
+[      66ms] [LOG]                            Doom Generic 0.1 @ http://localhost:8000/?r=1793777694905:18
+[      66ms] [LOG] Z_Init: Init zone memory allocation daemon.  @ http://localhost:8000/?r=1793777694905:18
+[      66ms] [LOG] zone memory: 0x265460, 600000 allocated for zone @ http://localhost:8000/?r=1793777694905:18
+[      66ms] [LOG] Using . for configuration and saves @ http://localhost:8000/?r=1793777694905:18
+[      66ms] [LOG] V_Init: allocate screens. @ http://localhost:8000/?r=1793777694905:18
+[      67ms] [LOG] M_LoadDefaults: Load system defaults. @ http://localhost:8000/?r=1793777694905:18
+[      67ms] [LOG] saving config in .default.cfg @ http://localhost:8000/?r=1793777694905:18
+[      67ms] [LOG] W_Init: Init WADfiles. @ http://localhost:8000/?r=1793777694905:18
+[      67ms] [LOG]  adding /doom1.wad @ http://localhost:8000/?r=1793777694905:18
+[      68ms] [LOG] Using ./.savegame/ for savegames @ http://localhost:8000/?r=1793777694905:18
+[      68ms] [LOG] =========================================================================== @ http://localhost:8000/?r=1793777694905:18
+[      68ms] [LOG]                             DOOM Shareware @ http://localhost:8000/?r=1793777694905:18
+[      68ms] [LOG] =========================================================================== @ http://localhost:8000/?r=1793777694905:18
+[      68ms] [LOG]  Doom Generic is free software, covered by the GNU General Public @ http://localhost:8000/?r=1793777694905:18
+[      68ms] [LOG]  License.  There is NO warranty; not even for MERCHANTABILITY or FITNESS @ http://localhost:8000/?r=1793777694905:18
+[      68ms] [LOG]  FOR A PARTICULAR PURPOSE. You are welcome to change and distribute @ http://localhost:8000/?r=1793777694905:18
+[      68ms] [LOG]  copies under certain conditions. See the source for more information. @ http://localhost:8000/?r=1793777694905:18
+[      68ms] [LOG] =========================================================================== @ http://localhost:8000/?r=1793777694905:18
+[      68ms] [LOG] I_Init: Setting up machine state. @ http://localhost:8000/?r=1793777694905:18
+[      68ms] [LOG] M_Init: Init miscellaneous info. @ http://localhost:8000/?r=1793777694905:18
+[      69ms] [LOG] R_Init: Init DOOM refresh daemon - ................... @ http://localhost:8000/?r=1793777694905:18
+[      69ms] [LOG] P_Init: Init Playloop state. @ http://localhost:8000/?r=1793777694905:18
+[      70ms] [LOG] S_Init: Setting up sound. @ http://localhost:8000/?r=1793777694905:18
+[     175ms] [LOG] D_CheckNetGame: Checking network game status. @ http://localhost:8000/?r=1793777694905:18
+[     175ms] [LOG] startskill 2  deathmatch: 0  startmap: 1  startepisode: 1 @ http://localhost:8000/?r=1793777694905:18
+[     175ms] [LOG] player 1 of 1 (1 nodes) @ http://localhost:8000/?r=1793777694905:18
+[     175ms] [LOG] Emulating the behavior of the 'Doom 1.9' executable. @ http://localhost:8000/?r=1793777694905:18
+[     175ms] [LOG] HU_Init: Setting up heads up display. @ http://localhost:8000/?r=1793777694905:18
+[     175ms] [LOG] ST_Init: Init status bar. @ http://localhost:8000/?r=1793777694905:18
+[     205ms] [LOG] I_InitGraphics: framebuffer: x_res: 640, y_res: 400, x_virtual: 640, y_virtual: 400, bpp: 32 @ http://localhost:8000/?r=1793777694905:18
+[     205ms] [LOG] I_InitGraphics: framebuffer: RGBA: 8888, red_off: 16, green_off: 8, blue_off: 0, transp_off: 24 @ http://localhost:8000/?r=1793777694905:18
+[     205ms] [LOG] I_InitGraphics: DOOM screen size: w x h: 320 x 200 @ http://localhost:8000/?r=1793777694905:18
+[     205ms] [LOG] I_InitGraphics: Auto-scaling factor: 2 @ http://localhost:8000/?r=1793777694905:18
+[   14929ms] [LOG]                            Doom Generic 0.1 @ http://localhost:8000/?r2=1793777709796:18
+[   14929ms] [LOG] Z_Init: Init zone memory allocation daemon.  @ http://localhost:8000/?r2=1793777709796:18
+[   14929ms] [LOG] zone memory: 0x265460, 600000 allocated for zone @ http://localhost:8000/?r2=1793777709796:18
+[   14929ms] [LOG] Using . for configuration and saves @ http://localhost:8000/?r2=1793777709796:18
+[   14929ms] [LOG] V_Init: allocate screens. @ http://localhost:8000/?r2=1793777709796:18
+[   14929ms] [LOG] M_LoadDefaults: Load system defaults. @ http://localhost:8000/?r2=1793777709796:18
+[   14929ms] [LOG] saving config in .default.cfg @ http://localhost:8000/?r2=1793777709796:18
+[   14929ms] [LOG] W_Init: Init WADfiles. @ http://localhost:8000/?r2=1793777709796:18
+[   14929ms] [LOG]  adding /doom1.wad @ http://localhost:8000/?r2=1793777709796:18
+[   14931ms] [LOG] Using ./.savegame/ for savegames @ http://localhost:8000/?r2=1793777709796:18
+[   14931ms] [LOG] =========================================================================== @ http://localhost:8000/?r2=1793777709796:18
+[   14931ms] [LOG]                             DOOM Shareware @ http://localhost:8000/?r2=1793777709796:18
+[   14931ms] [LOG] =========================================================================== @ http://localhost:8000/?r2=1793777709796:18
+[   14931ms] [LOG]  Doom Generic is free software, covered by the GNU General Public @ http://localhost:8000/?r2=1793777709796:18
+[   14931ms] [LOG]  License.  There is NO warranty; not even for MERCHANTABILITY or FITNESS @ http://localhost:8000/?r2=1793777709796:18
+[   14931ms] [LOG]  FOR A PARTICULAR PURPOSE. You are welcome to change and distribute @ http://localhost:8000/?r2=1793777709796:18
+[   14931ms] [LOG]  copies under certain conditions. See the source for more information. @ http://localhost:8000/?r2=1793777709796:18
+[   14931ms] [LOG] =========================================================================== @ http://localhost:8000/?r2=1793777709796:18
+[   14931ms] [LOG] I_Init: Setting up machine state. @ http://localhost:8000/?r2=1793777709796:18
+[   14931ms] [LOG] M_Init: Init miscellaneous info. @ http://localhost:8000/?r2=1793777709796:18
+[   14932ms] [LOG] R_Init: Init DOOM refresh daemon - ................... @ http://localhost:8000/?r2=1793777709796:18
+[   14932ms] [LOG] P_Init: Init Playloop state. @ http://localhost:8000/?r2=1793777709796:18
+[   14932ms] [LOG] S_Init: Setting up sound. @ http://localhost:8000/?r2=1793777709796:18
+[   14934ms] [WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:27
+[   14935ms] [LOG] D_CheckNetGame: Checking network game status. @ http://localhost:8000/?r2=1793777709796:18
+[   14935ms] [LOG] startskill 2  deathmatch: 0  startmap: 1  startepisode: 1 @ http://localhost:8000/?r2=1793777709796:18
+[   14935ms] [LOG] player 1 of 1 (1 nodes) @ http://localhost:8000/?r2=1793777709796:18
+[   14935ms] [LOG] Emulating the behavior of the 'Doom 1.9' executable. @ http://localhost:8000/?r2=1793777709796:18
+[   14935ms] [LOG] HU_Init: Setting up heads up display. @ http://localhost:8000/?r2=1793777709796:18
+[   14935ms] [LOG] ST_Init: Init status bar. @ http://localhost:8000/?r2=1793777709796:18
+[   14965ms] [LOG] I_InitGraphics: framebuffer: x_res: 640, y_res: 400, x_virtual: 640, y_virtual: 400, bpp: 32 @ http://localhost:8000/?r2=1793777709796:18
+[   14965ms] [LOG] I_InitGraphics: framebuffer: RGBA: 8888, red_off: 16, green_off: 8, blue_off: 0, transp_off: 24 @ http://localhost:8000/?r2=1793777709796:18
+[   14965ms] [LOG] I_InitGraphics: DOOM screen size: w x h: 320 x 200 @ http://localhost:8000/?r2=1793777709796:18
+[   14966ms] [LOG] I_InitGraphics: Auto-scaling factor: 2 @ http://localhost:8000/?r2=1793777709796:18
+[   14966ms] [WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:53
+[   53692ms] [LOG]                            Doom Generic 0.1 @ http://localhost:8000/?r3=1793777748563:18
+[   53693ms] [LOG] Z_Init: Init zone memory allocation daemon.  @ http://localhost:8000/?r3=1793777748563:18
+[   53693ms] [LOG] zone memory: 0x265460, 600000 allocated for zone @ http://localhost:8000/?r3=1793777748563:18
+[   53693ms] [LOG] Using . for configuration and saves @ http://localhost:8000/?r3=1793777748563:18
+[   53693ms] [LOG] V_Init: allocate screens. @ http://localhost:8000/?r3=1793777748563:18
+[   53693ms] [LOG] M_LoadDefaults: Load system defaults. @ http://localhost:8000/?r3=1793777748563:18
+[   53693ms] [LOG] saving config in .default.cfg @ http://localhost:8000/?r3=1793777748563:18
+[   53693ms] [LOG] W_Init: Init WADfiles. @ http://localhost:8000/?r3=1793777748563:18
+[   53693ms] [LOG]  adding /doom1.wad @ http://localhost:8000/?r3=1793777748563:18
+[   53693ms] [LOG] Using ./.savegame/ for savegames @ http://localhost:8000/?r3=1793777748563:18
+[   53693ms] [LOG] =========================================================================== @ http://localhost:8000/?r3=1793777748563:18
+[   53693ms] [LOG]                             DOOM Shareware @ http://localhost:8000/?r3=1793777748563:18
+[   53693ms] [LOG] =========================================================================== @ http://localhost:8000/?r3=1793777748563:18
+[   53693ms] [LOG]  Doom Generic is free software, covered by the GNU General Public @ http://localhost:8000/?r3=1793777748563:18
+[   53693ms] [LOG]  License.  There is NO warranty; not even for MERCHANTABILITY or FITNESS @ http://localhost:8000/?r3=1793777748563:18
+[   53693ms] [LOG]  FOR A PARTICULAR PURPOSE. You are welcome to change and distribute @ http://localhost:8000/?r3=1793777748563:18
+[   53693ms] [LOG]  copies under certain conditions. See the source for more information. @ http://localhost:8000/?r3=1793777748563:18
+[   53693ms] [LOG] =========================================================================== @ http://localhost:8000/?r3=1793777748563:18
+[   53693ms] [LOG] I_Init: Setting up machine state. @ http://localhost:8000/?r3=1793777748563:18
+[   53694ms] [LOG] M_Init: Init miscellaneous info. @ http://localhost:8000/?r3=1793777748563:18
+[   53694ms] [LOG] R_Init: Init DOOM refresh daemon - ................... @ http://localhost:8000/?r3=1793777748563:18
+[   53694ms] [LOG] P_Init: Init Playloop state. @ http://localhost:8000/?r3=1793777748563:18
+[   53695ms] [LOG] S_Init: Setting up sound. @ http://localhost:8000/?r3=1793777748563:18
+[   53697ms] [LOG] D_CheckNetGame: Checking network game status. @ http://localhost:8000/?r3=1793777748563:18
+[   53697ms] [LOG] startskill 2  deathmatch: 0  startmap: 1  startepisode: 1 @ http://localhost:8000/?r3=1793777748563:18
+[   53697ms] [LOG] player 1 of 1 (1 nodes) @ http://localhost:8000/?r3=1793777748563:18
+[   53697ms] [LOG] Emulating the behavior of the 'Doom 1.9' executable. @ http://localhost:8000/?r3=1793777748563:18
+[   53697ms] [LOG] HU_Init: Setting up heads up display. @ http://localhost:8000/?r3=1793777748563:18
+[   53697ms] [LOG] ST_Init: Init status bar. @ http://localhost:8000/?r3=1793777748563:18
+[   53727ms] [LOG] I_InitGraphics: framebuffer: x_res: 640, y_res: 400, x_virtual: 640, y_virtual: 400, bpp: 32 @ http://localhost:8000/?r3=1793777748563:18
+[   53727ms] [LOG] I_InitGraphics: framebuffer: RGBA: 8888, red_off: 16, green_off: 8, blue_off: 0, transp_off: 24 @ http://localhost:8000/?r3=1793777748563:18
+[   53727ms] [LOG] I_InitGraphics: DOOM screen size: w x h: 320 x 200 @ http://localhost:8000/?r3=1793777748563:18
+[   53727ms] [LOG] I_InitGraphics: Auto-scaling factor: 2 @ http://localhost:8000/?r3=1793777748563:18
+[   75724ms] [LOG]                            Doom Generic 0.1 @ http://localhost:8000/?r4=1793777770595:18
+[   75724ms] [LOG] Z_Init: Init zone memory allocation daemon.  @ http://localhost:8000/?r4=1793777770595:18
+[   75724ms] [LOG] zone memory: 0x265460, 600000 allocated for zone @ http://localhost:8000/?r4=1793777770595:18
+[   75724ms] [LOG] Using . for configuration and saves @ http://localhost:8000/?r4=1793777770595:18
+[   75724ms] [LOG] V_Init: allocate screens. @ http://localhost:8000/?r4=1793777770595:18
+[   75724ms] [LOG] M_LoadDefaults: Load system defaults. @ http://localhost:8000/?r4=1793777770595:18
+[   75724ms] [LOG] saving config in .default.cfg @ http://localhost:8000/?r4=1793777770595:18
+[   75724ms] [LOG] W_Init: Init WADfiles. @ http://localhost:8000/?r4=1793777770595:18
+[   75724ms] [LOG]  adding /doom1.wad @ http://localhost:8000/?r4=1793777770595:18
+[   75725ms] [LOG] Using ./.savegame/ for savegames @ http://localhost:8000/?r4=1793777770595:18
+[   75725ms] [LOG] =========================================================================== @ http://localhost:8000/?r4=1793777770595:18
+[   75725ms] [LOG]                             DOOM Shareware @ http://localhost:8000/?r4=1793777770595:18
+[   75725ms] [LOG] =========================================================================== @ http://localhost:8000/?r4=1793777770595:18
+[   75725ms] [LOG]  Doom Generic is free software, covered by the GNU General Public @ http://localhost:8000/?r4=1793777770595:18
+[   75725ms] [LOG]  License.  There is NO warranty; not even for MERCHANTABILITY or FITNESS @ http://localhost:8000/?r4=1793777770595:18
+[   75725ms] [LOG]  FOR A PARTICULAR PURPOSE. You are welcome to change and distribute @ http://localhost:8000/?r4=1793777770595:18
+[   75725ms] [LOG]  copies under certain conditions. See the source for more information. @ http://localhost:8000/?r4=1793777770595:18
+[   75725ms] [LOG] =========================================================================== @ http://localhost:8000/?r4=1793777770595:18
+[   75725ms] [LOG] I_Init: Setting up machine state. @ http://localhost:8000/?r4=1793777770595:18
+[   75725ms] [LOG] M_Init: Init miscellaneous info. @ http://localhost:8000/?r4=1793777770595:18
+[   75726ms] [LOG] R_Init: Init DOOM refresh daemon - ................... @ http://localhost:8000/?r4=1793777770595:18
+[   75726ms] [LOG] P_Init: Init Playloop state. @ http://localhost:8000/?r4=1793777770595:18
+[   75726ms] [LOG] S_Init: Setting up sound. @ http://localhost:8000/?r4=1793777770595:18
+[   75728ms] [WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:27
+[   75728ms] [LOG] D_CheckNetGame: Checking network game status. @ http://localhost:8000/?r4=1793777770595:18
+[   75728ms] [LOG] startskill 2  deathmatch: 0  startmap: 1  startepisode: 1 @ http://localhost:8000/?r4=1793777770595:18
+[   75728ms] [LOG] player 1 of 1 (1 nodes) @ http://localhost:8000/?r4=1793777770595:18
+[   75728ms] [LOG] Emulating the behavior of the 'Doom 1.9' executable. @ http://localhost:8000/?r4=1793777770595:18
+[   75728ms] [LOG] HU_Init: Setting up heads up display. @ http://localhost:8000/?r4=1793777770595:18
+[   75728ms] [LOG] ST_Init: Init status bar. @ http://localhost:8000/?r4=1793777770595:18
+[   75759ms] [LOG] I_InitGraphics: framebuffer: x_res: 640, y_res: 400, x_virtual: 640, y_virtual: 400, bpp: 32 @ http://localhost:8000/?r4=1793777770595:18
+[   75759ms] [LOG] I_InitGraphics: framebuffer: RGBA: 8888, red_off: 16, green_off: 8, blue_off: 0, transp_off: 24 @ http://localhost:8000/?r4=1793777770595:18
+[   75759ms] [LOG] I_InitGraphics: DOOM screen size: w x h: 320 x 200 @ http://localhost:8000/?r4=1793777770595:18
+[   75759ms] [LOG] I_InitGraphics: Auto-scaling factor: 2 @ http://localhost:8000/?r4=1793777770595:18
+[   75759ms] [WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:53
+[   99856ms] [LOG]                            Doom Generic 0.1 @ http://localhost:8000/?r5=1793777794730:18
+[   99856ms] [LOG] Z_Init: Init zone memory allocation daemon.  @ http://localhost:8000/?r5=1793777794730:18
+[   99856ms] [LOG] zone memory: 0x265460, 600000 allocated for zone @ http://localhost:8000/?r5=1793777794730:18
+[   99856ms] [LOG] Using . for configuration and saves @ http://localhost:8000/?r5=1793777794730:18
+[   99856ms] [LOG] V_Init: allocate screens. @ http://localhost:8000/?r5=1793777794730:18
+[   99856ms] [LOG] M_LoadDefaults: Load system defaults. @ http://localhost:8000/?r5=1793777794730:18
+[   99856ms] [LOG] saving config in .default.cfg @ http://localhost:8000/?r5=1793777794730:18
+[   99856ms] [LOG] W_Init: Init WADfiles. @ http://localhost:8000/?r5=1793777794730:18
+[   99856ms] [LOG]  adding /doom1.wad @ http://localhost:8000/?r5=1793777794730:18
+[   99856ms] [LOG] Using ./.savegame/ for savegames @ http://localhost:8000/?r5=1793777794730:18
+[   99856ms] [LOG] =========================================================================== @ http://localhost:8000/?r5=1793777794730:18
+[   99856ms] [LOG]                             DOOM Shareware @ http://localhost:8000/?r5=1793777794730:18
+[   99856ms] [LOG] =========================================================================== @ http://localhost:8000/?r5=1793777794730:18
+[   99856ms] [LOG]  Doom Generic is free software, covered by the GNU General Public @ http://localhost:8000/?r5=1793777794730:18
+[   99857ms] [LOG]  License.  There is NO warranty; not even for MERCHANTABILITY or FITNESS @ http://localhost:8000/?r5=1793777794730:18
+[   99857ms] [LOG]  FOR A PARTICULAR PURPOSE. You are welcome to change and distribute @ http://localhost:8000/?r5=1793777794730:18
+[   99857ms] [LOG]  copies under certain conditions. See the source for more information. @ http://localhost:8000/?r5=1793777794730:18
+[   99857ms] [LOG] =========================================================================== @ http://localhost:8000/?r5=1793777794730:18
+[   99857ms] [LOG] I_Init: Setting up machine state. @ http://localhost:8000/?r5=1793777794730:18
+[   99857ms] [LOG] M_Init: Init miscellaneous info. @ http://localhost:8000/?r5=1793777794730:18
+[   99857ms] [LOG] R_Init: Init DOOM refresh daemon - ................... @ http://localhost:8000/?r5=1793777794730:18
+[   99857ms] [LOG] P_Init: Init Playloop state. @ http://localhost:8000/?r5=1793777794730:18
+[   99858ms] [LOG] S_Init: Setting up sound. @ http://localhost:8000/?r5=1793777794730:18
+[   99859ms] [WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:27
+[   99860ms] [LOG] D_CheckNetGame: Checking network game status. @ http://localhost:8000/?r5=1793777794730:18
+[   99860ms] [LOG] startskill 2  deathmatch: 0  startmap: 1  startepisode: 1 @ http://localhost:8000/?r5=1793777794730:18
+[   99860ms] [LOG] player 1 of 1 (1 nodes) @ http://localhost:8000/?r5=1793777794730:18
+[   99860ms] [LOG] Emulating the behavior of the 'Doom 1.9' executable. @ http://localhost:8000/?r5=1793777794730:18
+[   99860ms] [LOG] HU_Init: Setting up heads up display. @ http://localhost:8000/?r5=1793777794730:18
+[   99860ms] [LOG] ST_Init: Init status bar. @ http://localhost:8000/?r5=1793777794730:18
+[   99891ms] [LOG] I_InitGraphics: framebuffer: x_res: 640, y_res: 400, x_virtual: 640, y_virtual: 400, bpp: 32 @ http://localhost:8000/?r5=1793777794730:18
+[   99891ms] [LOG] I_InitGraphics: framebuffer: RGBA: 8888, red_off: 16, green_off: 8, blue_off: 0, transp_off: 24 @ http://localhost:8000/?r5=1793777794730:18
+[   99891ms] [LOG] I_InitGraphics: DOOM screen size: w x h: 320 x 200 @ http://localhost:8000/?r5=1793777794730:18
+[   99891ms] [LOG] I_InitGraphics: Auto-scaling factor: 2 @ http://localhost:8000/?r5=1793777794730:18
+[   99892ms] [WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:53

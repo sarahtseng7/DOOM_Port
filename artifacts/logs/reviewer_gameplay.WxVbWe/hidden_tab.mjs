@@ -1,0 +1,48 @@
+// reviewer_gameplay WxVbWe: H1 proxy using a real second tab (bringToFront), not a synthetic visibilitychange.
+// Holds a turn (keydown, never released on this page), switches tabs, measures hidden-state behaviour, returns.
+// Usage: node hidden_tab.mjs <OUT_DIR> <PORT>
+import { createRequire } from 'node:module'; import fs from 'node:fs';
+const root = '/Users/sarahtseng/Projects/fellowship-loop-capstone';
+const require = createRequire(root + '/tests/package.json');
+const { chromium } = require('playwright');
+const [OUT, PORT] = process.argv.slice(2); const sleep = ms => new Promise(r => setTimeout(r, ms));
+const b = await chromium.launch();
+const ctx = await b.newContext({ viewport: { width: 800, height: 600 } });
+const page = await ctx.newPage(); const errs = [];
+page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+await page.goto(`http://127.0.0.1:${PORT}/`); await sleep(4000);
+const S = () => page.evaluate(() => ({ tic: Module._cap_tic_count(), lvl: Module._cap_level_id(), x: Module._cap_player_x(), y: Module._cap_player_y(), ang: Module._cap_player_angle() >>> 0, vis: document.visibilityState, hidden: document.hidden, focus: document.hasFocus(), audio: window.CapAudio.stats() }));
+const key = async (k, h = 120) => { await page.keyboard.down(k); await sleep(h); await page.keyboard.up(k); };
+const angDeg = (a, c) => { let d = ((c.ang - a.ang) >>> 0) / 2 ** 32 * 360; if (d > 180) d -= 360; return +d.toFixed(2); };
+await page.click('#canvas');
+await key('Enter'); await sleep(1200); for (let i = 0; i < 3; i++) { await key('Enter'); await sleep(900); } await sleep(5000);
+
+const r = { errs };
+r.start = await S();
+await page.evaluate(() => { window.__vis = []; document.addEventListener('visibilitychange', () => window.__vis.push(document.visibilityState)); });
+await page.keyboard.down('ArrowRight'); await sleep(400);
+r.preSwitch = await S(); r.turnBeforeSwitch = angDeg(r.start, r.preSwitch);
+const other = await ctx.newPage(); await other.goto('about:blank'); await other.bringToFront(); await sleep(300);
+r.hidden0 = await S(); await sleep(2000); r.hidden1 = await S();
+r.ticsWhileHidden = r.hidden1.tic - r.hidden0.tic; r.turnWhileHidden = angDeg(r.hidden0, r.hidden1);
+await page.bringToFront(); await sleep(800);
+r.back0 = await S(); await sleep(1500); r.back1 = await S();
+r.visEvents = await page.evaluate(() => window.__vis);
+r.turnAfterReturn = angDeg(r.back0, r.back1); r.ticsAfterReturn = r.back1.tic - r.back0.tic;
+await page.keyboard.up('ArrowRight'); // released late; game should already have cleared it
+await sleep(300); const a = await S(); await key('ArrowLeft', 400); await sleep(300); const c = await S();
+r.inputAfterReturn = angDeg(a, c);
+r.realHidden = r.hidden0.vis === 'hidden';
+r.checks = {
+  tabReallyHidden: r.realHidden,
+  heldTurnStoppedByHide: Math.abs(r.turnAfterReturn) < 4 && Math.abs(r.turnWhileHidden) < 4,
+  gameTicksAfterReturn: r.ticsAfterReturn > 30,
+  inputWorksAfterReturn: r.inputAfterReturn > 10,
+  audioRunningAfterReturn: r.back1.audio && (r.back1.audio.ctxState || r.back1.audio.state) !== 'suspended',
+  noErrors: errs.length === 0,
+};
+r.pass = Object.values(r.checks).every(Boolean);
+await page.screenshot({ path: `${OUT}/screens/hidden-tab-after-return.png` });
+fs.writeFileSync(`${OUT}/hidden-tab.json`, JSON.stringify(r, null, 1));
+console.log(JSON.stringify({ checks: r.checks, ticsWhileHidden: r.ticsWhileHidden, turnBeforeSwitch: r.turnBeforeSwitch, turnWhileHidden: r.turnWhileHidden, turnAfterReturn: r.turnAfterReturn, inputAfterReturn: r.inputAfterReturn, visEvents: r.visEvents, lvl: r.start.lvl, audioHidden: r.hidden1.audio, audioBack: r.back1.audio }, null, 1));
+await b.close();

@@ -1,0 +1,7 @@
+1. [GET] http://localhost:8000/?r=rev3 => [200] OK
+2. [GET] http://localhost:8000/input_audio.js => [200] OK
+3. [GET] http://localhost:8000/audio_web.js => [200] OK
+4. [GET] http://localhost:8000/render_timing.js => [200] OK
+5. [GET] http://localhost:8000/doom.js => [200] OK
+6. [GET] http://localhost:8000/doom.data => [200] OK
+7. [GET] http://localhost:8000/doom.wasm => [200] OK

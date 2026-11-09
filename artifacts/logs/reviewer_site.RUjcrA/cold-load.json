@@ -1,0 +1,8 @@
+{"note":"transcribed from MCP run_code return; CDP clearBrowserCache+setCacheDisabled, ?fresh= query, viewport 1280x720",
+"samples":[{"ms":37,"ready":1,"tic":2,"transp":0,"n":2560,"mean":[116,54,32],"w":640,"h":400,"title":"DOOM Shareware"},
+{"ms":1003,"ready":1,"tic":24,"transp":0,"n":2560,"mean":[116,54,32]},
+{"ms":3026,"ready":1,"tic":95,"transp":0,"n":2560,"mean":[116,54,32]}],
+"responses":["/?fresh=1793815860460 200","/render_timing.js 200","/input_audio.js 200","/audio_web.js 200","/doom.js 200","/doom.data 200","/doom.wasm 200"],
+"fromServiceWorker":false,"failed":[],"pageErrors":[],
+"consoleWarnErr":["warning: AudioContext was not allowed to start @audio_web.js:27","warning: AudioContext was not allowed to start @audio_web.js:53"],
+"browserConsoleCapture":"artifacts/browser/console-2026-11-04T18-11-00-447Z.log"}

@@ -1,0 +1,6 @@
+{"note":"transcribed from Playwright MCP run_code return; CDP clearBrowserCache + setCacheDisabled, URL /?fresh=1793812016701",
+"samples":[{"ms":414,"ready":1,"tic":3,"canvas":"640x400","meanRGB":[111,50,30],"transparent":"0/2560"},
+{"ms":501,"ready":1,"tic":7},{"ms":1004,"ready":1,"tic":24},{"ms":2016,"ready":1,"tic":59},{"ms":3007,"ready":1,"tic":94,"meanRGB":[111,50,30],"transparent":"0/2560"}],
+"tic_rate_1s_to_3s":35.0,
+"responses":["/?fresh= 200","/render_timing.js 200","/input_audio.js 200","/audio_web.js 200","/doom.js 200","/doom.data 200","/doom.wasm 200"],"service_worker":false,
+"requestfailed":[],"pageerrors":[],"console":"0 errors, 2 warnings (AudioContext not allowed to start before user gesture); full log artifacts/browser/console-2026-11-04T17-06-56-689Z.log"}

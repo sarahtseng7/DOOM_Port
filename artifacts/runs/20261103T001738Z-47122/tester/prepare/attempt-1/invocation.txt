@@ -1,0 +1,11 @@
+Role=tester RUN_ID=20261103T001738Z-47122 TASK_ID=prepare ATTEMPT_ID=attempt-1.
+OUTPUT_DIR=artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1. Run manifest: artifacts/runs/20261103T001738Z-47122/manifest.txt. Task: Write missing proposed criteria and actual verification scripts before implementation. Do not wait for a Makefile or playable game to write tests.
+Read current reports under artifacts/runs/20261103T001738Z-47122 and prior runs for unresolved findings.
+Student inputs, if present: artifacts/specification.md, artifacts/acceptance-criteria.md,
+artifacts/interface-contract.md. Fallback spec: artifacts/runs/20261103T001738Z-47122/coder/plan/attempt-1/proposed-spec.md.
+Fallback contract: artifacts/runs/20261103T001738Z-47122/coder/plan/attempt-1/interface-contract.md.
+Fallback criteria: artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/proposed-criteria.md.
+Missing optional inputs: propose sensible requirements, record assumptions, and proceed.
+Do not invent student approval or modify approved/frozen criteria.
+Save report.md and result.json with status and summary in OUTPUT_DIR.
+Use exactly READY, PASS, FINDINGS, ERROR, or NEEDS_INPUT. Partial work uses FINDINGS, never PASS.

@@ -1,0 +1,22 @@
+{
+ "pass": true,
+ "control": {
+  "mode": "keyup",
+  "lvl": 101,
+  "movedWhileHeld": 97,
+  "coastAfterRelease": 77,
+  "lastMoveTicsAfterRelease": 45,
+  "movedFinal1s": 0,
+  "inputWorksAfter": null
+ },
+ "blur": {
+  "mode": "blur",
+  "lvl": 101,
+  "movedWhileHeld": 97,
+  "coastAfterRelease": 77,
+  "lastMoveTicsAfterRelease": 45,
+  "movedFinal1s": 0,
+  "inputWorksAfter": 141
+ },
+ "errs": []
+}

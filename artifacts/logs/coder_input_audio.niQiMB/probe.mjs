@@ -1,0 +1,14 @@
+import { chromium } from '/Users/sarahtseng/Projects/fellowship-loop-capstone/tests/node_modules/playwright/index.mjs';
+const b = await chromium.launch(); const p = await b.newPage({viewport:{width:800,height:600}});
+const errs=[]; p.on('pageerror',e=>errs.push(String(e)));
+await p.goto('http://127.0.0.1:8189/'); await p.waitForTimeout(3000);
+const s0 = await p.evaluate(()=>CapAudio.stats());
+await p.keyboard.press('Enter'); await p.waitForTimeout(1500);
+await p.keyboard.press('Enter'); await p.waitForTimeout(1000);
+await p.keyboard.press('Enter'); await p.waitForTimeout(1000);
+await p.keyboard.press('Enter'); await p.waitForTimeout(4000);
+await p.keyboard.down('Control'); await p.waitForTimeout(600); await p.keyboard.up('Control');
+await p.waitForTimeout(1500);
+const s1 = await p.evaluate(()=>CapAudio.stats());
+console.log(JSON.stringify({s0,s1,errs}));
+await b.close();

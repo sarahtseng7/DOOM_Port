@@ -1,0 +1,4 @@
+HEAD e500c44 + uncommitted; git diff HEAD -- . ':!artifacts' | shasum prefix 441e441ad5dfcd52
+render_timing.c af7995156cd24603  render_timing.h 524c31029de67e71
+render_timing.js e4114e9951ad4ed1 dist/doom.wasm 7afb94fa1ec64b5c
+find platform web Makefile -newer dist/doom.wasm: empty (dist current)

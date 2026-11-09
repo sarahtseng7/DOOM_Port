@@ -1,0 +1,642 @@
+I'll start by reading the required docs and the earlier run artifacts.
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+  the resource usage, manual interventions, and final stopping decision.
+
+Preserve failing evidence as well as passing evidence. Record changes to
+acceptance criteria separately, with a reason. Discuss disagreements and
+missed faults in your write-up.
+
+## Where your work belongs
+
+| Location | Purpose |
+| --- | --- |
+| [`loop/`](loop/README.md) | All loop code, prompts, role definitions, MCP configuration, and design documentation. |
+| [`artifacts/`](artifacts/README.md) | All durable run state, handoffs, logs, review findings, and evidence. Agents must use this folder between runs. |
+| `tests/` | Verification code, including checks for the loop itself. |
+| `platform/`, `web/` | The port and browser page. |
+| `third_party/doomgeneric/` | Supplied engine; platform ports have been removed. |
+| `assets/` | Included shareware `doom1.wad` (Episode 1). |
+| `build/`, `dist/` | Generated build output. |
+
+Keep the root for project documentation and shared build/toolchain files.
+The starter supplies engine source, platform and HTML stubs, the shareware
+WAD, documentation, and an optional Docker toolchain. It supplies no working
+game, build script, loop implementation, or test suite. `artifacts/` starts
+with its README only; students create run evidence there during the project.
+Use the supplied engine and Emscripten. Documentation is allowed; copying an
+existing Doom browser port does not satisfy the assignment.
+
+See [`platform/README.md`](platform/README.md) for engine integration caveats,
+including pixel format, timing, and audio. The supplied game data already
+contains sound effects and music; no additional sound assets are required.
+
+## Agent section for setup
+
+### macOS without Docker
+
+Install the build tools directly on your Mac to compile and test the browser
+port. Docker is not required for this workflow. There is currently no macOS
+setup script; run the steps below manually.
+
+1. **Install prerequisites.** In Terminal, run:
+
+   ```sh
+   xcode-select --install
+   ```
+
+   Finish the installer, then check `git --version` and `python3 --version`.
+   If Python is missing, install it from [python.org](https://www.python.org/downloads/macos/),
+   or run `brew install python` if you already have Homebrew.
+
+2. **Install Emscripten.** Use version `4.0.18` to match the supplied Dockerfile:
+
+   ```sh
+   mkdir -p ~/Developer
+   cd ~/Developer
+   git clone https://github.com/emscripten-core/emsdk.git
+   cd emsdk
+   ./emsdk install 4.0.18
+   ./emsdk activate 4.0.18
+   source ./emsdk_env.sh
+   emcc --version
+   ```
+
+   If you already have an SDK checkout at that location, use it instead of
+   cloning again. In each new Terminal session where you want to compile, run:
+
+   ```sh
+   source ~/Developer/emsdk/emsdk_env.sh
+   ```
+
+   See the [official installation instructions](https://emscripten.org/docs/getting_started/downloads.html).
+
+artifacts:
+README.md
+runs
+
+artifacts/runs/20261103T002748Z-51080:
+coder
+coder_input_audio
+coder_render_timing
+manifest.txt
+reviewer
+reviewer_requirements
+tester
+verification-1.log
+verification-2.log
+run_id: 20261103T002748Z-51080
+source_commit: e500c440656622db5ab3f8fb7df73d8b5998eeb3
+artifacts/runs/20261103T002748Z-51080/manifest.txt
+artifacts/runs/20261103T002748Z-51080/verification-2.log
+artifacts/runs/20261103T002748Z-51080/verification-1.log
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/source-commit.txt
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/invocation.txt
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/result.json
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full.log
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/report.md
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/source-dirty.patch
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/agent.log
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/source-status.txt
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-exit.txt
+artifacts/runs/20261103T002748Z-51080/coder/3-build/attempt-1/invocation.txt
+artifacts/runs/20261103T002748Z-51080/coder/3-build/attempt-1/agent.log
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/invocation.txt
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/result.json
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full.log
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/report.md
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/dist-sha256.txt
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/agent.log
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/build.log
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/playtest-results.json
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/verify-result.json
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/verify.log
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/playtest.log
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/selftest.log
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/dist-sha256.txt
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/browser-console.log
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/identity.txt
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/build.log
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/playtest-results.json
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/verify-result.json
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/verify.log
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/playtest.log
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/selftest.log
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/dist-sha256.txt
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/browser-console.log
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/identity.txt
+artifacts/runs/20261103T002748Z-51080/coder/1-build/attempt-1/verify-full/build.log
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/screens/058-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/screens/059-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/screens/013-move-fwd-held2.png
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/screens/026-settle.png
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/screens/052-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/screens/053-soak.png
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/screens/final-page.png
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/screens/006-idle-b.png
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/screens/014-settle.png
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/screens/023-settle.png
+artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/verify-full/screens/003-main-menu.png
+# Building the Doom WebAssembly port
+
+Toolchain: Emscripten **4.0.18** (`source ~/Developer/emsdk/emsdk_env.sh`), GNU make, Node (tests only).
+
+    make        # builds build/*.o and dist/{index.html,doom.js,doom.wasm,doom.data}
+    make clean  # removes build/ and dist/
+
+- Engine sources: all `third_party/doomgeneric/*.c` except `dummy.c`, `doomgeneric_sdl.c`; platform code: `platform/*.c`.
+- WAD packaging: `assets/doom1.wad` is embedded via `--preload-file` at `/doom1.wad` in `dist/doom.data`.
+- `web/index.html` is copied to `dist/index.html`. Serve `dist/` over HTTP (not `file://`).
+- JS/C bridge exports are listed in the Makefile `EXPORTED_FUNCTIONS`; see `platform/capstone_bridge.h`.
+- Acceptance: `tests/verify.sh` (tester-owned); `QUICK=1` is partial and never exits 0.
+# Doom -> WebAssembly build. Requires Emscripten 4.0.18 (source emsdk_env.sh
+# or use the Dockerfile image). Output: dist/{index.html,doom.js,doom.wasm,doom.data}
+EMCC      ?= emcc
+ENGINE    := third_party/doomgeneric
+BUILD     := build
+DIST      := dist
+WAD       := assets/doom1.wad
+
+# Platform-specific/unused engine files: dummy.c, i_cdmus.c, i_joystick.c are
+# stubs here; net_* sources are absent from this tree.
+ENGINE_EXCLUDE := $(ENGINE)/dummy.c $(ENGINE)/doomgeneric_sdl.c
+ENGINE_SRC := $(filter-out $(ENGINE_EXCLUDE),$(wildcard $(ENGINE)/*.c))
+PLAT_SRC   := $(wildcard platform/*.c)
+OBJS       := $(patsubst %.c,$(BUILD)/%.o,$(ENGINE_SRC) $(PLAT_SRC))
+
+CFLAGS  := -O2 -I$(ENGINE) -Iplatform -MMD -MP
+ENGINE_CFLAGS := -w   # silence warnings for the supplied engine only
+LDFLAGS := -O2 -sASYNCIFY -sASYNCIFY_STACK_SIZE=65536 -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=64MB \
+           -sEXPORTED_FUNCTIONS=_main,_cap_ready,_cap_tic_count,_cap_input_event,_cap_input_reset,_cap_bridge_version,_cap_framebuffer_ptr \
+           -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,HEAPU8 \
+           --preload-file $(WAD)@/doom1.wad
+
+.PHONY: all clean
+all: $(DIST)/index.html
+
+$(BUILD)/$(ENGINE)/%.o: $(ENGINE)/%.c
+	@mkdir -p $(dir $@)
+	$(EMCC) $(CFLAGS) $(ENGINE_CFLAGS) -c $< -o $@
+
+$(BUILD)/platform/%.o: platform/%.c
+	@mkdir -p $(dir $@)
+	$(EMCC) $(CFLAGS) -c $< -o $@
+
+-include $(OBJS:.o=.d)
+
+$(DIST)/doom.js: $(OBJS) $(WAD)
+	@mkdir -p $(DIST)
+	$(EMCC) $(OBJS) $(LDFLAGS) -o $@
+
+WEB_FILES := web/index.html web/input_audio.js
+
+$(DIST)/index.html: $(DIST)/doom.js $(WEB_FILES)
+	cp $(WEB_FILES) $(DIST)/
+
+clean:
+	rm -rf $(BUILD) $(DIST)
+)
+
+Calling Bash()
+
+Bash response → (
+# coder 2-build attempt-1 (run 20261103T002748Z-51080)
+Status: PASS for owned scope (build/startup/WAD packaging); overall project NOT complete (see Limits).
+Source: commit e500c44 + uncommitted changes. Patch of tracked changes: source-dirty.patch; status: source-status.txt; identity: verify-full/identity.txt. Untracked files are not in the patch (F9 partly addressed).
+Criteria are AGENT-PROPOSED; no student-approved spec/criteria/contract exists.
+
+## Reviewer findings addressed (coder-owned)
+- F1: removed exported `cap_frame` (C function, header decl, Makefile export). It was unused and unsafe next to the ASYNCIFY main loop. The proposed interface-contract text was edited to drop it.
+- F4: `-sASYNCIFY_STACK_SIZE=65536` set explicitly (default 4096).
+- F6: `-w` now applies only to third_party engine objects; platform code compiles with warnings visible (none emitted). Added `-MMD -MP` so header edits rebuild (checked: touching platform/input_audio.h triggers rebuilds).
+## Not addressed
+- F3 (shortcut hijack), F8 (canvas scaling), F5 (implementation-identity diagnostic): web/platform behaviour changes outside build scope; F5 check is tester-owned. F2: tester. F7: partially (cap_frame refs removed; render_timing.js reference remains in plan doc).
+## Evidence
+`make clean && make all` with emcc 4.0.18: exit 0, no warnings. Full `tests/verify.sh` (selftest, clean build, playtest, 300 s soak) exit 0: `playtest: PASS failed=0 unverified=3` (verify-full.log, verify-full/, verify-exit.txt). I did not edit tests/ or loop/.
+## Limits
+A1 audio, P1 persistence, G3 door/exit UNVERIFIED. Headless Chromium only, one run. ASYNCIFY stack size is raised but no deeper-path test (intermission, demo loop) exists. Passing proves no regression, not fault-detection. Manual interventions: none. Usage: not available.
+## Next action
+Reviewer re-checks F1/F4/F6; tester adds F2/F5 checks; student approves criteria and audio/persistence scope.
+{"status":"PASS","summary":"Owned build scope OK: clean emcc 4.0.18 build, no warnings; full tests/verify.sh exit 0 (failed=0). Fixed reviewer F1 (removed cap_frame export), F4 (ASYNCIFY stack 64K), F6 (scoped -w, header deps). F2/F3/F5/F8 open; A1/P1/G3 UNVERIFIED; criteria agent-proposed."}
+exit 0
+source-dirty.patch
+source-status.txt
+verify-exit.txt
+verify-full
+verify-full.log
+)
+The build passes and the full protected check (`tests/verify.sh`) exits 0 with no failures. This is a pass for my scope only: build, startup and WAD packaging. The project is not complete.
+
+The check ran a clean emcc 4.0.18 build, the selftest and the browser playtest with the 300 s soak. It reported `playtest: PASS failed=0`, with 3 checks listed as unverified. The build emits no warnings.
+
+I fixed four of the reviewer's findings that were mine to fix:
+- **F1:** I removed the exported `cap_frame`, which nothing called and which could corrupt state next to the ASYNCIFY main loop. The change touches the C function, its header declaration and the Makefile export list. I also dropped it from the plan's interface contract.
+- **F4:** I set `-sASYNCIFY_STACK_SIZE=65536` explicitly, up from the 4096 default.
+- **F6, warnings:** `-w` now applies only to the supplied engine sources, so platform code compiles with warnings visible.
+- **F6, rebuilds:** I added `-MMD -MP`, so header edits trigger rebuilds. I confirmed this by touching `platform/input_audio.h`.
+- **F9:** I saved the diff of the tracked changes as `source-dirty.patch`. The untracked new files (Makefile, `platform/*`, `tests/*`) are not in that patch, so the source revision is only partly reproducible.
+
+Still open:
+- **Reviewer findings:**
+  - F3: input handling swallows browser shortcuts.
+  - F8: the canvas is not upscaled cleanly.
+  - F5: no check that the strong input and render implementations are linked instead of the weak fallbacks. That check is the tester's.
+  - F2: key edge cases have no tests, also the tester's.
+- **Unverified checks:** A1 audio, P1 save persistence and G3 door use and level exit.
+- **Criteria:** the acceptance criteria are agent-proposed, and no student-approved specification, criteria or interface contract exists.
+- **Test coverage:** only headless Chromium was tested, in a single run.
+
+The next steps are for the reviewer to re-check F1, F4 and F6, and for the tester to add the F2 and F5 checks. You need to approve the criteria and decide the audio and persistence scope. I made no manual interventions and did not touch `loop/`, `tests/`, `assets/` or `third_party/`.
+
+Everything is saved in `artifacts/runs/20261103T002748Z-51080/coder/2-build/attempt-1/`. Start with `report.md`; `result.json` and the verification logs are alongside it.Role=coder RUN_ID=20261103T002748Z-51080 TASK_ID=3-build ATTEMPT_ID=attempt-1.
+OUTPUT_DIR=artifacts/runs/20261103T002748Z-51080/coder/3-build/attempt-1. Manifest: artifacts/runs/20261103T002748Z-51080/manifest.txt. Task: Implement/repair owned build, startup and WAD packaging.
+Follow your configured role prompt. Read earlier findings under artifacts/runs/.
+Use artifacts/specification.md, artifacts/acceptance-criteria.md and
+artifacts/interface-contract.md if present. Otherwise use proposals under
+artifacts/runs/20261103T002748Z-51080/coder/plan/attempt-1/ and artifacts/runs/20261103T002748Z-51080/tester/prepare/attempt-1/.
+Record reasonable assumptions if optional documents are absent; do not invent approval.
+Save report.md and result.json in OUTPUT_DIR. Partial work is FINDINGS, not PASS.
+coder_input_audio:
+1-input
+2-input
+
+coder_render_timing:
+1-render
+2-render
+
+reviewer:
+1-review
+2-review
+
+tester:
+1-test
+2-test
+prepare
+verify-005841Z
+verify-013807Z
+== tooling
+VERIFY FAIL: emcc missing (source emsdk 4.0.18 env)
+)
+
+Calling Bash()
+
+Bash response → (
+Exit code 1
+.:
+total 24
+drwxr-xr-x  11 sarahtseng  staff  352 Nov  2 17:38 .
+drwxr-xr-x@  7 sarahtseng  staff  224 Nov  2 16:27 ..
+drwxr-xr-x   8 sarahtseng  staff  256 Nov  2 17:38 coder
+drwxr-xr-x   4 sarahtseng  staff  128 Nov  2 17:08 coder_input_audio
+drwxr-xr-x   4 sarahtseng  staff  128 Nov  2 17:05 coder_render_timing
+-rw-r--r--   1 sarahtseng  staff   87 Nov  2 16:27 manifest.txt
+drwxr-xr-x   4 sarahtseng  staff  128 Nov  2 17:25 reviewer
+drwxr-xr-x   4 sarahtseng  staff  128 Nov  2 17:37 reviewer_requirements
+drwxr-xr-x   7 sarahtseng  staff  224 Nov  2 17:38 tester
+-rw-r--r--   1 sarahtseng  staff   63 Nov  2 16:58 verification-1.log
+-rw-r--r--   1 sarahtseng  staff   63 Nov  2 17:38 verification-2.log
+
+reviewer/1-review:
+total 0
+drwxr-xr-x  3 sarahtseng  staff   96 Nov  2 16:49 .
+drwxr-xr-x  4 sarahtseng  staff  128 Nov  2 17:25 ..
+drwxr-xr-x  6 sarahtseng  staff  192 Nov  2 16:51 attempt-1
+
+reviewer/2-review:
+total 0
+drwxr-xr-x   3 sarahtseng  staff   96 Nov  2 17:25 .
+drwxr-xr-x   4 sarahtseng  staff  128 Nov  2 17:25 ..
+drwxr-xr-x  13 sarahtseng  staff  416 Nov  2 17:30 attempt-1
+
+tester/1-test:
+total 0
+drwxr-xr-x   3 sarahtseng  staff   96 Nov  2 16:51 .
+drwxr-xr-x   7 sarahtseng  staff  224 Nov  2 17:38 ..
+drwxr-xr-x  15 sarahtseng  staff  480 Nov  2 16:57 attempt-1
+
+tester/2-test:
+total 0
+drwxr-xr-x   3 sarahtseng  staff   96 Nov  2 17:30 .
+drwxr-xr-x   7 sarahtseng  staff  224 Nov  2 17:38 ..
+drwxr-xr-x  12 sarahtseng  staff  384 Nov  2 17:37 attempt-1
+
+tester/prepare:
+total 0
+drwxr-xr-x   3 sarahtseng  staff   96 Nov  2 16:28 .
+drwxr-xr-x   7 sarahtseng  staff  224 Nov  2 17:38 ..
+drwxr-xr-x  11 sarahtseng  staff  352 Nov  2 16:29 attempt-1
+
+tester/verify-005841Z:
+total 16
+drwxr-xr-x  4 sarahtseng  staff   128 Nov  2 16:58 .
+drwxr-xr-x  7 sarahtseng  staff   224 Nov  2 17:38 ..
+-rw-r--r--  1 sarahtseng  staff  1002 Nov  2 16:58 identity.txt
+-rw-r--r--  1 sarahtseng  staff    63 Nov  2 16:58 verify.log
+
+tester/verify-013807Z:
+total 16
+drwxr-xr-x  4 sarahtseng  staff   128 Nov  2 17:38 .
+drwxr-xr-x  7 sarahtseng  staff   224 Nov  2 17:38 ..
+-rw-r--r--  1 sarahtseng  staff  1002 Nov  2 17:38 identity.txt
+-rw-r--r--  1 sarahtseng  staff    63 Nov  2 17:38 verify.log
+# reviewer 2-review attempt-1 (run 20261103T002748Z-51080)
+
+Status: FINDINGS (not PASS). Technical review of the integrated candidate. I re-ran the browser playtest on the current dist and reproduced a failing check.
+
+## Basis and assumptions
+- Source: commit e500c44 + uncommitted changes (manifest). Untracked platform/*, web/input_audio.js, Makefile and tests/* are not in any preserved patch (finding R2-7).
+- No artifacts/specification.md, acceptance-criteria.md or interface-contract.md exists. I used the AGENT-PROPOSED coder/plan and tester/prepare proposals. None is student-approved; I did not approve them.
+- Candidate under review is the shared `dist/` built 17:19. Its sha256 values equal `coder/2-integrate/attempt-1/dist-sha256.txt` (my copy: `dist-sha256-at-review.txt`). The earlier `coder/1-build/attempt-1` report and hashes describe an older tree (before render_timing.c and input_audio.js) and are superseded. Do not cite them for the current candidate.
+- I did not rebuild (emcc is not on this shell's PATH; `verification-1.log` shows the runner hit the same). I reviewed the source and ran the existing playtest against the existing dist.
+- Prior reviewer findings F1, F3, F4, F6, F7, F8 are addressed in source (cap_frame removed, stack 64K, scoped -w, -MMD, shortcut passthrough, pixelated CSS). I re-read the code and found no regression in them. F2, F5, F9 are still open (R2-3, R2-4, R2-7).
+
+## Verified correct by reading source (no action)
+- Pixel path: `render_timing.c` turns word 0x00RRGGBB into 0xFFBBGGRR, so bytes are R,G,B,A and alpha is 255. The 1 MB view is rebuilt per frame, so ALLOW_MEMORY_GROWTH cannot leave a detached buffer. Frame `B3/B4/B6` checks agree, and the screenshots I viewed have correct colours.
+- WAD: `--preload-file assets/doom1.wad@/doom1.wad`, `main` passes `-iwad /doom1.wad`. The game boots to E1M1 in every run.
+- Timing: `cap_time_ms` is nonzero on the first call (i_timer.c `basetime==0` rule). `cap_sleep_ms` uses `emscripten_sleep`, so the wipe and tic waits yield. T2 measured 35 tics/s.
+- Input queue: `input_audio.c` keeps strict press/release alternation. The 256-press limit plus at most 255 outstanding releases fits the 512 slots, so a release is never dropped. `I_GetEvent` breaks after each release; extra queued events wait for the next tick, which is harmless.
+- Key table in `web/input_audio.js` matches `doomkeys.h`. Weak fallbacks in `cap_fallback.c` are overridden by the strong definitions (confirmed by earlier role reports; `rt_js_put` is present in doom.js).
+
+## Findings (most severe first)
+
+### R2-1 (high, owner: tester) I3.turn-left is flaky because of the check, and the "PASS" gate is unreliable
+- Evidence: three QUICK playtests on the identical current dist. Run 1 and 2: `FAIL I3.tu
+
+... [2174 characters truncated] ...
+
+isibilitychange`, `pagehide`, `contextmenu`, Meta, L+R Ctrl, auto-repeat. Expected validation: Playwright cases that dispatch `keydown{repeat:true}` after blur and assert `defaultPrevented===false` for F5 and Ctrl+R.
+
+### R2-4 (medium, owner: tester, with coder) Silent fallback hides a regression
+`cap_fallback.c` still ships a complete second renderer and queue. If `render_timing.c` or `input_audio.c` stops linking, the build passes and no check notices. Expected validation: a test asserting `Module._rt` exists (render module) and an exported diagnostic from `input_audio.c` such as `cap_input_delivered`. This matters for the injected-regression evaluation, because dropping a module is an obvious fault to inject.
+
+### R2-5 (medium, owner: coder_input_audio / student) Save and config persistence is absent
+Files go to the in-memory FS and are lost on reload. P1 is UNVERIFIED and unscoped. I did not exercise saving in this review, so I make no claim about whether in-session save and load work.
+
+### R2-6 (low-medium, owner: tester) Hidden-tab behaviour is unchecked
+The main loop is ASYNCIFY with `setTimeout`-based sleeps. Browsers throttle timers in background tabs, so the game will run slowly or stall while hidden and catch up on return. The input code releases keys on hide, but nothing tests timing after a hide/show cycle. Report it as unverified, not as a defect.
+
+### R2-7 (low, owner: coder / runner) Candidate source is not reproducible from artifacts
+`coder/2-integrate/.../source-dirty.patch` covers tracked files only. platform/*.c, web/input_audio.js, Makefile and tests/* are untracked, so another agent cannot recreate the exact tested tree. This was prior finding F9 and is only partly fixed. Expected: a snapshot or tree hash that includes untracked files, or a commit.
+
+### R2-8 (low, owner: coder_render_timing) Per-frame allocation
+`rt_js_put` allocates a new `Uint8ClampedArray` and `ImageData` every frame, and `cap_render_present` also copies 256k pixels in C. T2 and rAF checks show it keeps up (35 tics/s, 60 rAF/s headless), so this is only a GC and efficiency note. Not measured on slower hardware.
+
+### R2-9 (process, owner: student/runner) Runner verification failed to run
+`verification-1.log` reads `VERIFY FAIL: emcc missing (source emsdk 4.0.18 env)` and the run continued. `loop/` is read-only for me, so I only report it: the runner's own verify step does not source emsdk, so its independent check produced no evidence for this run.
+
+## Coverage limits
+This review does not certify gameplay or the final submission. Not established: audio, persistence, door use and level exit (G3), mouse, browsers other than headless Chromium, HiDPI, flakiness beyond the runs listed, and fidelity to original Doom (no demo or determinism oracle). The student has not approved any criteria.
+
+## Commands and results
+- `shasum -a 256 dist/*` compared with `coder/2-integrate` hashes: identical.
+- `QUICK=1 OUT_DIR=<abs> node tests/playtest.mjs` ×3 on that dist: exit 1, 1, 3. Failures only in I3, as above. Evidence: `quick-N.log`, `quick-N/` (screens, results json).
+- Read: platform/*, web/*, Makefile, tests/lib/frames.mjs, tests/playtest.mjs (lines 100-113), i_input.c, i_timer.c, doomfeatures.h, all role reports under this run.
+
+## Next action
+Tester: fix I3 (R2-1) and repeat 10 runs; add R2-3 and R2-4 checks. Student: decide audio/persistence scope (R2-2, R2-5) and approve criteria. Coder: preserve a full source snapshot (R2-7). Reviewer re-check after those land. Manual interventions: none. Usage: not available.
+# tester 2-test attempt-1 (run 20261103T002748Z-51080)
+
+Status: FINDINGS. The unchanged suite FAILED (exit 1): `I3.turn-left shift=-116px`. All other required checks passed. A1, P1 and G3 are UNVERIFIED. The criteria are agent-proposed, not student-approved.
+
+## Source
+- Commit e500c440656622db5ab3f8fb7df73d8b5998eeb3 plus uncommitted changes: source-status.txt, source-dirty.patch (untracked files are not in the patch).
+- Identity (tests_sha256, dirty_diff_sha256, wad_sha256, emcc): verify/identity.txt.
+- No tests/ files were modified, and no thresholds were changed.
+
+## Assumptions
+- No artifacts/specification.md, acceptance-criteria.md or interface-contract.md exists. I used the proposals in coder/plan/attempt-1/ and tester/prepare/attempt-1/. None is student-approved.
+
+## Commands and results
+- `source ~/Developer/emsdk/emsdk_env.sh && RUN_ID=... OUT_DIR=<abs> tests/verify.sh`: exit 1 (verify-exit.txt).
+- Tooling, selftest and `make clean && make all` passed.
+- Playtest: 29 PASS, 1 FAIL (I3), 3 UNVERIFIED (A1, P1, G3). This includes the 300s soak (R1-R4) and 34.96 tics/s.
+- Evidence: verify/ (verify.log, selftest.log, build.log, dist-sha256.txt, playtest-results.json, screenshots), verify-stdout.log.
+
+## Findings
+1. FAIL I3.turn-left (owner: tester for the check; coder only if the cause turns out to be in the product).
+== tooling
+VERIFY FAIL: emcc missing (source emsdk 4.0.18 env)
+bazel
+build
+docker
+emcc not found
+)
+
+Calling Bash()
+
+Bash response → (
+emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 4.0.18 (fae107463db4d20a276a27ede393048deaeebf76)
+e500c440656622db5ab3f8fb7df73d8b5998eeb3
+build=0
+total 9424
+drwxr-xr-x@  7 sarahtseng  staff      224 Nov  2 17:38 .
+drwxr-xr-x@ 22 sarahtseng  staff      704 Nov  2 17:38 ..
+-rw-r--r--@  1 sarahtseng  staff  4196020 Nov  2 17:38 doom.data
+-rw-r--r--@  1 sarahtseng  staff    74318 Nov  2 17:38 doom.js
+-rwxr-xr-x@  1 sarahtseng  staff   539468 Nov  2 17:38 doom.wasm
+-rw-r--r--@  1 sarahtseng  staff      771 Nov  2 17:38 index.html
+-rw-r--r--@  1 sarahtseng  staff     4005 Nov  2 17:38 input_audio.js
+1d7d43be501e67d927e415e0b8f3e29c3bf33075e859721816f652a526cac771  dist/doom.data
+b02755a83c1db50a61b4865d031d812d444d63f8b697fce7508c1ca7a9f69bb1  dist/doom.js
+11ecbb45e45cc08bd726aa299ab2a822f02320ad7beedba2e456179cd5a6fd1c  dist/doom.wasm
+066eb792f6e1f405e0856aeb7e7320019b1730f6a24cb3331c3f4ae71e1f3708  dist/index.html
+8308f801511da836740f717820318be323c738c2efb1a2cf23511ba9806091d2  dist/input_audio.js
+1d7d43be501e67d927e415e0b8f3e29c3bf33075e859721816f652a526cac771  assets/doom1.wad
+0
+)
+
+Calling Bash()
+
+Bash response → (
+19 /Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/runs/20261103T002748Z-51080/coder/3-build/attempt-1/source-files.txt
+#!/usr/bin/env bash
+# Acceptance entry point (tester-owned). Exit 0 only if build + every required check passes.
+# Env: RUN_ID (evidence dir name), SOAK_SECONDS (default 300), QUICK=1 (partial; never exits 0),
+#      SKIP_BUILD=1 is intentionally NOT supported.
+set -u
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+RUN_ID="${RUN_ID:-manual-$(date -u +%Y%m%dT%H%M%SZ)}"
+OUT_DIR="${OUT_DIR:-artifacts/runs/$RUN_ID/tester/verify-$(date -u +%H%M%SZ)}"
+mkdir -p "$OUT_DIR"
+export OUT_DIR
+fail() { echo "VERIFY FAIL: $1" | tee -a "$OUT_DIR/verify.log"; exit "${2:-1}"; }
+step() { echo "== $1" | tee -a "$OUT_DIR/verify.log"; }
+
+# Identity of what was tested.
+{
+  echo "commit: $(git rev-parse HEAD)"
+  echo "dirty_diff_sha256: $(git diff HEAD -- . ':!artifacts' | shasum -a 256 | cut -d' ' -f1)"
+  git status --short -- . ':!artifacts' | sed 's/^/status: /'
+  echo "tests_sha256: $(cat tests/verify.sh tests/playtest.mjs tests/selftest.mjs tests/lib/frames.mjs tests/package.json | shasum -a 256 | cut -d' ' -f1)"
+  echo "wad_sha256: $(shasum -a 256 assets/doom1.wad | cut -d' ' -f1)"
+  echo "emcc: $(emcc --version 2>/dev/null | head -1 || echo missing)"
+} > "$OUT_DIR/identity.txt"
+
+step "tooling"
+command -v node >/dev/null || fail "node missing" 2
+command -v make >/dev/null || fail "make missing" 2
+command -v emcc >/dev/null || fail "emcc missing (source emsdk 4.0.18 env)" 2
+(cd tests && npm ci --no-audit --no-fund >>"$OUT_DIR/verify.log" 2>&1) || fail "npm ci in tests/ failed" 2
+(cd tests && npx playwright install chromium >>"$OUT_DIR/verify.log" 2>&1) || fail "playwright chromium install failed" 2
+
+step "helper self-test (fault injection on pixel checks)"
+node tests/selftest.mjs 2>&1 | tee "$OUT_DIR/selftest.log"; [ "${PIPESTATUS[0]}" -eq 0 ] || fail "selftest failed"
+
+step "clean build"
+{ make clean && make all; } >"$OUT_DIR/build.log" 2>&1 || fail "make clean && make all failed (see $OUT_DIR/build.log)"
+[ -f dist/index.html ] && [ -f dist/doom.wasm ] || fail "dist/index.html or dist/doom.wasm missing after build"
+shasum -a 256 dist/* > "$OUT_DIR/dist-sha256.txt" 2>/dev/null
+
+step "browser playtest"
+)
+
+Calling Bash()
+
+Bash response → "Command running in background with ID: b6mrdmxal. Output is being written to: /private/tmp/claude-501/-Users-sarahtseng-Projects-fellowship-loop-capstone/3ce94cfa-68ae-4734-ac80-47508d3301a0/tasks/b6mrdmxal.output. You will be notified when it completes. To check interim output, use Read on that file path."
+
+Calling Monitor()
+
+Monitor response → "Monitor started (task b0xasic9a, expires in 10m unless the source ends first; you get one notice at expiry — re-arm if you still need the watch). You will be notified on each event. Keep working — do not poll or sleep. Events may arrive while you are waiting for the user — an event is not their reply."
+I'm running the full `tests/verify.sh` (clean build, playtest, 300 s soak) on the freshly built tree. I'm waiting for it to finish before writing the report.
+Calling Monitor()
+
+Monitor response → "Monitor started (task bwfusugbg, expires in 10m unless the source ends first; you get one notice at expiry — re-arm if you still need the watch). You will be notified on each event. Keep working — do not poll or sleep. Events may arrive while you are waiting for the user — an event is not their reply."
+
+Calling Bash()
+
+Bash response → (
+cat: /Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/runs/20261103T002748Z-51080/coder/3-build/attempt-1/verify-exit.txt: No such file or directory
+ok   different frames: diff large
+ok   shift sign/size: right-moved content => +12
+ok   shift sign: left-moved => -12
+ok   static frames: no spurious shift improvement
+== clean build
+)
+Still running (it's in the clean-build step, then the playtest and soak). I'll wait for the notification.
+Calling Monitor()
+
+Monitor response → "Monitor started (task b8asbjwv9, expires in 10m unless the source ends first; you get one notice at expiry — re-arm if you still need the watch). You will be notified on each event. Keep working — do not poll or sleep. Events may arrive while you are waiting for the user — an event is not their reply."
+
+Calling Bash()
+
+Bash response → "<tool_use_error>Blocked: sleep 420 followed by: cd /Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/runs/20261103T002748Z-51080/coder/3-build/attempt-1 cat verify-exit.txt tail -8 verify-full.log. To wait for a condition, use Monitor with an until-loop (e.g. `until <check>; do sleep 2; done`). To wait for a command you started, use run_in_background: true. Do not chain shorter sleeps to work around this block.</tool_use_error>"
+The verification run is still going. I'll wait for the monitor notification.
+Calling Monitor()
+
+Monitor response → "Monitor started (task bnx927unt, expires in 10m unless the source ends first; you get one notice at expiry — re-arm if you still need the watch). You will be notified on each event. Keep working — do not poll or sleep. Events may arrive while you are waiting for the user — an event is not their reply."
+Waiting on the verify run to finish.
+Calling Bash()
+
+Bash response → (
+0
+PASS       T2.35-tics-per-second 34.98 tics/s over 4s (need 35 +/-10%)
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3.door-use-and-level-exit no stable cross-build oracle; manual/protocol check
+playtest: PASS failed=0 unverified(not-in-scope, listed)=3
+commit: e500c440656622db5ab3f8fb7df73d8b5998eeb3
+dirty_diff_sha256: e216dde7205b9621f0bf4204c8c964ff54f6f5d566d32292acb117fba00966c3
+status:  M loop/agents.yaml
+)
+
+Calling Bash()
+
+Bash response → "(Bash completed with no output)"
+The build, startup and WAD packaging work passes for my scope, but the project as a whole is not done. I needed no changes to the Makefile or sources this attempt.
+
+- **Build:** `make clean && make all` with emcc 4.0.18 exits 0 with no warnings.
+- **WAD packaging:** `dist/doom.data` has the same sha256 as `assets/doom1.wad`, so the unmodified WAD is embedded at `/doom1.wad`.
+- **Full check:** `tests/verify.sh` exited 0, including the 300 s soak. The playtest reported `PASS failed=0` and 34.98 tics/s.
+- **Unverified:** audio (A1), save persistence (P1) and door use/level exit (G3) are still listed as unverified.
+- **Source snapshot:** I saved a tarball of the 19 changed or untracked source files, with hashes, so the tested tree can be recreated. This addresses the reviewer's R2-7.
+- **Runner verification:** the earlier runner verification logs failed with "emcc missing" because emsdk was never sourced. The fix belongs in `loop/`, which I may not edit, so you'll need to fix it.
+- **Still open:**
+  - The `I3.turn-left` check failed in the tester's run and was flaky in the reviewer's. It passed in my single run, which doesn't show the flake is fixed. The tester should repeat the run at least 10 times.
+  - The other reviewer findings are not mine to fix. They include the silent fallback in `cap_fallback.c`.
+- **Approval:** the acceptance criteria are still agent-proposed. You haven't approved them.
+
+I didn't touch `tests/`, `loop/`, `assets/` or `third_party/`.
+
+Everything is in `artifacts/runs/20261103T002748Z-51080/coder/3-build/attempt-1/`; start with `report.md` and `result.json`.

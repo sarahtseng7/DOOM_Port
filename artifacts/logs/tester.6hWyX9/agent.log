@@ -1,0 +1,1480 @@
+I'll start by reading the project docs, the role prompt, and the prior reports.
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+  the resource usage, manual interventions, and final stopping decision.
+
+Preserve failing evidence as well as passing evidence. Record changes to
+acceptance criteria separately, with a reason. Discuss disagreements and
+missed faults in your write-up.
+
+## Where your work belongs
+
+| Location | Purpose |
+| --- | --- |
+| [`loop/`](loop/README.md) | All loop code, prompts, role definitions, MCP configuration, and design documentation. |
+| [`artifacts/`](artifacts/README.md) | All durable run state, handoffs, logs, review findings, and evidence. Agents must use this folder between runs. |
+| `tests/` | Verification code, including checks for the loop itself. |
+| `platform/`, `web/` | The port and browser page. |
+| `third_party/doomgeneric/` | Supplied engine; platform ports have been removed. |
+| `assets/` | Included shareware `doom1.wad` (Episode 1). |
+| `build/`, `dist/` | Generated build output. |
+
+Keep the root for project documentation and shared build/toolchain files.
+The starter supplies engine source, platform and HTML stubs, the shareware
+WAD, documentation, and an optional Docker toolchain. It supplies no working
+game, build script, loop implementation, or test suite. `artifacts/` starts
+with its README only; students create run evidence there during the project.
+Use the supplied engine and Emscripten. Documentation is allowed; copying an
+existing Doom browser port does not satisfy the assignment.
+
+See [`platform/README.md`](platform/README.md) for engine integration caveats,
+including pixel format, timing, and audio. The supplied game data already
+contains sound effects and music; no additional sound assets are required.
+
+## Agent section for setup
+
+### macOS without Docker
+
+Install the build tools directly on your Mac to compile and test the browser
+port. Docker is not required for this workflow. There is currently no macOS
+setup script; run the steps below manually.
+
+1. **Install prerequisites.** In Terminal, run:
+
+   ```sh
+   xcode-select --install
+   ```
+
+   Finish the installer, then check `git --version` and `python3 --version`.
+   If Python is missing, install it from [python.org](https://www.python.org/downloads/macos/),
+   or run `brew install python` if you already have Homebrew.
+
+2. **Install Emscripten.** Use version `4.0.18` to match the supplied Dockerfile:
+
+   ```sh
+   mkdir -p ~/Developer
+   cd ~/Developer
+   git clone https://github.com/emscripten-core/emsdk.git
+   cd emsdk
+   ./emsdk install 4.0.18
+   ./emsdk activate 4.0.18
+   source ./emsdk_env.sh
+   emcc --version
+   ```
+
+   If you already have an SDK checkout at that location, use it instead of
+   cloning again. In each new Terminal session where you want to compile, run:
+
+   ```sh
+   source ~/Developer/emsdk/emsdk_env.sh
+   ```
+
+   See the [official installation instructions](https://emscripten.org/docs/getting_started/downloads.html).
+
+3. **Verify the compiler and browser workflow.** Return to this repository's
+   root directory, then run:
+
+   ```sh
+   mkdir -p build/smoke
+   cat > build/smoke/hello.c <<'EOF'
+   #include <stdio.h>
+   int main(void) {
+       printf("Emscripten works!\n");
+       return 0;
+   }
+   EOF
+
+   emcc build/smoke/hello.c -o build/smoke/index.html
+   python3 -m http.server 8000 --bind 127.0.0.1 --directory build/smoke
+   ```
+
+   Open <http://localhost:8000>. The generated page should print
+   `Emscripten works!`. Press **Control-C** in Terminal to stop the server.
+   This verifies the toolchain and local serving, not the game.
+
+4. **Have your agents implement and build the game.** The supplied platform callbacks are
+   empty, there is no entry point or build script, and the HTML does not yet
+   load a compiled module. These are student implementation tasks; see
+   [platform/README.md](platform/README.md). Document the actual build command
+   once implemented. A completed build could produce:
+
+   ```text
+   dist/
+     index.html
+     doom.js
+     doom.wasm
+     doom.data
+   ```
+
+   The exact filenames depend on the build configuration. For example,
+   `doom.data` could contain the packaged shareware WAD. The build must make
+   that WAD available to the engine inside the browser module.
+
+5. **Test the completed game locally.** Once the build output is in `dist/`,
+   run this from the repository root:
+
+   ```sh
+   python3 -m http.server 8000 --bind 127.0.0.1 --directory dist
+   ```
+
+   Open <http://localhost:8000> and exercise the game's behavior. Use a local
+   web server rather than opening the HTML file directly, as explained in
+   [Emscripten's deployment documentation](https://emscripten.org/docs/compiling/Deploying-Pages.html).
+
+artifacts/logs:
+coder_input_audio.1EbASm
+coder_input_audio.3fWNbv
+coder_input_audio.6WSU74
+coder_input_audio.6zHSnA
+coder_input_audio.9u4tS4
+coder_input_audio.a8DgOL
+coder_input_audio.DUI82V
+coder_input_audio.g90qsB
+coder_input_audio.GUXhIX
+coder_input_audio.kjW35H
+coder_input_audio.KqlYco
+coder_input_audio.KWBVgQ
+coder_input_audio.N0e4K8
+coder_input_audio.OwOtK6
+coder_input_audio.PrVlSe
+coder_input_audio.rdvBFz
+coder_input_audio.XJqG3c
+coder_input_audio.XSXPrI
+coder_input_audio.YCG1J3
+coder_input_audio.zZGUhu
+coder_render_timing.1ZyeYK
+coder_render_timing.6XCJuY
+coder_render_timing.8nHQTI
+coder_render_timing.cK29OS
+coder_render_timing.El3oAP
+coder_render_timing.EqHAI4
+coder_render_timing.HgDIMK
+coder_render_timing.i3pFKE
+coder_render_timing.kFsAu7
+coder_render_timing.KuIme0
+coder_render_timing.licfez
+coder_render_timing.lpNQaR
+coder_render_timing.mobiWy
+coder_render_timing.mpRUkR
+coder_render_timing.Pct78q
+coder_render_timing.vyC811
+coder_render_timing.wbiVKQ
+coder_render_timing.Wkpv1o
+coder_render_timing.y2E5IZ
+coder_render_timing.zWYUzc
+coder.1Bi21x
+coder.5cbI3A
+coder.7cXMRV
+coder.7RfYKW
+coder.9PHBOq
+coder.acGoDX
+coder.ACrcCc
+coder.b0xh2K
+coder.CzMECd
+coder.diUW6i
+coder.FaD2R7
+coder.GhMtru
+coder.H58uUd
+coder.HgewO7
+coder.HPqFrt
+coder.HT7Mh0
+coder.ICaI0g
+coder.J22PFD
+coder.JMrJmA
+coder.kf3uJJ
+coder.lRueHg
+coder.MB4v9E
+coder.mtnqTz
+coder.n6GiEG
+coder.nUFHev
+coder.NWKoK5
+coder.O0vxbS
+coder.pLDPys
+coder.Q1melD
+coder.s3mRzG
+coder.UAUPuD
+coder.UVP1dP
+coder.UWFAhI
+coder.UwvRwk
+coder.VgF4Hv
+coder.XbhNOg
+coder.XGU7Cd
+coder.xIoyo9
+coder.Xl0uaN
+coder.xM6chO
+reviewer_gameplay.3rXq3f
+reviewer_gameplay.Bt9KSs
+reviewer_gameplay.dAPDqY
+reviewer_gameplay.EqGhpV
+reviewer_gameplay.facW3H
+reviewer_gameplay.GMLSL6
+reviewer_gameplay.GTAfxW
+reviewer_gameplay.j2SZgT
+reviewer_gameplay.ldSVVs
+reviewer_gameplay.LPg0t8
+reviewer_gameplay.Lw1bQv
+reviewer_gameplay.PEszG3
+reviewer_gameplay.q0AKMe
+reviewer_gameplay.Rw1fcA
+reviewer_gameplay.T486PX
+reviewer_gameplay.WeHatJ
+reviewer_gameplay.wHMOB2
+reviewer_gameplay.wQbJ7c
+reviewer_gameplay.Xy92jH
+reviewer_gameplay.ZUZV8O
+reviewer_site.32cQhq
+reviewer_site.9wJ6HG
+reviewer_site.f9dy0D
+reviewer_site.FDoXaA
+reviewer_site.FMO0C9
+reviewer_site.FnUrtZ
+reviewer_site.GwiGfG
+reviewer_site.msvdXx
+reviewer_site.NOQPIi
+reviewer_site.nSpEMa
+reviewer_site.pWAMB0
+reviewer_site.Q4XPrg
+reviewer_site.qWTvbw
+reviewer_site.RLrOVV
+reviewer_site.Rm0IxG
+reviewer_site.sLn6b5
+reviewer_site.U8Ka1G
+reviewer_site.UpTuZG
+reviewer_site.w91AQ9
+reviewer_site.ZELzZH
+tester.06TdYY
+tester.3P7z9H
+tester.3Pq6Xx
+tester.4fEyMa
+tester.6hWyX9
+tester.8DASDy
+tester.8fsQdw
+tester.9SkuzA
+tester.aZlP2G
+tester.bajOBH
+tester.BNf9ts
+tester.gkbn63
+tester.InaBUN
+tester.JAaNjg
+tester.jQ8WOj
+tester.oPtvHA
+tester.puK0iM
+tester.Q0YUP2
+tester.QcBm5A
+tester.QSq2Uh
+tester.QT7YlR
+tester.w2Z6BS
+tester.wO71Dk
+verify.2u2qnP
+verify.69kwht
+verify.B9OMLq
+verify.C0hQ9F
+verify.Gjtb86
+verify.Gm8XQE
+verify.hDJeOV
+verify.ICvgiu
+verify.jfRFOF
+verify.KBbHyS
+verify.KEqrSN
+verify.kUtnpP
+verify.oFQ3cu
+verify.RZPoxv
+verify.wkzlnA
+verify.XOoz2M
+verify.xskzsM
+verify.XSzOzq
+verify.za54Fq
+verify.ZC3dO1
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+
+tests:
+faults.sh
+lib
+node_modules
+package-lock.json
+package.json
+playtest.mjs
+README.md
+selftest.mjs
+verify.sh
+
+tests/lib:
+frames.mjs
+e500c440656622db5ab3f8fb7df73d8b5998eeb3
+)
+
+Calling Bash()
+
+Bash response → (
+# Repeatable automated verification
+
+You are `tester`.
+
+Own tests/ verification code (except explicitly student-frozen criteria/baselines).
+Deliver an executable tests/verify.sh that clean-builds and tests the game in
+Chromium, returning 0 only when all required checks genuinely pass. Create missing
+tests and test-only dependencies as needed. Automate browser actions AND assertions
+for loading, level start, controls, key release, responsiveness, and required audio.
+Use existing supplied criteria; if absent, document proposed criteria before first
+using them. Do not silently lower criteria after failures; record test corrections
+with evidence and reasons. Read reviewers' findings and turn reproducible failures
+into regression checks. Use MCP for exploration where helpful; scripts must work
+without an agent interpreting output. Preserve logs and failed evidence. Do not
+fix product source. Report unavailable tooling or unverifiable required audio as
+FINDINGS/nonzero, never skip required behavior and report PASS.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+------
+FINDINGS
+
+`tests/verify.sh` exited 0 (verify/verify-result.json): tooling, selftest, clean build, playtest (42 PASS lines, 0 FAIL) and 5/5 fault injections caught. The result is FINDINGS, not PASS, because 4 required behaviors remain UNVERIFIED. No regression versus artifacts/reports/tester.md.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes, dirty_diff_sha256 2c74d74f... (same as the previous run). emcc 4.0.18. Details: verify/identity.txt.
+Command: `RUN_ID=tester.8DASDy OUT_DIR=artifacts/logs/tester.8DASDy/verify bash tests/verify.sh` with emsdk sourced. It took about 14 minutes, longer than the 10-minute foreground limit, so it ran in the background.
+
+## Evidence (this directory)
+verify.out, verify/ (identity.txt, build.log, selftest.log, playtest.log, playtest-results.json, faults.log, per-fault logs, browser-console.log, dist-sha256.txt, screens/).
+- T2 34.97 tics/s. The 300 s soak had no errors, rAF 60.1/s, and 23 changed sample frames.
+- Fault injection caught: drop-keyup (I2 I5 I6 C3 I7), drop-blur (I7), ignore-left (I3 E2a E2b), swap-rb (B4), bad-aspect (S1).
+
+## Unresolved (owner)
+1. UNVERIFIED A1 audio correctness (student/human): nobody has listened. The prior reviewer saw the headless audio clock stall (peak 0), so no machine-level audio evidence exists.
+2. UNVERIFIED P1 save persistence (student scope decision).
+3. UNVERIFIED G3 door use / level exit (tester, needs a coder sector/line export or a position-based walk-through).
+4. UNVERIFIED H1 real hidden-tab timing (human; manual protocol in tests/README.md).
+Also unverified: pickups, death, Firefox, Safari, HiDPI. WASD and mouse are not mapped (known). There is no menu-freezes-player check and no audio-clock-advances guard yet.
+
+## Assumptions
+- Criteria are agent-proposed, not student-approved; artifacts/specification.md and acceptance-criteria.md do not exist.
+- Headless Chromium only. I edited no tests and no product source, and weakened nothing.
+- I read artifacts/reports/tester.md and the tails of reviewer_gameplay.md, and did not re-read the other reports. I used the reviewer's audio-clock finding for item 1.
+- Manual interventions: none.
+
+## Next action
+Tester: add G3, a menu-freezes-player check, and an audio-clock-advances guard. Human: listen to the audio and run H1.
+agent.log
+# Verification
+
+Keep verification code here, including browser checks, fixtures, and tests
+for the loop itself. You design the checks; no test suite is provided.
+
+See [the acceptance criteria and evidence requirements](../README.md#evaluate-the-system-you-built).
+Document how to run your checks and what each one establishes.
+
+Save test results, logs, screenshots, and recordings in `artifacts/`.
+Keep acceptance checks outside the coder's write permissions using your
+sandbox/tool configuration; a folder name alone does not enforce access.
+
+## Suite (tester-owned; criteria are AGENT-PROPOSED, not student-approved)
+
+Run: `source ~/Developer/emsdk/emsdk_env.sh && tests/verify.sh` (RUN_ID, SOAK_SECONDS, QUICK=1 optional).
+Evidence goes to `artifacts/runs/$RUN_ID/tester/verify-*/` (identity.txt, logs, screenshots, playtest-results.json).
+Exit 0 only when tooling, build, selftest and every required playtest check pass; `QUICK=1` never exits 0.
+
+| File | Establishes |
+| --- | --- |
+| `verify.sh` | tooling check, source identity, selftest, `make clean && make all`, playtest |
+| `selftest.mjs` | pixel helpers FAIL on black, channel-swapped, transparent, static, wrongly shifted frames (no build needed) |
+| `playtest.mjs` | Chromium: load/console errors, boot frame, colors, rAF liveness, menu -> E1M1, turn/move/fire/release, blur, automap, Esc menu, soak |
+| `lib/frames.mjs` | region diff / color stats / horizontal-shift estimation on canvas screenshots |
+
+Limits: outcomes are inferred from pixels (no engine state hook); audio, persistence, door/level-exit and the
+35 tics/s rate are listed as UNVERIFIED in every result. Ammo/status regions assume the stock 320x200 layout.
+Test deps: `npm ci` in `tests/` (network needed once; Playwright 1.49.1, pngjs 7.0.0).
+
+## Rev 3 additions (tester)
+- `I6` is now position-based (`cap_player_x/y`; limit 0.7 unchanged) — TEST CORRECTION: the pixel oracle flaked (0.60-0.79). New: `G1b` (E1M1, health 100 via engine state), `I4b` (forward moves player >=32 units), `I9` (`cap_input_impl==1`, delivered>0, dropped==0), `S1` (canvas stays 16:10 and fits 4 viewports); fault `bad-aspect` must fail S1.
+- Still UNVERIFIED: A1 audio by ear, P1, G3 (no door/sector export), H1.
+
+### H1 manual protocol (real hidden tab; headless cannot do this)
+1. `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist`; open http://127.0.0.1:8000 in headed Chrome, start E1M1.
+2. In the console run `a=Module._cap_tic_count(); t=Date.now()`, switch to another tab for 60 s, return.
+3. Run `(Module._cap_tic_count()-a)/((Date.now()-t)/1000)`. Pass: game did not run >2x real time (<=70 tics/s catch-up burst) and no keys remain stuck (player stands still, `Module._cap_player_x()` stable across 2 s).
+4. Record browser version, result, and screenshot under artifacts/. Not automated; do not report PASS without doing it.
+)
+
+Calling Bash()
+
+Calling Bash()
+
+Bash response → (
+253 tests/playtest.mjs
+      25 tests/selftest.mjs
+      18 tests/faults.sh
+      49 tests/verify.sh
+      62 tests/lib/frames.mjs
+     407 total
+| `lib/frames.mjs` | region diff / color stats / horizontal-shift estimation on canvas screenshots |
+
+Limits: outcomes are inferred from pixels (no engine state hook); audio, persistence, door/level-exit and the
+35 tics/s rate are listed as UNVERIFIED in every result. Ammo/status regions assume the stock 320x200 layout.
+Test deps: `npm ci` in `tests/` (network needed once; Playwright 1.49.1, pngjs 7.0.0).
+
+## Rev 3 additions (tester)
+- `I6` is now position-based (`cap_player_x/y`; limit 0.7 unchanged) — TEST CORRECTION: the pixel oracle flaked (0.60-0.79). New: `G1b` (E1M1, health 100 via engine state), `I4b` (forward moves player >=32 units), `I9` (`cap_input_impl==1`, delivered>0, dropped==0), `S1` (canvas stays 16:10 and fits 4 viewports); fault `bad-aspect` must fail S1.
+- Still UNVERIFIED: A1 audio by ear, P1, G3 (no door/sector export), H1.
+
+### H1 manual protocol (real hidden tab; headless cannot do this)
+1. `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist`; open http://127.0.0.1:8000 in headed Chrome, start E1M1.
+2. In the console run `a=Module._cap_tic_count(); t=Date.now()`, switch to another tab for 60 s, return.
+3. Run `(Module._cap_tic_count()-a)/((Date.now()-t)/1000)`. Pass: game did not run >2x real time (<=70 tics/s catch-up burst) and no keys remain stuck (player stands still, `Module._cap_player_x()` stable across 2 s).
+4. Record browser version, result, and screenshot under artifacts/. Not automated; do not report PASS without doing it.
+)
+
+Calling Bash()
+
+Calling Bash()
+24:// v5: added cap_sector_count/floor/ceiling(i) and cap_player_sector() (read-only).
+25:// v4: added cap_player_{valid,x,y,angle,health}() and cap_level_id() (read-only).
+26:// v3: added cap_input_impl(), cap_input_delivered_count(), cap_input_dropped_count().
+27:// v2: added cap_tic_count(). Specialist hooks have WEAK defaults in
+28:// platform/cap_fallback.c; a strong definition in another platform/*.c wins.
+43:// cap_* functions below. Only the coder defines the DG_* symbols and main().
+44:CAP_EXPORT int      cap_bridge_version(void);        // returns CAP_BRIDGE_VERSION
+45:CAP_EXPORT const void *cap_framebuffer_ptr(void);    // DG_ScreenBuffer address (valid after startup)
+46:CAP_EXPORT int      cap_tic_count(void);             // engine gametic (35/s at full speed); for T2 checks
+47:CAP_EXPORT int      cap_input_impl(void);            // 1 = input_audio.c linked, 0 = cap_fallback.c queue
+48:CAP_EXPORT unsigned cap_input_delivered_count(void); // events handed to the engine (0 if fallback)
+49:CAP_EXPORT unsigned cap_input_dropped_count(void);   // events refused by the queue (0 if fallback)
+50:CAP_EXPORT int      cap_player_valid(void);          // 1 in a level with a spawned player mobj
+51:CAP_EXPORT int      cap_player_x(void);              // map units (fixed >> 16); 0 if !valid
+52:CAP_EXPORT int      cap_player_y(void);
+53:CAP_EXPORT unsigned cap_player_angle(void);          // BAM angle (0..2^32)
+54:CAP_EXPORT int      cap_player_health(void);         // -1 if !valid
+55:CAP_EXPORT int      cap_level_id(void);              // episode*100+map, 0 if !valid
+56:CAP_EXPORT int      cap_sector_count(void);          // v5: sectors in current level, 0 if !valid
+57:CAP_EXPORT int      cap_sector_floor(int i);         // v5: floor height (map units), 0 if out of range
+58:CAP_EXPORT int      cap_sector_ceiling(int i);       // v5: ceiling height; a door opens when this rises
+59:CAP_EXPORT int      cap_player_sector(void);         // v5: sector index under the player, -1 if !valid
+60:CAP_EXPORT int      cap_ready(void);                // 1 once doomgeneric_Create() returned
+63:void     cap_render_init(void);                      // from DG_Init
+64:void     cap_render_present(const pixel_t *fb);      // from DG_DrawFrame; must not retain fb
+65:uint32_t cap_time_ms(void);                          // from DG_GetTicksMs; monotonic, ms
+69:void     cap_sleep_ms(uint32_t ms);                  // from DG_SleepMs (engine wipe/tic waits)
+70:void     cap_set_title(const char *title);           // from DG_SetWindowTitle
+74:unsigned cap_input_delivered(void) __attribute__((weak));
+75:unsigned cap_input_dropped(void) __attribute__((weak));
+76:void cap_input_init(void);                           // from DG_Init
+77:int  cap_input_poll(int *pressed, unsigned char *doom_key); // from DG_GetKey; 1=event
+80:CAP_EXPORT void cap_input_event(int pressed, int doom_key); // JS->C enqueue (bounded queue)
+81:CAP_EXPORT void cap_input_reset(void);               // release all keys (blur/visibility)
+82:void cap_audio_init(void);                           // optional; no-op until audio scope approved
+browser
+logs
+README.md
+reports
+runs
+ M tests/README.md
+?? tests/faults.sh
+?? tests/lib/
+?? tests/package-lock.json
+?? tests/package.json
+?? tests/playtest.mjs
+?? tests/selftest.mjs
+?? tests/verify.sh
+)
+
+Bash response → (
+// Browser acceptance test for the Doom WASM port (AGENT-PROPOSED criteria; see
+// artifacts/runs/*/tester/prepare/attempt-1/proposed-criteria.md). Exit 0 only if every required
+// check passes. Env: DIST_DIR (default dist), OUT_DIR (evidence), SOAK_SECONDS (default 300),
+// QUICK=1 shortens the soak and forces a nonzero exit (3): partial runs never count as pass.
+import http from 'node:http'; import fs from 'node:fs'; import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { chromium } from 'playwright'; import { PNG } from 'pngjs';
+import { stats, diffFrac, bestShift, VIEW, STATUSBAR, AMMO } from './lib/frames.mjs';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const DIST = path.resolve(root, process.env.DIST_DIR || 'dist');
+const OUT = path.resolve(root, process.env.OUT_DIR || `artifacts/runs/manual-${Date.now()}/tester/playtest`);
+const QUICK = process.env.QUICK === '1';
+const SOAK = QUICK ? 15 : Number(process.env.SOAK_SECONDS || 300);
+fs.mkdirSync(path.join(OUT, 'screens'), { recursive: true });
+
+const results = []; const log = [];
+const rec = (id, status, detail = '') => { results.push({ id, status, detail }); console.log(`${status.padEnd(10)} ${id} ${detail}`); };
+const check = (id, cond, detail = '') => rec(id, cond ? 'PASS' : 'FAIL', detail);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+function finish(extra = {}) {
+  const failed = results.filter((r) => r.status === 'FAIL').length;
+  const unverified = results.filter((r) => r.status === 'UNVERIFIED').length;
+  let code = failed ? 1 : 0; if (!code && QUICK) code = 3;
+  const out = { status: code === 0 ? 'PASS' : 'FAIL', quick: QUICK, soak_seconds: SOAK, failed, unverified, results, ...extra };
+  fs.writeFileSync(path.join(OUT, 'playtest-results.json'), JSON.stringify(out, null, 2));
+  fs.writeFileSync(path.join(OUT, 'browser-console.log'), log.join('\n'));
+  console.log(`playtest: ${out.status} failed=${failed} unverified(not-in-scope, listed)=${unverified}${QUICK ? ' QUICK=partial' : ''}`);
+  process.exit(code);
+}
+
+// Missing dist is a hard failure, not a skip.
+for (const f of ['index.html', 'doom.wasm']) if (!fs.existsSync(path.join(DIST, f))) { rec('B0.dist-present', 'FAIL', `${path.join(DIST, f)} missing`); finish(); }
+rec('B0.dist-present', 'PASS');
+
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.wasm': 'application/wasm', '.data': 'application/octet-stream', '.css': 'text/css' };
+const badResponses = [];
+const server = http.createServer((req, res) => {
+  const p = path.join(DIST, decodeURIComponent(new URL(req.url, 'http://x').pathname).replace(/^\/$/, '/index.html'));
+  if (!p.startsWith(DIST) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) { badResponses.push(`404 ${req.url}`); res.writeHead(404).end(); return; }
+  res.writeHead(200, { 'content-type': MIME[path.extname(p)] || 'application/octet-stream' }); fs.createReadStream(p).pipe(res);
+});
+await new Promise((r) => server.listen(0, '127.0.0.1', r));
+const url = `http://127.0.0.1:${server.address().port}/`;
+
+const browser = await chromium.launch();
+const page = await (await browser.newContext({ viewport: { width: 800, height: 600 }, deviceScaleFactor: 1 })).newPage();
+const errors = [];
+page.on('console', (m) => { log.push(`[${m.type()}] ${m.text()}`); if (m.type() === 'error') errors.push(m.text()); });
+page.on('pageerror', (e) => { log.push(`[pageerror] ${e.message}`); errors.push(`pageerror: ${e.message}`); });
+page.on('requestfailed', (r) => errors.push(`requestfailed: ${r.url()}`));
+await page.addInitScript(() => {
+  window.__raf = 0; (function t() { window.__raf++; requestAnimationFrame(t); })();
+  window.__long = []; try { new PerformanceObserver((l) => l.getEntries().forEach((e) => window.__long.push(e.duration))).observe({ entryTypes: ['longtask'] }); } catch {}
+});
+
+// FAULT=<name> injects a deliberate browser-side fault (see tests/faults.sh) to prove checks catch it.
+const FAULT = process.env.FAULT || '';
+if (FAULT) await page.addInitScript((f) => {
+  const stop = (e) => e.stopImmediatePropagation();
+  if (f === 'drop-keyup') window.addEventListener('keyup', stop, true);
+  if (f === 'drop-blur') for (const t of ['blur', 'pagehide']) window.addEventListener(t, stop, true), document.addEventListener('visibilitychange', stop, true);
+  if (f === 'ignore-left') for (const t of ['keydown', 'keyup']) window.addEventListener(t, (e) => { if (e.code === 'ArrowLeft') stop(e); }, true);
+  if (f === 'bad-aspect') document.addEventListener('DOMContentLoaded', () => { const st = document.createElement('style'); st.textContent = '#canvas{width:640px!important;height:200px!important}'; document.head.append(st); });
+  if (f === 'swap-rb') { const o = CanvasRenderingContext2D.prototype.putImageData; CanvasRenderingContext2D.prototype.putImageData = function (img, ...a) {
+    const d = new Uint8ClampedArray(img.data); for (let i = 0; i < d.length; i += 4) { const t = d[i]; d[i] = d[i + 2]; d[i + 2] = t; } return o.call(this, new ImageData(d, img.width, img.height), ...a); }; }
+}, FAULT);
+let n = 0;
+async function shot(name) {
+  const buf = await page.locator('#canvas').screenshot();
+  fs.writeFileSync(path.join(OUT, 'screens', `${String(++n).padStart(3, '0')}-${name}.png`), buf);
+  return PNG.sync.read(buf);
+}
+const key = async (k, hold = 80) => { await page.keyboard.down(k); await sleep(hold); await page.keyboard.up(k); };
+// Doom has momentum/friction: motion legitimately decays for ~1.5s after key-up. Poll until two
+// consecutive 300ms steps differ <2% (settled) instead of assuming a fixed delay.
+async function settle(maxMs = 4000) {
+  const t = Date.now(); let prev = await shot('settle');
+  while (Date.now() - t < maxMs) { await sleep(300); const cur = await shot('settle'); const d = diffFrac(prev, cur, VIEW); prev = cur; if (d < 0.02) return { frame: cur, ms: Date.now() - t, settled: true }; }
+  return { frame: prev, ms: Date.now() - t, settled: false };
+}
+// Engine state via coder-exported read-only bridge (contract v4). null when export missing.
+const pos = () => page.evaluate(() => { const M = window.Module; if (!M || !M._cap_player_valid || !M._cap_player_valid()) return null;
+  return { x: M._cap_player_x(), y: M._cap_player_y(), angle: M._cap_player_angle(), health: M._cap_player_health(), level: M._cap_level_id() }; });
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+const hasCrash = () => errors.some((e) => /abort|RuntimeError|unreachable|Aborted/i.test(e));
+
+try {
+  await page.goto(url);
+  check('B1.canvas-640x400', await page.evaluate(() => { const c = document.getElementById('canvas'); return !!c && c.width === 640 && c.height === 400; }), 'canvas#canvas intrinsic size');
+  // Boot: wait for a non-black, multi-colour frame.
+  let boot = null; const t0 = Date.now();
+  while (Date.now() - t0 < 60000) { const p = await shot('boot'); const s = stats(p); if (s.darkFrac < 0.9 && s.distinctColors > 16) { boot = { p, s }; break; } await sleep(500); }
+  check('B2.boot-renders-frame', !!boot, boot ? `after ${Date.now() - t0}ms colors=${boot.s.distinctColors}` : 'no non-black frame in 60s');
+  if (!boot) finish();
+  check('B3.opaque-pixels', boot.s.transparentFrac === 0, `transparentFrac=${boot.s.transparentFrac}`);
+  check('B4.channel-order', boot.s.meanR > boot.s.meanB, `meanR=${boot.s.meanR.toFixed(1)} meanB=${boot.s.meanB.toFixed(1)} (title/menu are warm; swap => blue)`);
+  check('B5.no-load-errors', errors.length === 0 && badResponses.length === 0, [...errors, ...badResponses].slice(0, 5).join(' | '));
+  await page.locator('#canvas').click({ position: { x: 5, y: 5 } }).catch(() => {}); // focus only
+
+  // Animation liveness (T1): requestAnimationFrame keeps firing; no multi-second main-thread stalls.
+  const r0 = await page.evaluate(() => window.__raf); await sleep(3000); const r1 = await page.evaluate(() => window.__raf);
+  check('T1.main-thread-responsive', (r1 - r0) / 3 >= 20, `${((r1 - r0) / 3).toFixed(1)} rAF/s over 3s (need >=20)`);
+
+  // Menu navigation -> new game E1M1 (episode + skill menus with defaults).
+  const title = await shot('title');
+  await key('Enter'); await sleep(1200); const menu = await shot('main-menu');
+  check('M1.enter-opens-menu', diffFrac(title, menu, VIEW) > 0.01, `diff=${diffFrac(title, menu, VIEW).toFixed(3)}`);
+  await key('Enter'); await sleep(900); await key('Enter'); await sleep(900); await key('Enter'); // New Game, episode, skill
+  await sleep(6000); // wipe + level load
+  const lvl = await shot('level-start'); const sb = stats(lvl, STATUSBAR);
+  check('G1.level-started', diffFrac(menu, lvl) > 0.2 && sb.distinctColors > 20, `diff-from-menu=${diffFrac(menu, lvl).toFixed(2)} statusbarColors=${sb.distinctColors}`);
+  check('B6.level-colors', stats(lvl, VIEW).meanR >= stats(lvl, VIEW).meanB * 0.9, 'E1M1 view not blue-biased');
+
+  const p0 = await pos();
+  check('G1b.engine-state-e1m1', !!p0 && p0.level === 101 && p0.health === 100, p0 ? JSON.stringify(p0) : 'cap_player_valid()=0 or export missing (engine state, not pixels)');
+
+  // Idle stability: nothing should move with no input (guards "frames change by themselves").
+  const i1 = await shot('idle-a'); await sleep(600); const i2 = await shot('idle-b');
+  check('G2.idle-stable', diffFrac(i1, i2, VIEW) < 0.02, `diff=${diffFrac(i1, i2, VIEW).toFixed(4)}`);
+
+  // Turning: right turn => scene shifts left (negative); left turn shifts back (positive). Key release stops it.
+  const a = await shot('turn-start');
+  // TEST CORRECTION rev 3: hold 150ms (was 350ms). A 350ms hold turned ~200-240px, beyond bestShift's +-213px
+  // search window, so the estimate aliased (I3 flaked 4/10, reviewer R2-1). Thresholds (>=8px) unchanged;
+  // a result near the window edge is now a FAIL ("saturated") rather than silently aliased.
+  const SAT = Math.floor(a.width / 3) * 0.85;
+  await page.keyboard.down('ArrowRight'); await sleep(150); await page.keyboard.up('ArrowRight'); await sleep(900);
+  const b = await shot('turn-right'); const sr = bestShift(a, b);
+  check('I1.turn-right', sr.shift <= -8 && sr.shift > -SAT && sr.err < sr.err0, `shift=${sr.shift}px err=${sr.err.toFixed(1)} err0=${sr.err0.toFixed(1)}`);
+  const b2 = await shot('turn-right-settled'); check('I2.turn-stops-on-release', diffFrac(b, b2, VIEW) < 0.02, `diff=${diffFrac(b, b2, VIEW).toFixed(4)}`);
+  await page.keyboard.down('ArrowLeft'); await sleep(150); await page.keyboard.up('ArrowLeft'); await sleep(900);
+  const c = await shot('turn-left'); const sl = bestShift(b, c);
+  check('I3.turn-left', sl.shift >= 8 && sl.shift < SAT && sl.err < sl.err0, `shift=${sl.shift}px`);
+
+  // Movement: forward changes view; backward returns toward start; release halts motion.
+  const s0 = await shot('move-start'); const mp0 = await pos();
+  await page.keyboard.down('ArrowUp'); await sleep(800); const mid = await shot('move-fwd-held'); await sleep(300); const mid2 = await shot('move-fwd-held2');
+  check('I4.forward-moves', diffFrac(s0, mid, VIEW) > 0.05 && diffFrac(mid, mid2, VIEW) > 0.01, `start-vs-mid=${diffFrac(s0, mid, VIEW).toFixed(3)} still-moving=${diffFrac(mid, mid2, VIEW).toFixed(3)}`);
+  await page.keyboard.up('ArrowUp');
+  const fs1 = await settle(); const f2 = fs1.frame; const mpF = await pos();
+  check('I4b.forward-moves-player', !!mp0 && !!mpF && dist(mp0, mpF) >= 32, mp0 && mpF ? `moved ${dist(mp0, mpF).toFixed(0)} map units (need >=32)` : 'no engine position'); await sleep(500); const f3 = await shot('move-fwd-stopped');
+  check('I5.forward-stops-on-release', fs1.settled && diffFrac(f2, f3, VIEW) < 0.02, `settled=${fs1.settled} after ${fs1.ms}ms (momentum allowed up to 4s); later-diff=${diffFrac(f2, f3, VIEW).toFixed(4)}`);
+  await page.keyboard.down('ArrowDown'); await sleep(1100); await page.keyboard.up('ArrowDown');
+  const back = (await settle()).frame;
+  // TEST CORRECTION rev 3 (reason: pixel oracle flaked 0.60-0.79 vs 0.7 limit in prior runs): I6 now compares engine
+  // position. Backward must end closer to the start than the forward end point (limit 0.7 unchanged). Pixel numbers kept in detail.
+  const mpB = await pos(); const dF = mp0 && mpF ? dist(mp0, mpF) : NaN, dB = mp0 && mpB ? dist(mp0, mpB) : NaN;
+  check('I6.backward-returns', dF >= 32 && dB < dF * 0.7, `start-to-fwd=${dF.toFixed(0)} start-to-back=${dB.toFixed(0)} map units (pixel diff for reference: ${diffFrac(s0, back, VIEW).toFixed(3)} vs ${diffFrac(s0, f2, VIEW).toFixed(3)})`);
+
+  // Focus loss must release held keys (stuck-key regression).
+  // Hold a TURN key (never blocked by walls, so a stuck key keeps the view changing forever).
+  await page.keyboard.down('ArrowRight'); await sleep(500);
+  const turning = await shot('blur-turning'); await sleep(300); const turning2 = await shot('blur-turning-b');
+  check('I7a.turn-held-keeps-changing', diffFrac(turning, turning2, VIEW) > 0.02, `diff=${diffFrac(turning, turning2, VIEW).toFixed(4)} (precondition: key effective before blur)`);
+  await page.evaluate(() => { window.dispatchEvent(new Event('blur')); document.dispatchEvent(new Event('visibilitychange')); });
+  const bs = await settle(); await sleep(500); const g2 = await shot('blur-b');
+  check('I7.blur-releases-keys', bs.settled && diffFrac(bs.frame, g2, VIEW) < 0.02, `settled=${bs.settled} after ${bs.ms}ms; later-diff=${diffFrac(bs.frame, g2, VIEW).toFixed(4)} (key still physically down)`);
+  await page.keyboard.up('ArrowRight'); await sleep(500);
+
+  // Fire: ammo counter changes and the weapon/view animates; release stops firing.
+  const pre = await shot('fire-pre');
+  await key('Control', 120); await sleep(250); const flash = await shot('fire-anim'); await sleep(1500); const post = await shot('fire-post');
+  check('C1.fire-animates', diffFrac(pre, flash, VIEW) > 0.005, `view-diff=${diffFrac(pre, flash, VIEW).toFixed(4)}`);
+  check('C2.fire-decrements-ammo', diffFrac(pre, post, AMMO) > 0.02, `ammo-region-diff=${diffFrac(pre, post, AMMO).toFixed(3)} (persisting after weapon returns to rest)`);
+  const q1 = await shot('fire-rest-a'); await sleep(600); const q2 = await shot('fire-rest-b');
+  check('C3.fire-stops-on-release', diffFrac(q1, q2, VIEW) < 0.02, `diff=${diffFrac(q1, q2, VIEW).toFixed(4)}`);
+
+  // Use key + automap + menu overlay do not crash and change the display as expected.
+  await key('Space'); await sleep(500);
+  const am0 = await shot('automap-pre'); await key('Tab'); await sleep(700); const am1 = await shot('automap-on');
+  check('U1.automap-toggles', diffFrac(am0, am1) > 0.2, `diff=${diffFrac(am0, am1).toFixed(3)}`);
+  await key('Tab'); await sleep(700); const am2 = await shot('automap-off');
+  check('U2.automap-returns', diffFrac(am0, am2, VIEW) < 0.1, `diff=${diffFrac(am0, am2, VIEW).toFixed(3)}`);
+  await key('Escape'); await sleep(800); const esc = await shot('esc-menu');
+  check('U3.escape-opens-menu', diffFrac(am2, esc, VIEW) > 0.01, `diff=${diffFrac(am2, esc, VIEW).toFixed(3)}`);
+  await key('Escape'); await sleep(800); const esc2 = await shot('esc-closed');
+  check('U4.escape-closes-menu', diffFrac(esc, esc2, VIEW) > 0.01, `diff=${diffFrac(esc, esc2, VIEW).toFixed(3)}`);
+
+  // E*: input edge cases from reviewer findings F2/F3/R2-3 (web/input_audio.js) and identity R2-4.
+  // E1: browser shortcuts (F5, Ctrl+R) must NOT be default-prevented; game keys must be.
+  const prevented = await page.evaluate(() => { const fire = (init) => { const e = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...init }); window.dispatchEvent(e); window.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, ...init })); return e.defaultPrevented; };
+    return { f5: fire({ code: 'F5', key: 'F5' }), ctrlR: fire({ code: 'KeyR', key: 'r', ctrlKey: true }), up: fire({ code: 'ArrowUp', key: 'ArrowUp' }) }; });
+  check('E1.browser-shortcuts-not-blocked', prevented.f5 === false && prevented.ctrlR === false && prevented.up === true, JSON.stringify(prevented));
+  // E2: pagehide / visibilitychange (not just blur) release a held turn key.
+  for (const [id, ev] of [['E2a.pagehide-releases-keys', "window.dispatchEvent(new Event('pagehide'))"],
+                          ['E2b.hidden-releases-keys', "Object.defineProperty(document, 'hidden', { configurable: true, get: () => true }); document.dispatchEvent(new Event('visibilitychange'))"]]) {
+    await page.keyboard.down('ArrowLeft'); await sleep(500);
+    const h1 = await shot('edge-held'); await sleep(300); const h2 = await shot('edge-held-b');
+    const pre = diffFrac(h1, h2, VIEW) > 0.02;
+    await page.evaluate(ev); const st = await settle(); await sleep(500); const h3 = await shot('edge-after');
+    check(id, pre && st.settled && diffFrac(st.frame, h3, VIEW) < 0.02, `precondition-turning=${pre} settled=${st.settled} later-diff=${diffFrac(st.frame, h3, VIEW).toFixed(4)}`);
+    await page.evaluate(() => { delete document.hidden; }); await page.keyboard.up('ArrowLeft'); await sleep(500);
+  }
+  // E3: after blur with the key still physically held, the browser auto-repeats keydown; it must act as a fresh press.
+  await page.keyboard.down('ArrowRight'); await sleep(300);
+  await page.evaluate(() => window.dispatchEvent(new Event('blur'))); await settle();
+  const rb = await shot('refocus-before'); await page.keyboard.down('ArrowRight'); await sleep(500); const ra = await shot('refocus-after');
+  check('E3.repeat-after-blur-is-fresh-press', diffFrac(rb, ra, VIEW) > 0.02, `diff=${diffFrac(rb, ra, VIEW).toFixed(4)} (view must turn again)`);
+  await page.keyboard.up('ArrowRight'); await settle();
+  // E4: two physical keys on one Doom key (L+R Ctrl): still held until both released.
+  await page.keyboard.down('ControlLeft'); await page.keyboard.down('ControlRight'); await page.keyboard.up('ControlLeft');
+  const heldOne = await page.evaluate(() => window.CapInput ? window.CapInput.held().length : -1);
+  await page.keyboard.up('ControlRight'); const heldNone = await page.evaluate(() => window.CapInput ? window.CapInput.held().length : -1);
+  check('E4.dual-ctrl-held-until-both-up', heldOne === 1 && heldNone === 0, `held after one up=${heldOne}, after both=${heldNone} (JS state; engine side not observable)`);
+  // I8: strong render module active (Module._rt only exists when render_timing.c is linked, not cap_fallback.c) and presenting.
+  const rt0 = await page.evaluate(() => window.Module && window.Module._rt ? window.Module._rt.frames : null); await sleep(1000);
+  const rt1 = await page.evaluate(() => window.Module && window.Module._rt ? window.Module._rt.frames : null);
+  check('I8.render-module-active', rt0 !== null && rt1 !== null && rt1 > rt0, `Module._rt.frames ${rt0} -> ${rt1}`);
+
+  // I9: the strong input module (input_audio.c) is linked and has delivered events to the engine (not the fallback queue).
+  const inp = await page.evaluate(() => { const M = window.Module; return M && M._cap_input_impl ? { impl: M._cap_input_impl(), delivered: M._cap_input_delivered_count(), dropped: M._cap_input_dropped_count() } : null; });
+  if (!inp) rec('I9.input-module-identity', 'FAIL', 'Module._cap_input_impl not exported');
+  else check('I9.input-module-identity', inp.impl === 1 && inp.delivered > 0 && inp.dropped === 0, JSON.stringify(inp));
+  // S1: canvas scales with the window: keeps 16:10, fits inside the viewport, is not collapsed. Restores viewport afterwards.
+  const scaleBad = [];
+  for (const [w, h] of [[1280, 720], [500, 300], [1000, 700], [800, 600]]) {
+    await page.setViewportSize({ width: w, height: h }); await sleep(400);
+    const r = await page.evaluate(() => { const b = document.getElementById('canvas').getBoundingClientRect(); return { w: b.width, h: b.height, x: b.left, y: b.top }; });
+    const aspect = r.w / r.h;
+    if (Math.abs(aspect - 1.6) > 0.03 || r.w > w + 1 || r.h > h + 1 || r.w < Math.min(w, h * 1.6) * 0.5) scaleBad.push(`${w}x${h}->${r.w.toFixed(0)}x${r.h.toFixed(0)}`);
+  }
+  await shot('scaled-800x600');
+  check('S1.canvas-scales-16x10', scaleBad.length === 0, scaleBad.length ? `bad: ${scaleBad.join(', ')}` : 'viewports 1280x720, 500x300, 1000x700, 800x600 all 16:10 and fit');
+
+  // T2: engine tic rate via coder-exported cap_tic_count (contract v2). Missing export => UNVERIFIED, not PASS.
+  const tc = async () => page.evaluate(() => (window.Module && window.Module._cap_tic_count) ? window.Module._cap_tic_count() : null);
+  const ta = await tc(); const tms = Date.now(); await sleep(4000); const tb = await tc(); const rate = ((tb - ta) / ((Date.now() - tms) / 1000));
+  if (ta === null || tb === null) rec('T2.35-tics-per-second', 'UNVERIFIED', 'Module._cap_tic_count not exported');
+  else check('T2.35-tics-per-second', rate >= 31.5 && rate <= 38.5, `${rate.toFixed(2)} tics/s over 4s (need 35 +/-10%)`);
+
+  // Soak (R6): scripted input for SOAK seconds; the page must stay alive with no errors/aborts.
+  const keys = ['ArrowUp', 'ArrowLeft', 'ArrowRight', 'ArrowDown', 'Control', 'Space', 'Shift'];
+  let seed = 12345; const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+  const t1 = Date.now(), r2 = await page.evaluate(() => window.__raf); let moved = 0, last = await shot('soak-start');
+  while (Date.now() - t1 < SOAK * 1000) {
+    const k = keys[Math.floor(rnd() * keys.length)]; await key(k, 100 + Math.floor(rnd() * 600)); await sleep(100);
+    if (Math.floor((Date.now() - t1) / 1000) % 20 === 0) { const s = await shot('soak'); if (diffFrac(last, s) > 0.005) moved++; last = s; }
+  }
+  const r3 = await page.evaluate(() => window.__raf), longMax = await page.evaluate(() => Math.max(0, ...window.__long));
+  check('R1.soak-no-errors', !hasCrash() && errors.length === 0, `${SOAK}s; errors=${errors.slice(0, 3).join(' | ')}`);
+  check('R2.soak-still-rendering', (r3 - r2) / SOAK >= 20 && stats(last).darkFrac < 0.95, `rAF/s=${((r3 - r2) / SOAK).toFixed(1)} visibleFrame=${stats(last).darkFrac < 0.95}`);
+  check('R3.no-long-stalls', longMax < 1500, `max longtask=${longMax.toFixed(0)}ms (must be <1500)`);
+  check('R4.soak-frames-changed', moved > 0, `sampled frames that differed: ${moved}`);
+} catch (e) {
+  rec('X.harness-exception', 'FAIL', String(e && e.stack || e).split('\n').slice(0, 3).join(' '));
+}
+for (const [id, why] of [['A1.audio', 'scope undecided; an active AudioContext would not prove correct sound/music'],
+  ['P1.save-persistence', 'scope undecided'], ['G3.door-use-and-level-exit', 'no door/sector oracle exported (player pos/angle/health/level only); needs coder sector/line export'],
+  ['H1.hidden-tab-timing', 'headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)']]) rec(id, 'UNVERIFIED', why);
+await page.screenshot({ path: path.join(OUT, 'screens', 'final-page.png') }).catch(() => {});
+await browser.close().catch(() => {}); server.close();
+finish();
+)
+
+Calling Bash()
+
+Bash response → (
+build:
+total 0
+drwxr-xr-x   4 sarahtseng  staff  128 Nov  3 06:59 .
+drwxr-xr-x@ 24 sarahtseng  staff  768 Nov  3 06:59 ..
+drwxr-xr-x  14 sarahtseng  staff  448 Nov  3 06:59 platform
+drwxr-xr-x   3 sarahtseng  staff   96 Nov  3 06:59 third_party
+
+dist:
+total 9512
+drwxr-xr-x   9 sarahtseng  staff      288 Nov  3 06:59 .
+drwxr-xr-x@ 24 sarahtseng  staff      768 Nov  3 06:59 ..
+-rw-r--r--@  1 sarahtseng  staff    18571 Nov  3 06:59 audio_web.js
+-rw-r--r--   1 sarahtseng  staff  4196020 Nov  3 06:59 doom.data
+-rw-r--r--   1 sarahtseng  staff    76584 Nov  3 06:59 doom.js
+-rwxr-xr-x   1 sarahtseng  staff   555631 Nov  3 06:59 doom.wasm
+-rw-r--r--@  1 sarahtseng  staff      887 Nov  3 06:59 index.html
+-rw-r--r--@  1 sarahtseng  staff     4148 Nov  3 06:59 input_audio.js
+-rw-r--r--@  1 sarahtseng  staff     1189 Nov  3 06:59 render_timing.js
+=== reviewer_gameplay
+FINDINGS
+
+Movement, momentum, strafe, run, fire, menu freeze, focus loss and tic timing behaved correctly again. Audio is still not established: the headless audio clock did not advance (0.000 s in 2.004 s wall), so peak stayed 0 and nobody has heard anything.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes. `git diff HEAD` sha256 prefix 2c74d74fd2c699f9; dist/doom.wasm prefix 7afb94fa1ec64b5c. Both identical to the previous reviewer_gameplay runs (ZUZV8O and earlier). I did not rebuild. artifacts/specification.md and acceptance-criteria.md do not exist.
+
+## Prior findings read
+AGENTS.md, README.md, loop/README.md, artifacts/README.md, my role prompt, artifacts/reports/reviewer_gameplay.md and tester.md tail. Open items carried in: audio by ear, real hidden tab, walking through a door.
+
+## Work and evidence (this directory)
+review.mjs is an unmodified copy of the 3rXq3f script (not a protected check); output in review.log. Headless Chromium, no autoplay flag, 800x600, python http.server on 8152 (started and stopped by me). Exit 0, page errors: none.
+- PASS tic rate 35.0/s; PASS 35.0/s after returning to the page.
+- PASS forward hold then release coasts and stops: per-250 ms frame diffs 0.508, 0.348, 0.195, 0.101, then 0 for 8 intervals (normal Doom momentum).
+- PASS strafe with "." (0.535). PASS Shift-run (0.718).
+- PASS fire: ammo region changes (0.140), SFX 4 to 5. PASS held fire repeats (5 to 9).
+- PASS Esc menu freezes the view (diff 0.000 over 1.5 s). Frame diff only; does not prove player position unchanged.
+- PASS blur stops an in-progress turn (diff 0.000).
+- PASS audio ctx suspended before gesture, running after. Final counters: 11 SFX requested/played, sfxBad 0, musicErrors 0, music started 3, notesScheduled 16, maxPeak 0.
+- FAIL A.audio-clock-advances (0.000 s per 2 s) and FAIL A.menu-sfx-and-music-heard (sfxPlayed 0, peak 0). Both follow from the stalled headless clock; I treat this as an environment limit, not a product defect, and not as a pass.
+- "Use" produced no SFX (no door in reach at start). Door opening was observed in an earlier run (WeHatJ, door5-use-results.json); not repeated.
+
+## Unresolved (owner)
+1. UNVERIFIED, human: audio by ear on a machine where the audio clock advances. Earlier run ZUZV8O saw peak 0.50 with 930 notes when the clock ran; positive but not listening.
+2. UNVERIFIED, human: real hidden tab. Probe reported hidden:false.
+3. UNVERIFIED, tester: walking through an opened door, level exit, pickups, damage, death, Firefox, Safari, HiDPI. Add an audio-clock-advances guard before any peak assertion.
+4. Known limits, owner coder_input_audio: WASD and mouse unmapped; linked-sound pitch ignored; first SFX before a gesture dropped.
+5. Student decision: music is an oscillator synth, not GENMIDI/OPL.
+6. Timing/display: no fault seen; only tic rate checked (coder_render_timing owns the rest).
+
+## Assumptions
+- Doom default keys (arrows, Ctrl fire, Space use, Esc menu, Shift run, "." strafe) are the control requirement. Criteria are agent-proposed, not student-approved.
+- Headless Chromium, one run; a coast of about 1 s counts as normal momentum.
+- Manual interventions: none. Usage: not available. I wrote only in this directory.
+
+## Next action
+Human: run headed on a machine with a working audio clock, listen, and test a real hidden tab. Tester: add the walk-through-door check and the audio-clock guard.
+=== reviewer_site
+FINDINGS
+
+Startup was observed working on the current dist/ build at http://localhost:8000. No failed loads and no console errors. This is FINDINGS rather than PASS because time-to-first-frame and the title screen, post-gesture audio, a cold-cache load and other browsers or viewports were not verified (see Not verified). One minor audio warning also remains.
+
+## Work
+- Read AGENTS.md, README.md, loop/README.md, artifacts/README.md, loop/prompts/REVIEWER.md, artifacts/reports/reviewer_site.md and artifacts/reports/tester.md. I did not read platform/README.md, and artifacts/specification.md and acceptance-criteria.md do not exist.
+- Port 8000 had no listener. I started `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist` (pid in server.pid), then stopped it and confirmed the port is closed.
+- Build currency: `make -n` printed "Nothing to be done". web/{index.html,input_audio.js,audio_web.js,render_timing.js} are byte-identical to dist/ (cmp). rev.txt has the doom.wasm sha256 prefix (7afb94fa1ec64b5c) and HEAD e500c44 plus uncommitted changes.
+- Loaded `/?r=site_sLn6b5` in headless Playwright Chromium.
+  - Title "DOOM Shareware". Canvas 640x400, shown at 1152x720 CSS. `_cap_ready()` = 1.
+  - 6 subresources, all HTTP 200: audio_web.js, input_audio.js, render_timing.js, doom.js, doom.data (4.2 MB), doom.wasm (556 KB). Everything was fetched by 23 ms; DOMContentLoaded and load both fired at 23 ms. server.log shows only 200 responses (doom.wasm fetched twice, which looks like the normal compile/instantiate fetch).
+  - Tic rate over 3 x 3 s windows: 35.0, 34.9, 35.0 tics/s, matching Doom's 35/s. A first 2 s sample read about 17/s, so it was low. I did not investigate why, and the three later windows were normal. It is probably timing noise from the evaluate call, but I can't confirm that.
+  - Sampled canvas pixels: 77 distinct colours, so it is not blank.
+  - startup.png (viewed): uncorrupted render with HUD (ammo 50, health 100%, armor 100%, face, arms panel, ammo table) and the message "PICKED UP THE ARMOR." The scene is a close-up of a wall texture, with a weapon sprite at the bottom, which suggests the attract demo is running. Colours look natural, with no red/blue swap. The 3D view is very blocky, which is consistent with the wall being very close, but I did not compare it against a reference.
+- Console: 35 messages, 0 errors, 2 warnings.
+
+## Evidence (this directory)
+startup.png, console.txt, server.log, server.pid, rev.txt. Playwright captures are also in artifacts/browser/.
+
+## Findings
+1. Minor, owner coder_input_audio: the AudioContext autoplay warning at audio_web.js:27 and :53, before any user gesture. This is expected under browser policy. Whether audio resumes after a gesture is not verified, and tester.md lists audio correctness as UNVERIFIED.
+2. Low, owner coder (web/index.html and the runtime title code): the static title is "Doom (WASM)" per the prior report but the runtime title is "DOOM Shareware". I did not recheck the static file. It is cosmetic, and I can't tell whether it is intended.
+3. No blocking defects found in loading or startup.
+
+## Not verified
+- Time to first frame and the title screen. I evaluated about 4 s after navigation, once the demo was already running.
+- Cache-cleared load. The query string only busts the HTML URL, and the subresources may have come from the browser cache. The `transferSize` values are nonzero, which suggests network transfers, but I did not prove it.
+- Clean rebuild (the tester ran one), non-Chromium browsers, other viewports and HiDPI.
+- Audio after a gesture. Movement, combat and audio depth belong to reviewer_gameplay.
+
+## Assumptions
+- Headless Playwright Chromium via MCP. Pass criteria: the page loads, no required asset fails, the canvas draws with plausible colours, and the tic counter advances at about 35/s.
+- Port 8000 was free, so I served dist/ myself. No unknown service was touched.
+- I wrote nothing outside OUTPUT_DIR apart from Playwright captures in artifacts/browser/. No source, tests, loop or config files were modified, and I created no result.json.
+- Manual interventions: none.
+=== coder
+FINDINGS
+
+No source edits. None of the six reports in artifacts/reports/ asks for a change to a file I own, and I found no integration defect to fix. FINDINGS because open items remain outside my files and nothing was re-verified in a browser this run.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes. Rechecked this run: `git diff HEAD` sha256 prefix 2c74d74fd2c699f9, dist/doom.wasm prefix 7afb94fa1ec64b5c. Both match the previous coder, specialist, tester and reviewer reports. emcc 4.0.18. `make -n` reports "Nothing to be done", so I did not rebuild. artifacts/specification.md and artifacts/acceptance-criteria.md do not exist.
+
+## Prior findings read
+AGENTS.md, README.md, loop/README.md, artifacts/README.md, my role prompt, BUILD.md, and all six files in artifacts/reports/ (coder, coder_input_audio, coder_render_timing, reviewer_gameplay, reviewer_site, tester). I did not re-read the platform or web sources this run.
+
+## Integration status (carried over, same hashes)
+- tester.06TdYY: tests/verify.sh exit 0, 41 PASS, 0 FAIL, 5/5 injected faults caught.
+- reviewer_site: all assets served 200, canvas 640x400, `_cap_ready()` 1, no console errors.
+- reviewer_gameplay: tic rate 35.0/s, movement, fire and menu behaved correctly.
+- Bridge v5 sector exports are in platform/capstone_bridge.h and the Makefile EXPORTED_FUNCTIONS. The tester's "no door/sector oracle" note is stale, and G3 can be written against them.
+- BUILD.md already documents serving dist/ on port 8000.
+
+## Open items (owner)
+1. tester: add G3 (door via sector ceiling, then level exit), a menu-freezes-player check, and an audio-clock-advances guard before any peak assertion.
+2. human: listen to SFX and music on a machine whose audio clock advances; run the H1 hidden-tab protocol in tests/README.md.
+3. student: P1 save-persistence scope; music is an oscillator synth, not GENMIDI/OPL.
+4. coder_input_audio: WASD and mouse unmapped; linked-sound pitch ignored; first SFX before a gesture dropped (the autoplay warning reviewer_site saw).
+5. Unverified: Firefox, Safari, HiDPI, pickups, death, time to first frame, cache-cleared load.
+6. Minor, no owner: the page title is "Doom (WASM)" in the static HTML but "DOOM Shareware" at runtime. I don't know which is intended, and I didn't change it.
+
+## Assumptions
+- Criteria are agent-proposed, not student-approved.
+- Specialist evidence is trusted only as far as the identical hashes show it applies to this build. I ran no browser checks.
+- Manual interventions: none. Usage: not available. I wrote only in this directory.
+
+## Next action
+Tester adds the missing checks and reruns tests/verify.sh. Human does the audio listen and H1. I rebuild and re-integrate if any specialist changes a source file.
+2:// Called from platform/audio_web.c through window.CapAudio.
+8:// Diagnostics for tests: CapAudio.stats() (counters, context state, measured
+22:  function heap() { return window.Module && window.Module.HEAPU8; }
+26:    var AC = window.AudioContext || window.webkitAudioContext;
+43:    if (!ctx || ctx.state !== 'running') return;
+54:    if (ctx.state === 'suspended') ctx.resume().catch(function () {});
+57:    window.addEventListener(n, resume, true);
+99:    if (ctx.state !== 'running') { st.sfxSuppressed++; resume(); return 1; } // not audible yet
+208:  var M = null; // current song state
+234:    var now = ctx.currentTime;
+302:    var now = ctx.currentTime; if (when < now) when = now;
+324:      M.voices.forEach(function (v) { if (v.ch === e.ch && v.pitch) v.pitch.detune.setValueAtTime(c.bend * 200, Math.max(when, ctx.currentTime)); });
+331:      var node = chanNode(e.ch), t = Math.max(when, ctx.currentTime);
+355:    var now = ctx.currentTime;
+364:    if (!M || M.dead || M.paused || !ctx || ctx.state !== 'running') return;
+365:    var now = ctx.currentTime, horizon = now + 0.2, S = M.song;
+381:    bus.gain.setValueAtTime(0, ctx.currentTime);
+382:    bus.gain.linearRampToValueAtTime(1, ctx.currentTime + 0.02);
+386:    M = { song: song, loop: loop, idx: 0, base: ctx.currentTime - (atPos || 0), bus: bus, ch: ch,
+389:      var e = song.events[M.idx]; if (e.k !== 0x90 && e.k !== 0x80) applyEvent(e, ctx.currentTime); M.idx++;
+416:      musicBus.gain.setTargetAtTime(musicVol * 0.5, ctx.currentTime, 0.01);
+419:        M.pausedAt = ctx.currentTime - M.base; M.paused = true;
+435:    o.ctxState = ctx ? ctx.state : 'none';
+443:  window.CapAudio = {
+)
+
+Calling Bash()
+
+Bash response → (
+if (M && M.paused && M.song) { var pm = M; startSequencer(pm.song, pm.loop, pm.pausedAt % Math.max(pm.song.length, 0.001)); }
+    }
+  }
+
+  function musicPlaying() { return !!(M && M.playing); }
+
+  // ---- diagnostics -----------------------------------------------------
+  function stats() {
+    var o = {};
+    for (var k in st) o[k] = st[k];
+    o.ctxState = ctx ? ctx.state : 'none';
+    o.sampleRate = ctx ? ctx.sampleRate : 0;
+    o.sfxChannelsActive = Object.keys(chans).length;
+    o.musicPlaying = musicPlaying();
+    o.musicVoices = M && M.voices ? M.voices.length : 0;
+    return o;
+  }
+
+  window.CapAudio = {
+    sfxStart: sfxStart, sfxParams: sfxParams, sfxStop: sfxStop, sfxPlaying: sfxPlaying,
+    musicPlay: musicPlay, musicOp: musicOp, musicPlaying: musicPlaying,
+    stats: stats, resume: resume,
+    resetPeak: function () { st.maxPeak = 0; },
+    // Test hook: play a lump-independent tone and report the measured level.
+    _ctx: function () { return ctx; }
+  };
+})();
+#!/usr/bin/env bash
+# Acceptance entry point (tester-owned). Exit 0 only if build + every required check passes.
+# Env: RUN_ID (evidence dir name), SOAK_SECONDS (default 300), QUICK=1 (partial; never exits 0),
+#      SKIP_BUILD=1 is intentionally NOT supported.
+set -u
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+RUN_ID="${RUN_ID:-manual-$(date -u +%Y%m%dT%H%M%SZ)}"
+OUT_DIR="${OUT_DIR:-artifacts/runs/$RUN_ID/tester/verify-$(date -u +%H%M%SZ)}"
+mkdir -p "$OUT_DIR"
+OUT_DIR="$(cd "$OUT_DIR" && pwd)"
+export OUT_DIR
+fail() { echo "VERIFY FAIL: $1" | tee -a "$OUT_DIR/verify.log"; exit "${2:-1}"; }
+step() { echo "== $1" | tee -a "$OUT_DIR/verify.log"; }
+
+# Identity of what was tested.
+{
+  echo "commit: $(git rev-parse HEAD)"
+  echo "dirty_diff_sha256: $(git diff HEAD -- . ':!artifacts' | shasum -a 256 | cut -d' ' -f1)"
+  git status --short -- . ':!artifacts' | sed 's/^/status: /'
+  echo "tests_sha256: $(cat tests/verify.sh tests/faults.sh tests/playtest.mjs tests/selftest.mjs tests/lib/frames.mjs tests/package.json | shasum -a 256 | cut -d' ' -f1)"
+  echo "wad_sha256: $(shasum -a 256 assets/doom1.wad | cut -d' ' -f1)"
+  echo "emcc: $(emcc --version 2>/dev/null | head -1 || echo missing)"
+} > "$OUT_DIR/identity.txt"
+
+step "tooling"
+command -v node >/dev/null || fail "node missing" 2
+command -v make >/dev/null || fail "make missing" 2
+command -v emcc >/dev/null || fail "emcc missing (source emsdk 4.0.18 env)" 2
+(cd tests && npm ci --no-audit --no-fund >>"$OUT_DIR/verify.log" 2>&1) || fail "npm ci in tests/ failed" 2
+(cd tests && npx playwright install chromium >>"$OUT_DIR/verify.log" 2>&1) || fail "playwright chromium install failed" 2
+
+step "helper self-test (fault injection on pixel checks)"
+node tests/selftest.mjs 2>&1 | tee "$OUT_DIR/selftest.log"; [ "${PIPESTATUS[0]}" -eq 0 ] || fail "selftest failed"
+
+step "clean build"
+{ make clean && make all; } >"$OUT_DIR/build.log" 2>&1 || fail "make clean && make all failed (see $OUT_DIR/build.log)"
+[ -f dist/index.html ] && [ -f dist/doom.wasm ] || fail "dist/index.html or dist/doom.wasm missing after build"
+shasum -a 256 dist/* > "$OUT_DIR/dist-sha256.txt" 2>/dev/null
+
+step "browser playtest"
+node tests/playtest.mjs 2>&1 | tee "$OUT_DIR/playtest.log"
+rc=${PIPESTATUS[0]}
+if [ "$rc" -eq 0 ] && [ "${QUICK:-0}" != 1 ]; then
+  step "fault injection (checks must fail on broken behaviour)"
+  tests/faults.sh 2>&1 | tee "$OUT_DIR/faults.log"; [ "${PIPESTATUS[0]}" -eq 0 ] || rc=1
+fi
+echo "{\"exit\": $rc, \"evidence\": \"$OUT_DIR\"}" > "$OUT_DIR/verify-result.json"
+exit "$rc"
+#!/usr/bin/env bash
+# Fault-injection runs (tester-owned): each FAULT must make playtest.mjs exit 1 with one of the expected
+# check IDs FAILing. Proves the checks catch these faults; says nothing about faults not listed.
+# Usage: tests/faults.sh  (needs dist/ built). Env: OUT_DIR (evidence root), SOAK_SECONDS (default 5).
+set -u
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"; cd "$ROOT"
+BASE="${OUT_DIR:-artifacts/runs/manual-$(date -u +%Y%m%dT%H%M%SZ)/tester/faults}"; mkdir -p "$BASE"
+BASE="$(cd "$BASE" && pwd)"
+declare -a CASES=("drop-keyup:I2 I5 I6 C3 I7" "drop-blur:I7" "ignore-left:I3 E2a E2b" "swap-rb:B4 B6" "bad-aspect:S1")
+rc=0
+for c in "${CASES[@]}"; do
+  f="${c%%:*}"; ids="${c#*:}"
+  FAULT="$f" OUT_DIR="$BASE/$f" SOAK_SECONDS="${SOAK_SECONDS:-5}" node tests/playtest.mjs >"$BASE/$f.log" 2>&1; code=$?
+  hit=""; for id in $ids; do grep -q "^FAIL *$id" "$BASE/$f.log" && hit="$hit $id"; done
+  if [ "$code" -eq 1 ] && [ -n "$hit" ]; then echo "caught  FAULT=$f (failed:$hit)"
+  else echo "MISSED  FAULT=$f exit=$code expected one of: $ids (see $BASE/$f.log)"; rc=1; fi
+done
+exit $rc
+2c74d74fd2c699f9
+7afb94fa1ec64b5c
+platform/doomgeneric_wasm.c:119:// Read-only sector diagnostics (v5) for door / lift checks. Heights are map
+platform/doomgeneric_wasm.c:121:int cap_sector_count(void)
+platform/doomgeneric_wasm.c:123:    return cap_player_valid() ? numsectors : 0;
+platform/doomgeneric_wasm.c:126:int cap_sector_floor(int i)
+platform/doomgeneric_wasm.c:128:    return (cap_player_valid() && i >= 0 && i < numsectors) ? sectors[i].floorheight >> 16 : 0;
+platform/doomgeneric_wasm.c:131:int cap_sector_ceiling(int i)
+platform/doomgeneric_wasm.c:133:    return (cap_player_valid() && i >= 0 && i < numsectors) ? sectors[i].ceilingheight >> 16 : 0;
+platform/doomgeneric_wasm.c:136:int cap_player_sector(void)
+platform/doomgeneric_wasm.c:138:    return cap_player_valid() ? (int)(players[consoleplayer].mo->subsector->sector - sectors) : -1;
+)
+
+Calling Bash()
+
+Bash response → (
+agent.log
+door5-final.png
+door5-results.json
+door5-use-final.png
+door5-use-results.json
+door5.mjs
+door5ctl-final.png
+door5ctl-results.json
+door5ctl.mjs
+door5pass-final.png
+door5pass-results.json
+door5pass.mjs
+report.md
+{
+ "start": [
+  1056,
+  -3616
+ ],
+ "closed": [
+  [
+   4,
+   0,
+   0
+  ],
+  [
+   68,
+   -24,
+   -24
+  ],
+  [
+   76,
+   -24,
+   -24
+  ],
+  [
+   81,
+   -24,
+   -24
+  ]
+ ],
+ "traj": [
+  {
+   "it": 0,
+   "x": 1056,
+   "y": -3616,
+   "sec": 38,
+   "dist": 1245,
+   "d": -26
+  },
+  {
+   "it": 10,
+   "x": 1440,
+   "y": -2501,
+   "sec": 2,
+   "dist": 160,
+   "d": -37
+  },
+  {
+   "it": 20,
+   "x": 1519,
+   "y": -2486,
+   "sec": 3,
+   "dist": 82,
+   "d": -7
+  },
+  {
+   "it": 30,
+   "x": 1519,
+   "y": -2509,
+   "sec": 3,
+   "dist": 82,
+   "d": 9
+  },
+16:  var st = {
+17:    sfxRequested: 0, sfxPlayed: 0, sfxSuppressed: 0, sfxBad: 0,
+19:    maxPeak: 0, lastPeak: 0
+48:    if (p > st.maxPeak) st.maxPeak = p;
+112:    st.sfxPlayed++;
+447:    resetPeak: function () { st.maxPeak = 0; },
+)
+Reading the reviewer's earlier door-walk script so I can reuse its route for G3.
+Calling Bash()
+
+Bash response → (
+import http from 'node:http'; import fs from 'node:fs'; import path from 'node:path'; import { pathToFileURL } from 'node:url';
+const R = process.argv[2], OUT = process.argv[3];
+const { chromium } = await import(pathToFileURL(R + '/tests/node_modules/playwright/index.mjs'));
+const DIST = R + '/dist'; const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.wasm': 'application/wasm' };
+const srv = http.createServer((q, s) => { const p = path.join(DIST, q.url.split('?')[0].replace(/^\/$/, '/index.html')); if (!fs.existsSync(p)) { s.writeHead(404).end(); return; } s.writeHead(200, { 'content-type': MIME[path.extname(p)] || 'application/octet-stream' }); fs.createReadStream(p).pipe(s); });
+await new Promise(r => srv.listen(0, '127.0.0.1', r));
+const browser = await chromium.launch(); const page = await (await browser.newContext({ viewport: { width: 1000, height: 700 } })).newPage();
+const con = []; page.on('console', m => con.push(`[${m.type()}] ${m.text()}`)); page.on('pageerror', e => con.push('[pageerror] ' + e.message));
+await page.goto(`http://127.0.0.1:${srv.address().port}/?r=gp5`);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const S = () => page.evaluate(() => { const M = Module, n = M._cap_sector_count(), c = []; for (let i = 0; i < n; i++) c.push([M._cap_sector_floor(i), M._cap_sector_ceiling(i)]);
+  return { x: M._cap_player_x(), y: M._cap_player_y(), a: M._cap_player_angle(), h: M._cap_player_health(), l: M._cap_level_id(), sec: M._cap_player_sector(), n, c }; });
+await sleep(2500); for (let i = 0; i < 4; i++) { await page.keyboard.press('Enter'); await sleep(900); } await sleep(3000);
+const s0 = await S(); const closed = s0.c.map((v, i) => [i, ...v]).filter(v => v[1] === v[2]);
+console.log('start', s0.x, s0.y, 'level', s0.l, 'sectors', s0.n, 'closed(floor==ceil)', JSON.stringify(closed));
+const changes = new Map(); let prev = s0.c; const events = [];
+const check = async (tag) => { const s = await S(); s.c.forEach((v, i) => { if (v[1] !== prev[i][1]) { events.push({ tag, sector: i, ceil: [prev[i][1], v[1]], player: [s.x, s.y], psec: s.sec }); } }); prev = s.c; return s; };
+const hold = async (k, ms) => { await page.keyboard.down(k); await sleep(ms); await page.keyboard.up(k); await sleep(300); await check('after ' + k); };
+// steer toward target (tx,ty) with stuck-wiggle; Use pressed every step
+const TX = +process.argv[4], TY = +process.argv[5]; const steps = [];
+let stuck = 0, last = null;
+for (let it = 0; it < 220 && !events.length; it++) {
+  const s = await S(); const ang = s.a / 2**32 * 2 * Math.PI; const want = Math.atan2(TY - s.y, TX - s.x);
+  let d = want - ang; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+  const dist = Math.hypot(TX - s.x, TY - s.y);
+  if (last && Math.hypot(s.x - last[0], s.y - last[1]) < 8) stuck++; else stuck = 0; last = [s.x, s.y];
+  if (it % 10 === 0) steps.push({ it, x: s.x, y: s.y, sec: s.sec, dist: Math.round(dist), d: Math.round(d * 57.3) });
+  if (stuck >= 2) { const k = Math.random() < .5 ? 'ArrowLeft' : 'ArrowRight'; await hold(k, 300 + Math.random() * 500); await page.keyboard.down('ArrowUp'); await sleep(700); await page.keyboard.up('ArrowUp'); stuck = 0; continue; }
+  if (Math.abs(d) > 0.12) { await page.keyboard.down(d > 0 ? 'ArrowLeft' : 'ArrowRight'); await sleep(Math.min(500, 60 + Math.abs(d) * 220)); await page.keyboard.up(d > 0 ? 'ArrowLeft' : 'ArrowRight'); await sleep(150); }
+  await page.keyboard.down('ArrowUp'); await sleep(350); await page.keyboard.press('Space'); await sleep(100); await page.keyboard.up('ArrowUp'); await sleep(100); await check('steer');
+}
+await sleep(2000); await check('settle');
+await page.screenshot({ path: `${OUT}/door5-final.png` });
+const sf = await S();
+fs.writeFileSync(OUT + '/door5-results.json', JSON.stringify({ start: [s0.x, s0.y], closed, traj: steps, events, final: { x: sf.x, y: sf.y, h: sf.h, l: sf.l }, con }, null, 1));
+console.log('traj', JSON.stringify(steps)); console.log('events', JSON.stringify(events)); console.log('final', sf.x, sf.y, sf.h, sf.l);
+await browser.close(); srv.close();
+  "l": 101
+ },
+ "con": [
+  "[log]                            Doom Generic 0.1",
+  "[log] Z_Init: Init zone memory allocation daemon. ",
+  "[log] zone memory: 0x265460, 600000 allocated for zone",
+  "[log] Using . for configuration and saves",
+  "[log] V_Init: allocate screens.",
+  "[log] M_LoadDefaults: Load system defaults.",
+  "[log] saving config in .default.cfg",
+  "[log] W_Init: Init WADfiles.",
+  "[log]  adding /doom1.wad",
+  "[log] Using ./.savegame/ for savegames",
+  "[log] ===========================================================================",
+  "[log]                             DOOM Shareware",
+  "[log] ===========================================================================",
+  "[log]  Doom Generic is free software, covered by the GNU General Public",
+  "[log]  License.  There is NO warranty; not even for MERCHANTABILITY or FITNESS",
+  "[log]  FOR A PARTICULAR PURPOSE. You are welcome to change and distribute",
+  "[log]  copies under certain conditions. See the source for more information.",
+  "[log] ===========================================================================",
+  "[log] I_Init: Setting up machine state.",
+  "[log] M_Init: Init miscellaneous info.",
+  "[log] R_Init: Init DOOM refresh daemon - ...................",
+  "[log] P_Init: Init Playloop state.",
+  "[log] S_Init: Setting up sound.",
+  "[warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu",
+  "[log] D_CheckNetGame: Checking network game status.",
+  "[log] startskill 2  deathmatch: 0  startmap: 1  startepisode: 1",
+  "[log] player 1 of 1 (1 nodes)",
+  "[log] Emulating the behavior of the 'Doom 1.9' executable.",
+  "[log] HU_Init: Setting up heads up display.",
+  "[log] ST_Init: Init status bar.",
+  "[log] I_InitGraphics: framebuffer: x_res: 640, y_res: 400, x_virtual: 640, y_virtual: 400, bpp: 32",
+  "[log] I_InitGraphics: framebuffer: RGBA: 8888, red_off: 16, green_off: 8, blue_off: 0, transp_off: 24",
+  "[log] I_InitGraphics: DOOM screen size: w x h: 320 x 200",
+  "[log] I_InitGraphics: Auto-scaling factor: 2",
+  "[warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu"
+ ]
+}
+## Source identity
+HEAD e500c44 plus uncommitted changes. `git diff HEAD` sha256 prefix 2c74d74fd2c699f9. dist/doom.wasm sha256 prefix 7afb94fa1ec64b5c (bridge v5, with sector exports). `make -n`: nothing to do, so I did not rebuild. artifacts/specification.md and acceptance-criteria.md do not exist.
+
+## Prior findings read
+All six files in artifacts/reports/. The earlier reviewer_gameplay run found no door because no oracle existed. Coder's v5 sector exports now provide one. I did not repeat the movement or audio measurements.
+
+## Work and evidence (this directory)
+Scripts are my own, not protected checks. They use headless Chromium via Playwright against a throwaway local server that exits with the script.
+- **Door location:** I read the E1M1 LINEDEFS from assets/doom1.wad (read only). Door lines (special 1) belong to sectors 4, 68, 76 and 81. The engine export at level start reports exactly these four sectors with floor == ceiling (closed), which agrees with the WAD.
+- **door5.mjs, with Use:** steered from the start (1056,-3616) toward the sector 4 door at about (1544,-2496) using cap_player_x/y/angle, pressing Space while walking. The player reached (1519,-2484) in sector 3. Sector 4's ceiling then went 0 -> 16 -> 68, so the door opened. Health 100, level 101, no console errors. See door5-use-results.json and door5-use-final.png.
+- **door5ctl.mjs, control with Space removed:** same route, 90 steps, 0 sector changes. So the opening is caused by Use and not by walking up to the door.
+- **Movement and turning:** the steering depended on turning and on stopping, and both worked. The player turned toward the target and ended within about 25 units of the door.
+- **Console:** no errors or page errors in either run (35 console lines each, warnings only).
+
+## Unresolved (owner)
+1. UNVERIFIED, tester: walking through the opened door. door5pass.mjs (door5pass-results.json) did not reach the far side. Its steering ended with the player at (1519,-2449) and no further sector events. That is a limit of my greedy steering, not evidence that the door blocks the player. The tester can add a G3 check from this recipe: steer to (1519,-2490) facing east, press Space, and assert cap_sector_ceiling(4) > 0.
+2. UNVERIFIED, student/human: audio correctness. No one has listened. I did not retest audio. The coder_input_audio report on this same wasm hash shows a running context, 5 of 5 SFX played and peak 0.394, which proves non-silent output only.
+3. UNVERIFIED, tester: pickups, damage and death, level exit, a real hidden tab (headless cannot background a tab), Firefox, Safari.
+4. Known limits from earlier reports, unchanged: music is an oscillator synth, not GENMIDI/OPL. WASD and mouse are not mapped. The first SFX before a gesture is dropped.
+
+## Assumptions
+- Doom default keys (arrows, Space for Use) are the control requirement.
+- Position and sector exports are trusted as engine state. The WAD cross-check supports the sector list.
+- An opening ceiling in a door sector is taken to mean the door opened.
+- I used the first 220 steering steps as the budget. I stopped once the door event was seen.
+- Manual interventions: none. Usage: not available. I wrote nothing outside this directory.
+
+## Next action
+Tester adds a position-based G3 door check using the recipe above. A human listens to SFX and music.
+)
+I'm adding three playtest checks (G3 door-on-Use, menu-freeze, audio-clock guard) plus a drop-use fault, and checking the audio counter names first.
+
+
+Calling Bash()
+
+Bash response → (
+var anaBuf = null;
+  var sfxVol = 1, musicVol = 1;
+  var st = {
+    sfxRequested: 0, sfxPlayed: 0, sfxSuppressed: 0, sfxBad: 0,
+    musicRequested: 0, musicStarted: 0, notesScheduled: 0, musicErrors: 0,
+    maxPeak: 0, lastPeak: 0
+  };
+
+  function heap() { return window.Module && window.Module.HEAPU8; }
+12:    ControlLeft: 0xa3, ControlRight: 0xa3, Space: 0xa2,
+)
+Now the edits. First, the menu-freeze check after the Esc-menu checks:
+Calling Bash()
+
+Bash response → (
+Traceback (most recent call last):
+  File "<stdin>", line 18, in <module>
+AssertionError
+249:  ['P1.save-persistence', 'scope undecided'], ['G3.door-use-and-level-exit', 'no door/sector oracle exported (player
+)
+
+Calling Bash()
+
+Bash response → "178:  check('U4.escape-closes-menu', diffFrac(esc, esc2, VIEW) > 0.01, `diff=${diffFrac(esc, esc2, VIEW).toFixed(3)}`);"
+I'll rerun the patch with the anchor corrected (`toFixed(3)`).
+Calling Bash()
+
+Bash response → (
+/Users/sarahtseng/Projects/fellowship-loop-capstone/tests/playtest.mjs:277
+  const g0 = await GS(); const TX = 1544, TY = -2496; let g = g0, opened = false, stuck = 0, last = null, its = 0;
+                                                                                             ^
+
+SyntaxError: Identifier 'last' has already been declared
+    at checkSyntax (node:internal/main/check_syntax:84:5)
+
+Node.js v24.22.0
+sed: 2: "tests/faults.sh
+": undefined label 'ests/faults.sh'
+9:declare -a CASES=("drop-keyup:I2 I5 I6 C3 I7" "drop-blur:I7" "ignore-left:I3 E2a E2b" "swap-rb:B4 B6" "bad-aspect:S1")
+[This command modified 1 file you've previously read: tests/playtest.mjs. Call Read before editing.]
+)
+
+Calling Bash()
+
+Bash response → (
+9:declare -a CASES=("drop-keyup:I2 I5 I6 C3 I7" "drop-blur:I7" "ignore-left:I3 E2a E2b" "swap-rb:B4 B6" "bad-aspect:S1" "drop-use:G3a")
+259:  const t1 = Date.now(), r2 = await page.evaluate(() => window.__raf); let moved = 0, 
+262:    if (Math.floor((Date.now() - t1) / 1000) % 20 === 0) { const s = await shot('soak'
+266:  check('R2.soak-still-rendering', (r3 - r2) / SOAK >= 20 && stats(last).darkFrac < 0.
+277:  const g0 = await GS(); const TX = 1544, TY = -2496; let g = g0, opened = false, stuc
+282:    if (gLast && Math.hypot(g.x - gLast[0], g.y - gLast[1]) < 8) stuck++; else stuck =
+)
+Syntax is clean. I'm running a quick playtest against the existing `dist/`, which matches the tested wasm hash, to see how the new checks behave.
+Calling Bash()
+
+Bash response → (
+rc=1
+FAIL       U5.menu-freezes-player coasting-before-menu=21.5u/120ms; frozen-in-menu moved=0.0u tics=52 over 1.5s
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3b.level-exit-and-walk-through-door door opening is checked (G3a); no route/oracle yet for walking through it or finishing E1M1 (needs scripted route or coder level-exit hook)
+UNVERIFIED H1.hidden-tab-timing headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)
+playtest: FAIL failed=1 unverified(not-in-scope, listed)=4 QUICK=partial
+FAIL       U5.menu-freezes-player coasting-before-menu=21.5u/120ms; frozen-in-menu moved=0.0u tics=52 over 1.5s
+PASS       A0.audio-context-created state=running after user gestures (suspended => autoplay resume broken)
+PASS       A2.sfx-played-no-errors sfxPlayed=9 sfxBad=0 musicStarted=3 musicErrors=0 notes=1013
+PASS       A3.audible-peak audio clock advanced 2.01s/2s; maxPeak=0.408 (non-silent only, not correct sound)
+PASS       G3a.door-opens-on-use start=(1056,-3616) closed-at-start=true sector4 ceil 0->16 steps=46 end=(1519,-2480)
+UNVERIFIED G3b.level-exit-and-walk-through-door door opening is checked (G3a); no route/oracle yet for walking through it or finishing E1M1 (needs scripted route or coder level-exit hook)
+)
+U5 failed because my test assumed the player was stuck, but the tic counter keeps running with the menu open, so I'm fixing that faulty condition in the test.
+
+
+Calling Bash()
+
+Bash response → "ok"
+Next is the full `tests/verify.sh`: clean build, full 300 s soak, and all fault injections. It takes about 15 minutes, so I'm running it in the background.
+Calling Bash()
+
+Bash response → "Command running in background with ID: bshuifzj3. Output is being written to: /private/tmp/claude-501/-Users-sarahtseng-Projects-fellowship-loop-capstone/3c109a8d-f40b-4135-90ce-318fd9389a8d/tasks/bshuifzj3.output. You will be notified when it completes. To check interim output, use Read on that file path."
+Status: the full verification is running in the background. I'll update the README notes while it runs.
+Calling Bash()
+
+Bash response → (
+PASS       T2.35-tics-per-second 34.97 tics/s over 4s (need 35 +/-10%)
+PASS       R1.soak-no-errors 300s; errors=
+PASS       R2.soak-still-rendering rAF/s=60.2 visibleFrame=true
+PASS       R3.no-long-stalls max longtask=0ms (must be <1500)
+PASS       R4.soak-frames-changed sampled frames that differed: 22
+)
+
+Calling Bash()
+
+Bash response → "<tool_use_error>Blocked: sleep 540 followed by: tail -12 /Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/tester.6hWyX9/verify.out. To wait for a condition, use Monitor with an until-loop (e.g. `until <check>; do sleep 2; done`). To wait for a command you started, use run_in_background: true. Do not chain shorter sleeps to work around this block.</tool_use_error>"
+
+Calling Bash()
+
+Bash response → "Command did not complete within its 600s timeout and was moved to the background (ID: bjmsnh3kp). Output is being written to: /private/tmp/claude-501/-Users-sarahtseng-Projects-fellowship-loop-capstone/3c109a8d-f40b-4135-90ce-318fd9389a8d/tasks/bjmsnh3kp.output. You will be notified when it completes. If it is still running after 10m in the background, it will be stopped and you will be notified. It is running now: do not start a second copy while it runs. If it is no longer needed, stop it with TaskStop. No output had been read from it when it was moved. A program that buffers its output, or a pipe into one such as tail, can keep the output file empty until the command finishes. To check interim output, use Read on that file path.\nSession cwd remains /Users/sarahtseng/Projects/fellowship-loop-capstone; directory changes made by the backgrounded command do not apply to subsequent commands."
+Still running; I'll wait for the completion notification.
+Calling Bash()
+
+Bash response → (
+caught  FAULT=drop-keyup (failed: I2 I5 I6 C3 I7)
+caught  FAULT=drop-blur (failed: I7)
+caught  FAULT=ignore-left (failed: I3 E2a E2b)
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3b.level-exit-and-walk-through-door door opening is checked (G3a); no route/oracle yet for walking through it or finishing E1M1 (needs scripted route or coder level-exit hook)
+UNVERIFIED H1.hidden-tab-timing headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)
+caught  FAULT=drop-keyup (failed: I2 I5 I6 C3 I7)
+caught  FAULT=drop-blur (failed: I7)
+caught  FAULT=ignore-left (failed: I3 E2a E2b)
+)
+
+Calling Bash()
+
+Bash response → (
+PASS       U5.menu-freezes-player coasting-before-menu=22.5u/120ms; frozen-in-menu moved=0.0u tics=52 over 1.5s
+PASS       A0.audio-context-created state=running after user gestures (suspended => autoplay resume broken)
+PASS       A2.sfx-played-no-errors sfxPlayed=9 sfxBad=0 musicStarted=3 musicErrors=0 notes=1013
+PASS       A3.audible-peak audio clock advanced 2.01s/2s; maxPeak=0.429 (non-silent only, not correct sound)
+PASS       G3a.door-opens-on-use start=(1056,-3616) closed-at-start=true sector4 ceil 0->14 steps=69 end=(1519,-2520)
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3b.level-exit-and-walk-through-door door opening is checked (G3a); no route/oracle yet for walking through it or finishing E1M1 (needs scripted route or coder level-exit hook)
+UNVERIFIED H1.hidden-tab-timing headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)
+playtest: PASS failed=0 unverified(not-in-scope, listed)=4
+caught  FAULT=drop-keyup (failed: I2 I5 I6 C3 I7)
+caught  FAULT=drop-blur (failed: I7)
+caught  FAULT=ignore-left (failed: I3 E2a E2b)
+caught  FAULT=swap-rb (failed: B4)
+caught  FAULT=bad-aspect (failed: S1)
+caught  FAULT=drop-use (failed: G3a)
+done rc=0
+)
+
+Calling Bash()
+
+Bash response → (
+commit: e500c440656622db5ab3f8fb7df73d8b5998eeb3
+dirty_diff_sha256: 2c74d74fd2c699f962fbe4b0efed4edf20edce8dc48292d33a4f5d5951053970
+emcc: emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 4.0.18 (fae107463db4d20a276a27ede393048deaeebf76)
+46
+7afb94fa1ec64b5c
+)
+The report is at `artifacts/logs/tester.6hWyX9/report.md`, and its first line is `FINDINGS`, not `PASS`. `tests/verify.sh` exited 0: the clean build and playtest had no FAILs, and all 6 injected faults were caught. Four required behaviors are still unverified, so I can't report PASS.
+
+**What I added (tests only; no product source, `loop/` or other protected files touched):**
+- **`U5.menu-freezes-player`:** with the Esc menu open, the player's position and angle stay unchanged for 1.5 s. It first confirms the player was still moving.
+- **Audio guard:**
+  - `A0` checks the audio context is running after gestures.
+  - `A2` checks sound effects played with no errors and music started.
+  - `A3` checks the peak level is above silence, but only when the audio clock actually advances. A stalled clock is reported UNVERIFIED, not PASS.
+  - This run the clock advanced and the peak was 0.429. That shows non-silent output, not correct sound.
+- **`G3a.door-opens-on-use`:** in a fresh game it walks to the E1M1 sector-4 door and presses Use. The sector started closed and its ceiling rose from 0 to 14 in 69 steps. The new `drop-use` fault, where Use never reaches the game, makes it fail.
+
+**One test correction:** my first `U5` draft also required the game tic counter to freeze, and the quick run failed. The player was frozen, but Doom keeps counting tics with the menu open. That was my wrong assumption, so I dropped the tic condition and kept the failing evidence in `quick.log`. No existing check was weakened.
+
+**Still unverified:**
+- **Audio by ear (A1):** a human has to listen.
+- **Hidden-tab timing (H1):** a human has to run the manual protocol in `tests/README.md`.
+- **Save persistence (P1):** this needs your scope decision.
+- **Walking through the door or finishing the level (G3b):** the tester still needs a scripted route for this.
+- **Other gaps:** `U5` and `A0`–`A3` have no injected fault. The tester can't break the product to make one. The door steering is greedy and could flake on a slow machine.
+
+The criteria are still agent-proposed, not student-approved, because `artifacts/specification.md` and `artifacts/acceptance-criteria.md` don't exist. Manual interventions: none.
+
+Other files are in `artifacts/logs/tester.6hWyX9/` (`verify.out`, `verify/` and `quick/`). I also added a Rev 4 section to `tests/README.md` and the `drop-use` case to `tests/faults.sh`.

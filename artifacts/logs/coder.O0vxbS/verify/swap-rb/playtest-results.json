@@ -1,0 +1,139 @@
+{
+  "status": "FAIL",
+  "quick": false,
+  "soak_seconds": 5,
+  "failed": 2,
+  "unverified": 4,
+  "results": [
+    {
+      "id": "B0.dist-present",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "B1.canvas-640x400",
+      "status": "PASS",
+      "detail": "canvas#canvas intrinsic size"
+    },
+    {
+      "id": "B2.boot-renders-frame",
+      "status": "PASS",
+      "detail": "after 218ms colors=240"
+    },
+    {
+      "id": "B3.opaque-pixels",
+      "status": "PASS",
+      "detail": "transparentFrac=0"
+    },
+    {
+      "id": "B4.channel-order",
+      "status": "FAIL",
+      "detail": "meanR=30.7 meanB=109.8 (title/menu are warm; swap => blue)"
+    },
+    {
+      "id": "B5.no-load-errors",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "T1.main-thread-responsive",
+      "status": "PASS",
+      "detail": "60.0 rAF/s over 3s (need >=20)"
+    },
+    {
+      "id": "M1.enter-opens-menu",
+      "status": "PASS",
+      "detail": "diff=0.234"
+    },
+    {
+      "id": "G1.level-started",
+      "status": "PASS",
+      "detail": "diff-from-menu=0.93 statusbarColors=86"
+    },
+    {
+      "id": "B6.level-colors",
+      "status": "PASS",
+      "detail": "E1M1 view not blue-biased"
+    },
+    {
+      "id": "G1b.engine-state-e1m1",
+      "status": "PASS",
+      "detail": "{\"x\":1056,\"y\":-3616,\"angle\":1073741824,\"health\":100,\"level\":101}"
+    },
+    {
+      "id": "G2.idle-stable",
+      "status": "PASS",
+      "detail": "diff=0.0000"
+    },
+    {
+      "id": "I1.turn-right",
+      "status": "PASS",
+      "detail": "shift=-123px err=4.0 err0=6.1"
+    },
+    {
+      "id": "I2.turn-stops-on-release",
+      "status": "PASS",
+      "detail": "diff=0.0000"
+    },
+    {
+      "id": "I3.turn-left",
+      "status": "PASS",
+      "detail": "shift=101px"
+    },
+    {
+      "id": "I4.forward-moves",
+      "status": "PASS",
+      "detail": "start-vs-mid=0.689 still-moving=0.598"
+    },
+    {
+      "id": "I4b.forward-moves-player",
+      "status": "PASS",
+      "detail": "moved 409 map units (need >=32)"
+    },
+    {
+      "id": "I5.forward-stops-on-release",
+      "status": "PASS",
+      "detail": "settled=true after 2106ms (momentum allowed up to 4s); later-diff=0.0001"
+    },
+    {
+      "id": "I6.backward-returns",
+      "status": "PASS",
+      "detail": "start-to-fwd=409 start-to-back=93 map units (pixel diff for reference: 0.394 vs 0.496)"
+    },
+    {
+      "id": "I7a.turn-held-keeps-changing",
+      "status": "PASS",
+      "detail": "diff=0.3557 (precondition: key effective before blur)"
+    },
+    {
+      "id": "I7.blur-releases-keys",
+      "status": "PASS",
+      "detail": "settled=true after 501ms; later-diff=0.0000 (key still physically down)"
+    },
+    {
+      "id": "X.harness-exception",
+      "status": "FAIL",
+      "detail": "locator.screenshot: Target page, context or browser has been closed     at shot (/Users/sarahtseng/Projects/fellowship-loop-capstone/tests/playtest.mjs:70:45)     at /Users/sarahtseng/Projects/fellowship-loop-capstone/tests/playtest.mjs:163:125"
+    },
+    {
+      "id": "A1.audio",
+      "status": "UNVERIFIED",
+      "detail": "scope undecided; an active AudioContext would not prove correct sound/music"
+    },
+    {
+      "id": "P1.save-persistence",
+      "status": "UNVERIFIED",
+      "detail": "scope undecided"
+    },
+    {
+      "id": "G3.door-use-and-level-exit",
+      "status": "UNVERIFIED",
+      "detail": "no door/sector oracle exported (player pos/angle/health/level only); needs coder sector/line export"
+    },
+    {
+      "id": "H1.hidden-tab-timing",
+      "status": "UNVERIFIED",
+      "detail": "headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)"
+    }
+  ]
+}

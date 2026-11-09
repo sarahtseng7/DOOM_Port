@@ -1,0 +1,157 @@
+{
+ "start": [
+  1056,
+  -3616
+ ],
+ "closed": [
+  [
+   4,
+   0,
+   0
+  ],
+  [
+   68,
+   -24,
+   -24
+  ],
+  [
+   76,
+   -24,
+   -24
+  ],
+  [
+   81,
+   -24,
+   -24
+  ]
+ ],
+ "traj": [
+  {
+   "it": 0,
+   "x": 1056,
+   "y": -3616,
+   "sec": 38,
+   "dist": 1245,
+   "d": -26
+  },
+  {
+   "it": 10,
+   "x": 1440,
+   "y": -2501,
+   "sec": 2,
+   "dist": 160,
+   "d": -37
+  },
+  {
+   "it": 20,
+   "x": 1519,
+   "y": -2486,
+   "sec": 3,
+   "dist": 82,
+   "d": -7
+  },
+  {
+   "it": 30,
+   "x": 1519,
+   "y": -2509,
+   "sec": 3,
+   "dist": 82,
+   "d": 9
+  },
+  {
+   "it": 40,
+   "x": 1519,
+   "y": -2486,
+   "sec": 3,
+   "dist": 82,
+   "d": -20
+  },
+  {
+   "it": 50,
+   "x": 1519,
+   "y": -2497,
+   "sec": 3,
+   "dist": 81,
+   "d": 7
+  },
+  {
+   "it": 60,
+   "x": 1519,
+   "y": -2515,
+   "sec": 3,
+   "dist": 83,
+   "d": 27
+  }
+ ],
+ "events": [
+  {
+   "tag": "steer",
+   "sector": 4,
+   "ceil": [
+    0,
+    16
+   ],
+   "player": [
+    1519,
+    -2484
+   ],
+   "psec": 3
+  },
+  {
+   "tag": "settle",
+   "sector": 4,
+   "ceil": [
+    16,
+    68
+   ],
+   "player": [
+    1519,
+    -2479
+   ],
+   "psec": 3
+  }
+ ],
+ "final": {
+  "x": 1519,
+  "y": -2479,
+  "h": 100,
+  "l": 101
+ },
+ "con": [
+  "[log]                            Doom Generic 0.1",
+  "[log] Z_Init: Init zone memory allocation daemon. ",
+  "[log] zone memory: 0x265460, 600000 allocated for zone",
+  "[log] Using . for configuration and saves",
+  "[log] V_Init: allocate screens.",
+  "[log] M_LoadDefaults: Load system defaults.",
+  "[log] saving config in .default.cfg",
+  "[log] W_Init: Init WADfiles.",
+  "[log]  adding /doom1.wad",
+  "[log] Using ./.savegame/ for savegames",
+  "[log] ===========================================================================",
+  "[log]                             DOOM Shareware",
+  "[log] ===========================================================================",
+  "[log]  Doom Generic is free software, covered by the GNU General Public",
+  "[log]  License.  There is NO warranty; not even for MERCHANTABILITY or FITNESS",
+  "[log]  FOR A PARTICULAR PURPOSE. You are welcome to change and distribute",
+  "[log]  copies under certain conditions. See the source for more information.",
+  "[log] ===========================================================================",
+  "[log] I_Init: Setting up machine state.",
+  "[log] M_Init: Init miscellaneous info.",
+  "[log] R_Init: Init DOOM refresh daemon - ...................",
+  "[log] P_Init: Init Playloop state.",
+  "[log] S_Init: Setting up sound.",
+  "[warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu",
+  "[log] D_CheckNetGame: Checking network game status.",
+  "[log] startskill 2  deathmatch: 0  startmap: 1  startepisode: 1",
+  "[log] player 1 of 1 (1 nodes)",
+  "[log] Emulating the behavior of the 'Doom 1.9' executable.",
+  "[log] HU_Init: Setting up heads up display.",
+  "[log] ST_Init: Init status bar.",
+  "[log] I_InitGraphics: framebuffer: x_res: 640, y_res: 400, x_virtual: 640, y_virtual: 400, bpp: 32",
+  "[log] I_InitGraphics: framebuffer: RGBA: 8888, red_off: 16, green_off: 8, blue_off: 0, transp_off: 24",
+  "[log] I_InitGraphics: DOOM screen size: w x h: 320 x 200",
+  "[log] I_InitGraphics: Auto-scaling factor: 2",
+  "[warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu"
+ ]
+}

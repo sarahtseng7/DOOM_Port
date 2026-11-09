@@ -1,0 +1,1 @@
+{"status":"FINDINGS","summary":"Unchanged tests/verify.sh (clean build, selftest, 300s soak) exit 0 with 30 PASS, 0 FAIL on e500c44+dirty. Not PASS: A1 audio, P1 persistence, G3 door/exit UNVERIFIED; criteria agent-proposed; reviewer F2/F5 coverage gaps open. Run 0 was an invocation error (relative OUT_DIR), preserved."}

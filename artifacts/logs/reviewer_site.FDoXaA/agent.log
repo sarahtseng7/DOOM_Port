@@ -1,0 +1,360 @@
+I'll start by finding the role prompt and the prior reports.
+Calling Bash()
+
+Bash response → (
+artifacts/logs/reviewer_site.FDoXaA:
+agent.log
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+)
+
+Calling Bash()
+
+Bash response → (
+Exit code 1
+# Site and startup review
+
+You are `reviewer_site`.
+
+Review build/startup and actual browser loading at http://localhost:8000.
+Write no source, tests, or build files. You may run the existing build and start a
+local HTTP server without modifying source; stop only a server you started.
+Use Playwright MCP (or existing browser scripts) to verify the page, canvas, fresh
+JS/WASM/WAD loading, console/network failures, initial image, colors, and startup
+responsiveness. Ensure an existing port-8000 server serves this project's current
+build; do not kill an unknown service or accept an unrelated page as evidence.
+Leave movement, combat, and audio depth to reviewer_gameplay. Report actionable
+faults to the relevant coder. PASS requires actual observed startup, not inspection
+alone. Keep evidence in OUTPUT_DIR; screenshots are supporting evidence, not all
+of acceptance. Browser tools do not grant permission to patch files.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+(eval):1: ===== not found
+)
+
+Calling Bash()
+
+Bash response → (
+PROGRESS: reading reports
+FINDINGS
+
+Startup observed and working on the current dist/. FINDINGS (not PASS) only because time-to-first-frame, other viewports, clean rebuild, other browsers, warm-cache reload and post-gesture audio were not verified, plus one minor expected audio warning (unchanged from prior reviewer_site report).
+
+## Work
+- Read AGENTS.md, loop/prompts/REVIEWER.md, artifacts/README.md, artifacts/reports/reviewer_site.md and tester.md. No specification.md or acceptance-criteria.md exists.
+- Port 8000 had no listener. I started `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist` (pid in server.pid) and stopped it afterwards (port confirmed free).
+- `make`: "Nothing to be done". web/{index.html,input_audio.js,audio_web.js,render_timing.js} identical to dist/. doom.wasm sha256 6c93cbf125bd366a... (same as the prior review). Source: HEAD e500c44 plus uncommitted changes (rev.txt).
+- Playwright load of /?r=site5: document + 6 resources (input_audio.js, audio_web.js, render_timing.js, doom.js, doom.data ~4.2 MB, doom.wasm ~555 KB), all HTTP 200 and all in server.log. Title "DOOM Shareware" (the served HTML source has "Doom (WASM)" as its initial title, then the page sets it).
+- Canvas 640x400, displayed 1152x720 CSS (1.6 aspect). 93 distinct colours in a sparse sample. Module._rt.frames 645 -> 715 in 1 s, so the render loop runs (headless Chromium).
+- startup.png (viewed): in-game view with HUD and a "YOU GOT THE SHOTGUN!" message and an imp-like enemy. This is probably the attract-mode demo, not a player-controlled game. Colours are correct (no R/B swap), no corruption, letterboxed.
+- Console: 0 errors, 2 warnings (console.txt).
+
+## Evidence (this directory)
+startup.png, console.txt, server.log, server.pid, rev.txt. Playwright captures are in artifacts/browser/.
+
+## Findings
+1. Minor, owner coder_input_audio: AudioContext "not allowed to start" warnings (audio_web.js:27, :53) before a user gesture. Expected under autoplay policy; confirm audio resumes on first gesture (not verified here).
+
+No actionable startup fault found.
+
+## Not verified
+Precise time to first frame; clean rebuild; non-Chromium browsers; warm-cache reload; other viewports; audio after a gesture; whether the first frame is a demo or the title screen (I did not check the first frame, only a screenshot ~6 s after load); movement and combat (out of scope).
+
+## Assumptions
+- Headless Playwright Chromium via MCP; no spec, so criteria were: page loads, no failed required assets, canvas draws with plausible colours, loop advances.
+- "Fresh" = new query string; the browser cache was not cleared, but server.log shows every asset requested.
+- Wrote nothing outside OUTPUT_DIR apart from Playwright captures in artifacts/browser/.
+-----
+FINDINGS
+
+`tests/verify.sh` exited 0: tooling, selftest, clean build, all required playtest checks (failed=0, incl. 300 s soak) and all 4 fault injections passed. The result is FINDINGS rather than PASS because 5 required behaviors remain UNVERIFIED and the I6 oracle is flaky.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes (verify/identity.txt, dirty_diff_sha256 8a0736f5...). Command: `RUN_ID=tester.oPtvHA OUT_DIR=artifacts/logs/tester.oPtvHA/verify tests/verify.sh` (emsdk env sourced). Exit 0 (verify/verify-result.json).
+
+## Evidence (artifacts/logs/tester.oPtvHA/)
+verify.out, verify/ (identity.txt, build.log, selftest.log, playtest.log, playtest-results.json, faults.log, verify-result.json, dist-sha256.txt, screens/).
+- Passed: load/console, boot frame, colors, rAF liveness, menu -> E1M1, turn, move/stop on release, blur/pagehide/hidden key release, fire, automap, Esc menu, 34.98 tics/s, soak (no errors, no stalls, max longtask 0 ms).
+- Fault injection caught: drop-keyup (I2 I5 I6 C3 I7), drop-blur (I7), ignore-left (I3 E2a E2b), swap-rb (B4).
+- I6.backward-returns passed (start-vs-back=0.348, start-vs-fwd=0.584, ratio 0.60). Earlier runs ranged 0.60-0.79 against a 0.7 limit (tester.Q0YUP2 failed at 0.79).
+
+## Unresolved (owner)
+1. I6 flaky pixel oracle (tester). Not changed this run: no thresholds altered. Should become position-based using `_cap_player_x/y` exports, as a documented test correction.
+2. UNVERIFIED, listed in the results: A1 audio correctness (student scope, nobody has listened); P1 save persistence (student scope); G3 door use and level exit (tester, no oracle); I9 input-module identity (coder must export e.g. cap_input_delivered); H1 real hidden-tab timing (headless Chromium can't throttle; needs manual protocol).
+3. Limits: faults injected browser-side only; criteria agent-proposed, not student-approved; headless Chromium only; pixel-inferred outcomes.
+
+## Assumptions
+Doom default keys. No spec/acceptance-criteria files exist. Ran the suite once; I6 not rerun in isolation. No product source or tests changed. Manual interventions: none. Usage: not available.
+----
+FINDINGS
+
+Integration re-checked against all six prior reports. No coder-owned defect is open and I made no source edits. FINDINGS rather than PASS because I ran no browser and did not run `tests/verify.sh`.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes. `git diff HEAD` sha256 prefix 8a0736f5784ff838, unchanged from every prior report. dist/doom.wasm sha256 prefix 6c93cbf125bd366a. emcc 4.0.18. `make -n` reports "Nothing to be done", so dist/ is current. web/{index.html,input_audio.js,audio_web.js,render_timing.js} are cmp-identical to dist/. Makefile exports `cap_input_impl` (grep count 1). artifacts/specification.md and acceptance-criteria.md do not exist.
+
+## Prior findings read
+artifacts/reports/{coder,coder_input_audio,coder_render_timing,reviewer_gameplay,reviewer_site,tester}.md. All roles report the same wasm hash. None assigns an open item to coder-owned files (Makefile, BUILD.md, web/index.html, platform/doomgeneric_wasm.c, capstone_bridge.h, cap_fallback.c, engine_stubs.c).
+
+## Work
+No integration change was needed, so I made none. The only specialist request aimed at me (tester I9, export an input-module identity) is already satisfied by the `cap_input_impl` export.
+
+## Unresolved (owner)
+1. tester: make I6 position-based (`_cap_player_x/y`), adopt `_cap_input_impl` for I9, and rerun `tests/verify.sh` on hash 6c93cbf125bd366a. Record the change as a test correction.
+2. UNVERIFIED (tester/student): audio by ear, door use and level exit (no door or sector oracle; I could add a bridge export if the tester asks), pickups, damage and death, a real hidden tab, Firefox and Safari.
+3. Known limits (specialists/student): oscillator-synth music instead of GENMIDI/OPL, no WASD or mouse mapping, first SFX before a gesture dropped.
+
+## Assumptions
+Doom default keys are the control requirement. No spec exists, so I chose no new requirements. Manual interventions: none. Usage: not available.
+
+## Next action
+Tester reruns verify.sh on hash 6c93cbf125bd366a; a human listens to the audio.
+I'll start by finding the role prompt and the prior reports.
+Calling Bash()
+
+Bash response → (
+artifacts/logs/reviewer_site.FDoXaA:
+agent.log
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+e500c440656622db5ab3f8fb7df73d8b5998eeb3
+build:
+platform
+third_party
+
+dist:
+audio_web.js
+doom.data
+doom.js
+doom.wasm
+index.html
+input_audio.js
+render_timing.js
+# Doom -> WebAssembly build. Requires Emscripten 4.0.18 (source emsdk_env.sh
+# or use the Dockerfile image). Output: dist/{index.html,doom.js,doom.wasm,doom.data}
+EMCC      ?= emcc
+ENGINE    := third_party/doomgeneric
+BUILD     := build
+DIST      := dist
+WAD       := assets/doom1.wad
+
+# Platform-specific/unused engine files: dummy.c, i_cdmus.c, i_joystick.c are
+# stubs here; net_* sources are absent from this tree.
+ENGINE_EXCLUDE := $(ENGINE)/dummy.c $(ENGINE)/doomgeneric_sdl.c
+ENGINE_SRC := $(filter-out $(ENGINE_EXCLUDE),$(wildcard $(ENGINE)/*.c))
+PLAT_SRC   := $(wildcard platform/*.c)
+OBJS       := $(patsubst %.c,$(BUILD)/%.o,$(ENGINE_SRC) $(PLAT_SRC))
+
+CFLAGS  := -O2 -I$(ENGINE) -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP
+ENGINE_CFLAGS := -w   # silence warnings for the supplied engine only
+LDFLAGS := -O2 -sASYNCIFY -sASYNCIFY_STACK_SIZE=65536 -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=64MB \
+           -sEXPORTED_FUNCTIONS=_main,_cap_ready,_cap_tic_count,_cap_input_event,_cap_input_reset,_cap_bridge_version,_cap_framebuffer_ptr,_cap_input_impl,_cap_input_delivered_count,_cap_input_dropped_count,_cap_player_valid,_cap_player_x,_cap_player_y,_cap_player_angle,_cap_player_health,_cap_level_id \
+           -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,HEAPU8 \
+           --preload-file $(WAD)@/doom1.wad
+
+.PHONY: all clean
+all: $(DIST)/index.html
+
+$(BUILD)/$(ENGINE)/%.o: $(ENGINE)/%.c
+	@mkdir -p $(dir $@)
+	$(EMCC) $(CFLAGS) $(ENGINE_CFLAGS) -c $< -o $@
+
+$(BUILD)/platform/%.o: platform/%.c
+	@mkdir -p $(dir $@)
+	$(EMCC) $(CFLAGS) -c $< -o $@
+
+-include $(OBJS:.o=.d)
+
+$(DIST)/doom.js: $(OBJS) $(WAD)
+	@mkdir -p $(DIST)
+	$(EMCC) $(OBJS) $(LDFLAGS) -o $@
+
+WEB_FILES := web/index.html web/input_audio.js web/audio_web.js web/render_timing.js
+)
+Nothing is listening on port 8000, so I'll check the build is current and start a server on it.
+Calling Bash()
+
+Calling ToolSearch()
+
+Bash response → (
+make: Nothing to be done for `all'.
+same index.html
+same input_audio.js
+same audio_web.js
+same render_timing.js
+6c93cbf125bd366a
+HTTP/1.0 200 OK
+Server: SimpleHTTP Python/3.15.0
+Date: Tue, 03 Nov 2026 06:43:23 GMT
+e500c44
+8a0736f5784ff838
+)
+
+ToolSearch response → "Completed by external harness."
+
+Calling mcp__playwright__browser_navigate()
+
+mcp__playwright__browser_navigate response → (
+### Ran Playwright code
+```js
+await page.goto('http://localhost:8000/?r=site6');
+```
+### Page
+- Page URL: http://localhost:8000/?r=site6
+- Page Title: DOOM Shareware
+- Console: 0 errors, 2 warnings
+### Snapshot
+- [Snapshot](artifacts/browser/page-2026-11-03T06-43-28-376Z.yml)
+### Events
+- New console entries: artifacts/browser/console-2026-11-03T06-43-28-176Z.log#L1-L35
+)
+
+Calling mcp__playwright__browser_evaluate()
+
+Calling mcp__playwright__browser_take_screenshot()
+
+Calling mcp__playwright__browser_console_messages()
+
+mcp__playwright__browser_evaluate response → (
+### Result
+{
+  "w": 640,
+  "h": 400,
+  "cw": 1152,
+  "ch": 720,
+  "f1": 269,
+  "f2": 339,
+  "colors": 89,
+  "nav": [
+    [
+      "input_audio.js",
+      200,
+      4448
+    ],
+    [
+      "audio_web.js",
+      200,
+      18871
+    ],
+    [
+      "render_timing.js",
+      200,
+      1489
+    ],
+    [
+      "doom.js",
+      200,
+      76488
+    ],
+    [
+      "doom.data",
+      200,
+      4196320
+    ],
+    [
+      "doom.wasm",
+      200,
+      555567
+    ]
+  ]
+}
+### Ran Playwright code
+```js
+await page.evaluate('async () => { const c=document.querySelector(\'canvas\'); const f1=Module._rt?Module._rt.frames:null; await new Promise(r=>setTimeout(r,1000)); const f2=Module._rt?Module._rt.frames:null; const x=c.getContext(\'2d\'); let set=new Set(); if(x){const d=x.getImageData(0,0,c.width,c.height).data; for(let i=0;i<d.length;i+=997*4)set.add(d[i]+\',\'+d[i+1]+\',\'+d[i+2]);} return {w:c.width,h:c.height,cw:c.clientWidth,ch:c.clientHeight,f1,f2,colors:set.size, nav:performance.getEntriesByType(\'resource\').map(e=>[e.name.split(\'/\').pop(),e.responseStatus,e.transferSize])}; }');
+```
+)
+
+mcp__playwright__browser_console_messages response → "### Result\n- [Console](artifacts/logs/reviewer_site.FDoXaA/console.txt)"
+
+mcp__playwright__browser_take_screenshot response → (
+### Result
+- [Screenshot of viewport](artifacts/logs/reviewer_site.FDoXaA/startup.png)
+### Ran Playwright code
+```js
+// Screenshot viewport and save it as artifacts/logs/reviewer_site.FDoXaA/startup.png
+await page.screenshot({
+  path: 'artifacts/logs/reviewer_site.FDoXaA/startup.png',
+  scale: 'css',
+  type: 'png'
+});
+```
+)
+
+Calling Read()
+
+Calling Bash()
+
+Read response → "Completed by external harness."
+
+Bash response → (
+Total messages: 35 (Errors: 0, Warnings: 2)
+Returning 2 messages for level "warning"
+
+[WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:27
+[WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:538
+)
+
+Calling Bash()
+
+Bash response → (
+0
+8
+GET /?r=site6
+GET /input_audio.js
+GET /audio_web.js
+GET /doom.js
+GET /render_timing.js
+GET /doom.data
+GET /doom.wasm
+)
+
+Calling Write()
+
+Write response → "File created successfully at: /Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/reviewer_site.FDoXaA/report.md (file state is current in your context — no need to Read it back)"
+Report is written. I'm wrapping up now. Startup works on the current build, but the verdict is FINDINGS because several checks weren't done.
+
+The report is at `artifacts/logs/reviewer_site.FDoXaA/report.md`.
+
+- **Load:** Port 8000 was empty, so I served `dist/` there and stopped the server afterwards. `make -n` reports nothing to rebuild, and `doom.wasm` has the same hash as every earlier report. The page, 3 scripts, `doom.js`, `doom.data` and `doom.wasm` all returned HTTP 200.
+- **Startup:** The 640x400 canvas drew an in-game E1M1-style view with a correct HUD and colours. The frame counter advanced from 269 to 339 in one second, and the console showed 0 errors.
+- **Warning:** The browser logged two audio warnings because audio can't start before a user gesture (`audio_web.js:27` and `:538`). This is expected, and I did not check that audio resumes after the first gesture. The owner is `coder_input_audio`.
+- **Not verified:** I didn't measure time to first frame or try a clean rebuild, other browsers, other viewports or a warm-cache reload. I also didn't check whether the first frame is the title screen or gameplay.
+
+No source, test or loop files were changed.

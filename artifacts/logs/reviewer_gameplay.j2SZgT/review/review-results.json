@@ -1,0 +1,135 @@
+{
+ "res": [
+  {
+   "id": "A.ctx-running-after-gesture-no-autoplay-flag",
+   "ok": true,
+   "d": "before=suspended after=running"
+  },
+  {
+   "id": "A.menu-sfx-and-music-heard",
+   "ok": false,
+   "d": "sfxPlayed=0 musicStarted=2 maxPeak=0"
+  },
+  {
+   "id": "G.level-entered",
+   "ok": true,
+   "d": "statusbar colours"
+  },
+  {
+   "id": "A.level-music-switched",
+   "ok": true,
+   "d": "{\"ms\":3,\"playing\":true,\"peak\":0}"
+  },
+  {
+   "id": "T.tic-rate",
+   "ok": true,
+   "d": "35.0 tics/s"
+  },
+  {
+   "id": "M.forward-coasts-then-stops",
+   "ok": true,
+   "d": "0.495,0.352,0.191,0.12,0,0,0,0,0,0,0,0"
+  },
+  {
+   "id": "M.period-strafes",
+   "ok": true,
+   "d": "diff=0.499"
+  },
+  {
+   "id": "M.shift-run-moves",
+   "ok": true,
+   "d": "diff=0.690"
+  },
+  {
+   "id": "C.fire-ammo-and-sfx",
+   "ok": true,
+   "d": "ammoDiff=0.140 sfx 4->5"
+  },
+  {
+   "id": "C.held-fire-repeats-sfx",
+   "ok": true,
+   "d": "5->9"
+  },
+  {
+   "id": "P.menu-pauses-game",
+   "ok": false,
+   "d": "tics in 1s with menu open: 35"
+  },
+  {
+   "id": "F.blur-stops-turn",
+   "ok": true,
+   "d": "diff=0.000"
+  },
+  {
+   "id": "F.resumes-after-foreground",
+   "ok": true,
+   "d": "35.0 tics/s"
+  }
+ ],
+ "pre": {
+  "sfxRequested": 0,
+  "sfxPlayed": 0,
+  "sfxSuppressed": 0,
+  "sfxBad": 0,
+  "musicRequested": 1,
+  "musicStarted": 1,
+  "notesScheduled": 0,
+  "musicErrors": 0,
+  "maxPeak": 0,
+  "lastPeak": 0,
+  "ctxState": "suspended",
+  "sampleRate": 48000,
+  "sfxChannelsActive": 0,
+  "musicPlaying": true,
+  "musicVoices": 0
+ },
+ "post": {
+  "sfxRequested": 0,
+  "sfxPlayed": 0,
+  "sfxSuppressed": 0,
+  "sfxBad": 0,
+  "musicRequested": 2,
+  "musicStarted": 2,
+  "notesScheduled": 10,
+  "musicErrors": 0,
+  "maxPeak": 0,
+  "lastPeak": 0,
+  "ctxState": "running",
+  "sampleRate": 48000,
+  "sfxChannelsActive": 0,
+  "musicPlaying": true,
+  "musicVoices": 1
+ },
+ "fin": {
+  "sfxRequested": 11,
+  "sfxPlayed": 11,
+  "sfxSuppressed": 0,
+  "sfxBad": 0,
+  "musicRequested": 3,
+  "musicStarted": 3,
+  "notesScheduled": 16,
+  "musicErrors": 0,
+  "maxPeak": 0,
+  "lastPeak": 0,
+  "ctxState": "running",
+  "sampleRate": 48000,
+  "sfxChannelsActive": 1,
+  "musicPlaying": true,
+  "musicVoices": 6
+ },
+ "errs": [],
+ "diffs": [
+  0.495,
+  0.352,
+  0.191,
+  0.12,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0
+ ]
+}

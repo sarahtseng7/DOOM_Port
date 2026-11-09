@@ -1,0 +1,9 @@
+{"run":"cold load, CDP cache cleared+disabled, http://localhost:8000/?r=1793762926254, viewport 1280x720, headless Chromium (Playwright MCP)",
+ "firstFrameMs":208,
+ "responses":[["/",200],["/render_timing.js",200],["/input_audio.js",200],["/audio_web.js",200],["/doom.js",200],["/doom.data",200],["/doom.wasm",200]],
+ "requestFailed":[],"pageErrors":[],
+ "canvas":{"w":640,"h":400,"clientW":1152,"clientH":720,"sampledColours":203,"nonOpaqueSampled":0},
+ "ticSeries_ms_tics":[[208,1],[752,19],[1281,38],[1809,56],[2326,75],[2854,93],[3375,111],[3899,130],[4321,144]],
+ "ticRate":{"overall_208_4321ms":34.8,"first_window_208_752ms":33.1},
+ "escapeMenu":{"frameChangedWithinMs":54,"menuVisible":"after-esc.png","note":"demo is animating, so frame change alone is not proof; screenshot shows main menu"},
+ "viewport800x600":{"canvasCss":[800,500],"top":50,"scroll":[800,600]}}

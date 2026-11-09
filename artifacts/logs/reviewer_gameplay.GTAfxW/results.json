@@ -1,0 +1,73 @@
+{
+  "audio_before_gesture": {
+    "src": 0,
+    "osc": 0,
+    "peak": 0
+  },
+  "audio_after_menu_and_start": {
+    "src": 18,
+    "osc": 60,
+    "peak": 0.4204553961753845
+  },
+  "level_idle_settled": true,
+  "turn-right": {
+    "shift": {
+      "shift": -162,
+      "err": 5.473327385925815,
+      "err0": 6.884279954376948
+    },
+    "settledAfterMs": 373,
+    "settled": true
+  },
+  "turn-left": {
+    "shift": {
+      "shift": 159,
+      "err": 4.069598545311688,
+      "err0": 6.88476986027943
+    },
+    "settledAfterMs": 361,
+    "settled": true
+  },
+  "forward": {
+    "movedDiff": 0.7005389221556886,
+    "stopSettled": true,
+    "stopMs": 2191,
+    "afterDiff": 0.00004790419161676647
+  },
+  "run": {
+    "diffFromPrev": 0.9107145708582834,
+    "settled": true,
+    "ms": 359
+  },
+  "fire": {
+    "weaponFrameDiff": 0.3606781914893617,
+    "ammoShown": "see 07-fire.png",
+    "audio": {
+      "before": {
+        "src": 30,
+        "osc": 140,
+        "peak": 0.4204553961753845
+      },
+      "after": {
+        "src": 34,
+        "osc": 156,
+        "peak": 0.4204553961753845
+      }
+    }
+  },
+  "blur_while_holding": {
+    "settled": true,
+    "ms": 367,
+    "laterDiff": 0
+  },
+  "esc_menu_opens_diff": 0.9318982035928144,
+  "tics_per_s_approx": 35,
+  "audio_final": {
+    "src": 67,
+    "osc": 304,
+    "peak": 0.4204553961753845
+  },
+  "audio_ctx_states": [
+    "running"
+  ]
+}

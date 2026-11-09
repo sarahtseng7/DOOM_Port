@@ -1,0 +1,306 @@
+
+Calling Bash()
+
+Bash response → (
+artifacts/logs/reviewer_site.FMO0C9:
+agent.log
+
+artifacts/reports:
+coder_input_audio.md
+coder_render_timing.md
+coder.md
+reviewer_gameplay.md
+reviewer_site.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+(eval):1: no matches found: loop/prompts/*review*site*
+)
+
+Calling Bash()
+
+Bash response → (
+# Site and startup review
+
+You are `reviewer_site`.
+
+Review build/startup and actual browser loading at http://localhost:8000.
+Write no source, tests, or build files. You may run the existing build and start a
+local HTTP server without modifying source; stop only a server you started.
+Use Playwright MCP (or existing browser scripts) to verify the page, canvas, fresh
+JS/WASM/WAD loading, console/network failures, initial image, colors, and startup
+responsiveness. Ensure an existing port-8000 server serves this project's current
+build; do not kill an unknown service or accept an unrelated page as evidence.
+Leave movement, combat, and audio depth to reviewer_gameplay. Report actionable
+faults to the relevant coder. PASS requires actual observed startup, not inspection
+alone. Keep evidence in OUTPUT_DIR; screenshots are supporting evidence, not all
+of acceptance. Browser tools do not grant permission to patch files.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+----
+FINDINGS
+
+Startup was observed working on the current dist/ build. The result is FINDINGS rather than PASS because several checks were not done (see Not verified), plus one minor audio warning carried over from the prior review.
+
+## Work
+- Read AGENTS.md, loop/prompts/REVIEWER.md and artifacts/reports/*. No specification.md or acceptance-criteria.md exists.
+- Port 8000 had no listener. I started `python3 -m http.server 8000 --bind 127.0.0.1 --directory dist` (pid in server.pid) and stopped it afterwards. The port is confirmed free.
+- `make -n` reports "Nothing to be done", so dist/ is current. web/{index.html,input_audio.js,audio_web.js,render_timing.js} are identical to dist/. doom.wasm sha256 starts 6c93cbf125bd366a, the same as every prior report. Source is HEAD e500c44 plus uncommitted changes (diff sha256 8a0736f5784ff838, in rev.txt).
+- Playwright loaded /?r=site6. There were 6 resources, all HTTP 200: input_audio.js, audio_web.js, render_timing.js, doom.js, doom.data (~4.2 MB) and doom.wasm (~555 KB). server.log shows every asset requested, plus the document, with 8 responses at 200 and none failed.
+- Title is "DOOM Shareware". The canvas is 640x400, shown at 1152x720 CSS (1.6 aspect).
+- 89 distinct colours in a sparse sample. Module._rt.frames went 269 -> 339 in 1 s, so the render loop advances (headless Chromium).
+- startup.png (viewed): in-game E1M1-style view with HUD (ammo 50, health 100%, armor 0%) and a dark green/brown scene. Colours look correct (no red/blue swap), there is no corruption, and the image is letterboxed.
+- Console: 0 errors, 2 warnings (console.txt).
+
+## Evidence (this directory)
+startup.png, console.txt, server.log, server.pid, rev.txt. Playwright captures are in artifacts/browser/.
+
+## Findings
+1. Minor, owner coder_input_audio: the AudioContext "not allowed to start" warning appears twice (audio_web.js:27 and :538) before a user gesture. This is expected under the autoplay policy. I did not verify that audio resumes after the first gesture. Same as the prior reviewer_site report.
+
+No actionable startup fault was found.
+
+## Not verified
+- Precise time to first frame.
+- Whether the first frame is the title screen, a demo or gameplay. The screenshot was taken a few seconds after load.
+- Clean rebuild.
+- Non-Chromium browsers.
+- Warm-cache reload.
+- Other viewports.
+- Audio after a gesture.
+- Movement and combat (out of scope).
+
+## Assumptions
+- Headless Playwright Chromium via MCP. Criteria were: the page loads, no required asset fails, the canvas draws with plausible colours, and the loop advances.
+- "Fresh" means a new query string (?r=site6). I did not clear the browser cache, but server.log shows every asset requested.
+- I wrote nothing outside OUTPUT_DIR apart from the Playwright captures in artifacts/browser/. I modified no source, tests or loop files.
+----
+FINDINGS
+
+`tests/verify.sh` exited 0 (tooling, selftest, clean build, playtest failed=0 incl. 300 s soak, 5/5 fault injections caught). Result is FINDINGS, not PASS, because 4 required behaviors remain UNVERIFIED: A1 audio, P1 persistence, G3 door/level exit, H1 hidden-tab timing.
+
+## Source identity
+HEAD e500c44 plus uncommitted changes; see verify/identity.txt (dirty_diff_sha256 429a585d..., includes my test edits). dist/doom.wasm sha256 prefix 6c93cbf125bd366a. Command: `RUN_ID=tester.3Pq6Xx OUT_DIR=artifacts/logs/tester.3Pq6Xx/verify tests/verify.sh` (emsdk 4.0.18 sourced). Evidence: verify.out, verify/ (build.log, playtest.log, playtest-results.json, faults.log, screens/).
+
+## Work (prior reports read: all six in artifacts/reports/)
+Existing checks preserved; none weakened. Changes in tests/ (tester-owned):
+- **I6 now position-based** (cap_player_x/y), limit 0.7 unchanged. TEST CORRECTION, reason: pixel oracle flaked (0.60-0.79). Pixel values kept in detail. This run: start-to-fwd 409, start-to-back 84 units.
+- **New G1b** (E1M1, health 100 from engine state), **I4b** (forward moves player >=32 units; 409), **I9** (cap_input_impl==1, delivered 46 > 0, dropped 0; was UNVERIFIED), **S1** (canvas stays 16:10 and fits 1280x720, 500x300, 1000x700, 800x600).
+- **New fault bad-aspect** (forces a 640x200 canvas): S1 fails as expected.
+- tests/README.md: rev 3 notes and a manual H1 hidden-tab protocol.
+- No spec/acceptance-criteria file exists; criteria remain the agent-proposed curl=0
+)
+
+Calling Bash()
+
+Bash response → (
+000
+audio_web.js
+doom.data
+doom.js
+doom.wasm
+index.html
+input_audio.js
+render_timing.js
+make: Nothing to be done for `all'.
+e500c44
+2c74d74fd2c699f9
+7afb94fa1ec64b5c
+)
+
+Calling Bash()
+
+Calling ToolSearch()
+
+Bash response → (
+same index.html
+same input_audio.js
+same audio_web.js
+same render_timing.js
+200
+)
+
+ToolSearch response → "Completed by external harness."
+
+Calling mcp__playwright__browser_navigate()
+
+Calling mcp__playwright__browser_wait_for()
+
+mcp__playwright__browser_navigate response → (
+### Ran Playwright code
+```js
+await page.goto('http://localhost:8000/?r=site7');
+```
+### Page
+- Page URL: http://localhost:8000/?r=site7
+- Page Title: DOOM Shareware
+- Console: 0 errors, 2 warnings
+### Snapshot
+- [Snapshot](artifacts/browser/page-2026-11-03T08-17-16-541Z.yml)
+### Events
+- New console entries: artifacts/browser/console-2026-11-03T08-17-16-316Z.log#L1-L35
+)
+
+mcp__playwright__browser_wait_for response → (
+### Result
+Waited for 4 seconds
+### Ran Playwright code
+```js
+await new Promise(f => setTimeout(f, 4 * 1000));
+```
+### Page
+- Page URL: http://localhost:8000/?r=site7
+- Page Title: DOOM Shareware
+- Console: 0 errors, 2 warnings
+### Snapshot
+- [Snapshot](artifacts/browser/page-2026-11-03T08-17-21-027Z.yml)
+)
+PROGRESS: The page loaded with 0 console errors. Next I'll check the canvas and frame counter, take a screenshot, and save the network and console logs.
+Calling mcp__playwright__browser_evaluate()
+
+Calling mcp__playwright__browser_take_screenshot()
+
+Calling mcp__playwright__browser_console_messages()
+
+mcp__playwright__browser_evaluate response → (
+### Result
+{
+  "title": "DOOM Shareware",
+  "w": 640,
+  "h": 400,
+  "cssw": 1152,
+  "cssh": 720,
+  "f0": 749,
+  "f1": 819,
+  "colors": 101,
+  "res": [
+    [
+      "input_audio.js",
+      200,
+      4448
+    ],
+    [
+      "audio_web.js",
+      200,
+      18871
+    ],
+    [
+      "render_timing.js",
+      200,
+      1489
+    ],
+    [
+      "doom.js",
+      200,
+      76884
+    ],
+    [
+      "doom.data",
+      200,
+      4196320
+    ],
+    [
+      "doom.wasm",
+      200,
+      555931
+    ]
+  ]
+}
+### Ran Playwright code
+```js
+await page.evaluate('async () => { const c=document.querySelector(\'canvas\'); const r=c.getBoundingClientRect(); const f0=Module._rt&&Module._rt.frames; await new Promise(r=>setTimeout(r,1000)); const f1=Module._rt&&Module._rt.frames; const x=c.getContext(\'2d\')||null; let colors=null; try{const t=document.createElement(\'canvas\');t.width=c.width;t.height=c.height;const g=t.getContext(\'2d\');g.drawImage(c,0,0);const d=g.getImageData(0,0,c.width,c.height).data;const s=new Set();for(let i=0;i<d.length;i+=4*97)s.add(d[i]<<16|d[i+1]<<8|d[i+2]);colors=s.size}catch(e){colors=\'err \'+e}; return {title:document.title,w:c.width,h:c.height,cssw:r.width,cssh:r.height,f0,f1,colors, res:performance.getEntriesByType(\'resource\').map(e=>[e.name.split(\'/\').pop(),e.responseStatus,e.transferSize])}}');
+```
+)
+
+mcp__playwright__browser_console_messages response → "### Result\n- [Console](artifacts/logs/reviewer_site.FMO0C9/console.txt)"
+
+mcp__playwright__browser_take_screenshot response → (
+### Result
+- [Screenshot of viewport](artifacts/logs/reviewer_site.FMO0C9/startup.png)
+### Ran Playwright code
+```js
+// Screenshot viewport and save it as artifacts/logs/reviewer_site.FMO0C9/startup.png
+await page.screenshot({
+  path: 'artifacts/logs/reviewer_site.FMO0C9/startup.png',
+  scale: 'css',
+  type: 'png'
+});
+```
+)
+
+Calling Read()
+
+Calling Bash()
+
+Read response → "Completed by external harness."
+
+Bash response → (
+1
+Total messages: 35 (Errors: 0, Warnings: 2)
+[WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:27
+[WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu @ http://localhost:8000/audio_web.js:53
+8
+0
+)
+
+Calling Bash()
+
+Bash response → (
+0
+agent.log
+console.txt
+report.md
+rev.txt
+server.log
+server.pid
+startup.png
+)
+The result is FINDINGS, not PASS: the page loads and runs, but I couldn't confirm what the first frame should be, and a few checks weren't done.
+
+I observed this in Chromium via Playwright on `http://localhost:8000/?r=site7`:
+
+- **Server:** Port 8000 was free, so I started a local server on `dist/`. I stopped it afterwards and the port is free again.
+- **Build:** `make -n` found nothing to do, and the web files are identical to the copies in `dist/`.
+- **Loading:** All six resources returned HTTP 200 (`doom.data` is about 4.2 MB and `doom.wasm` about 556 KB). There were no console errors and two warnings.
+- **Display:** The canvas is 640x400, shown at 1152x720. The page title is "DOOM Shareware".
+- **Rendering:** I sampled 101 distinct colours. The frame counter went from 749 to 819 in one second, so the render loop is running. In the screenshot the colours look right and nothing is corrupted.
+
+Findings:
+1. **Audio warning (minor):** The browser reports the AudioContext "not allowed to start" twice before any user gesture (`audio_web.js:27` and `:53`). This is expected under autoplay rules. It belongs to `coder_input_audio`, and I didn't check that audio resumes after a gesture.
+2. **Build changed since earlier reports (informational):** `dist/doom.wasm` now starts `7afb94fa…`. The earlier reports recorded `6c93cbf1…`, so their evidence doesn't cover this build. I didn't investigate why it changed.
+3. **First frame unexplained:** A few seconds after load, the screenshot shows mid-gameplay: a damaged player, a dead monster and an armor pickup. It is probably the attract demo, but I didn't confirm it. `coder_render_timing` or the coordinator should confirm the intended startup behaviour.
+
+Not verified:
+- time to first frame
+- clean rebuild
+- warm-cache reload
+- other viewports and browsers
+- audio after a gesture
+- gameplay (out of scope for this role)
+
+I wrote no source, test or loop files. The report is `artifacts/logs/reviewer_site.FMO0C9/report.md`, with `startup.png`, `console.txt`, `server.log` and `rev.txt` alongside it.

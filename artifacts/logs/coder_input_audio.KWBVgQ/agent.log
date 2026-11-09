@@ -1,0 +1,2241 @@
+I'll start by reading the required docs and the prior reports.
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+  the resource usage, manual interventions, and final stopping decision.
+
+Preserve failing evidence as well as passing evidence. Record changes to
+acceptance criteria separately, with a reason. Discuss disagreements and
+missed faults in your write-up.
+
+## Where your work belongs
+
+| Location | Purpose |
+| --- | --- |
+| [`loop/`](loop/README.md) | All loop code, prompts, role definitions, MCP configuration, and design documentation. |
+| [`artifacts/`](artifacts/README.md) | All durable run state, handoffs, logs, review findings, and evidence. Agents must use this folder between runs. |
+| `tests/` | Verification code, including checks for the loop itself. |
+| `platform/`, `web/` | The port and browser page. |
+| `third_party/doomgeneric/` | Supplied engine; platform ports have been removed. |
+| `assets/` | Included shareware `doom1.wad` (Episode 1). |
+| `build/`, `dist/` | Generated build output. |
+
+Keep the root for project documentation and shared build/toolchain files.
+The starter supplies engine source, platform and HTML stubs, the shareware
+WAD, documentation, and an optional Docker toolchain. It supplies no working
+game, build script, loop implementation, or test suite. `artifacts/` starts
+with its README only; students create run evidence there during the project.
+Use the supplied engine and Emscripten. Documentation is allowed; copying an
+existing Doom browser port does not satisfy the assignment.
+
+See [`platform/README.md`](platform/README.md) for engine integration caveats,
+including pixel format, timing, and audio. The supplied game data already
+contains sound effects and music; no additional sound assets are required.
+
+## Agent section for setup
+
+### macOS without Docker
+
+Install the build tools directly on your Mac to compile and test the browser
+port. Docker is not required for this workflow. There is currently no macOS
+setup script; run the steps below manually.
+
+1. **Install prerequisites.** In Terminal, run:
+
+   ```sh
+   xcode-select --install
+   ```
+
+   Finish the installer, then check `git --version` and `python3 --version`.
+   If Python is missing, install it from [python.org](https://www.python.org/downloads/macos/),
+   or run `brew install python` if you already have Homebrew.
+
+2. **Install Emscripten.** Use version `4.0.18` to match the supplied Dockerfile:
+
+   ```sh
+   mkdir -p ~/Developer
+   cd ~/Developer
+   git clone https://github.com/emscripten-core/emsdk.git
+   cd emsdk
+   ./emsdk install 4.0.18
+   ./emsdk activate 4.0.18
+   source ./emsdk_env.sh
+   emcc --version
+   ```
+
+   If you already have an SDK checkout at that location, use it instead of
+   cloning again. In each new Terminal session where you want to compile, run:
+
+   ```sh
+   source ~/Developer/emsdk/emsdk_env.sh
+   ```
+
+   See the [official installation instructions](https://emscripten.org/docs/getting_started/downloads.html).
+
+3. **Verify the compiler and browser workflow.** Return to this repository's
+   root directory, then run:
+
+   ```sh
+   mkdir -p build/smoke
+   cat > build/smoke/hello.c <<'EOF'
+   #include <stdio.h>
+   int main(void) {
+       printf("Emscripten works!\n");
+       return 0;
+   }
+   EOF
+
+   emcc build/smoke/hello.c -o build/smoke/index.html
+   python3 -m http.server 8000 --bind 127.0.0.1 --directory build/smoke
+   ```
+
+   Open <http://localhost:8000>. The generated page should print
+   `Emscripten works!`. Press **Control-C** in Terminal to stop the server.
+   This verifies the toolchain and local serving, not the game.
+
+4. **Have your agents implement and build the game.** The supplied platform callbacks are
+   empty, there is no entry point or build script, and the HTML does not yet
+   load a compiled module. These are student implementation tasks; see
+   [platform/README.md](platform/README.md). Document the actual build command
+   once implemented. A completed build could produce:
+
+   ```text
+   dist/
+     index.html
+     doom.js
+     doom.wasm
+     doom.data
+   ```
+
+   The exact filenames depend on the build configuration. For example,
+   `doom.data` could contain the packaged shareware WAD. The build must make
+   that WAD available to the engine inside the browser module.
+
+5. **Test the completed game locally.** Once the build output is in `dist/`,
+   run this from the repository root:
+
+   ```sh
+   python3 -m http.server 8000 --bind 127.0.0.1 --directory dist
+   ```
+
+   Open <http://localhost:8000> and exercise the game's behavior. Use a local
+   web server rather than opening the HTML file directly, as explained in
+   [Emscripten's deployment documentation](https://emscripten.org/docs/compiling/Deploying-Pages.html).
+
+artifacts/logs:
+coder_input_audio.KWBVgQ
+coder_render_timing.y2E5IZ
+coder.9PHBOq
+tester.QSq2Uh
+
+artifacts/reports:
+coder_render_timing.md
+coder.md
+tester.md
+
+loop/prompts:
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_GAMEPLAY.md
+REVIEWER.md
+TESTER.md
+agent.log
+)
+
+Calling Bash()
+
+Bash response → (
+# Controls and audio
+
+You are `coder_input_audio`.
+
+Deliver reliable controls, key release/focus behavior, and working game audio.
+Own platform/input_audio.c, platform/input_audio.h, web/input_audio.js, plus new
+platform/audio_* and web/audio_* files. Request build/header/HTML changes from coder.
+Make movement, turning, firing, use, and menus work. Implement sound effects and
+music from the supplied WAD; distinguish genuine output from a merely initialized
+audio context. Choose a practical permitted backend; report unmet music fidelity
+or synthesis requirements honestly. Persistence follows supplied scope; otherwise
+record your assumption. Do not change rendering/timing or tests.
+
+Read AGENTS.md, README.md, platform/README.md, and relevant existing code/reports.
+Read artifacts/specification.md and artifacts/acceptance-criteria.md if present.
+Use your judgment to reach the requested result. If details are absent, choose
+reasonable defaults and explain them; do not wait for IDs, manifests, or a spec.
+Honor supplied requirements. Never weaken tests to hide a failure or call an
+assumption student-approved. Prefer completing useful work over writing plans.
+
+Hard boundaries: edit only the source paths allowed below and your supplied
+REPORT/OUTPUT_DIR. assets/, third_party/, loop/, .claude/, .mcp.json, tests/
+(except for the tester), other roles' source files, and Git history are read-only.
+Do not spawn agents, change permissions, expose secrets, or bypass tool denials.
+Browser-managed captures may go to artifacts/browser/.
+Builds may generate build/ and dist/; do not edit generated files as source fixes.
+These instructions do not themselves enforce OS-level permissions.
+
+Print brief PROGRESS: updates when changing activities. Read previous findings
+under artifacts/reports/; save a concise report to REPORT (or artifacts/<role>.md
+if none supplied). Begin it with PASS or FINDINGS on its own line, then list work,
+evidence, unresolved problems with owners, and assumptions. Partial/unverified
+work is FINDINGS. Do not create result.json. Never fabricate tests or approvals.
+----
+FINDINGS
+
+# coder_render_timing report (OUTPUT_DIR artifacts/logs/coder_render_timing.y2E5IZ)
+
+Source: commit e500c44 + uncommitted changes. emcc 4.0.18. No artifacts/specification.md or acceptance-criteria.md exist.
+
+## Work
+- Prior findings read (artifacts/reports/coder.md, tester.md; run reviewer report). Colour conversion (B,G,R,0 -> opaque RGBA), clock (nonzero, monotonic), ASYNCIFY sleeps all reviewed and found correct; no defect to repair there.
+- Reviewer F8 (canvas fixed 640x400, soft/small on large displays): added web/render_timing.js, which sets only the canvas CSS size (integer scale >= 1, fit-shrink below, 16:10 kept). Backing store and framebuffer contract unchanged.
+- platform/render_timing.c: comment fix (contract version 2 -> 3). No behaviour change; dist rebuilt with `make`.
+
+## Evidence (this dir)
+- measure.mjs (ad-hoc Playwright, headless Chromium, 1280x800 viewport; not a protected check).
+- Baseline dist: 34.98 tics/s, 69.96 presents/s, 0 non-opaque pixels, 182 distinct colours, no page errors (before.png).
+- dist2/ (copy of dist plus render_timing.js script tag): 34.99 tics/s, 69.98 presents/s, 0 non-opaque, 182 colours, canvas CSS 1280x800, no errors (after.png).
+
+## Unresolved (owner)
+1. coder: web/render_timing.js is NOT wired in. Add `<script src="render_timing.js"></script>` to web/index.html and add it to WEB_FILES in Makefile. Verified only on the dist2 copy, not on the real dist.
+2. tester: no check for scaling or for hidden-tab timing (H1 stays UNVERIFIED). Background tabs throttle setTimeout, so the ASYNCIFY loop slows; not mitigated here.
+3. Presents run at 2x the tic rate (~70/s); duplicate frames are still converted. Not a defect, possible CPU saving only.
+4. Not run: tests/verify.sh, headed browser, HiDPI.
+
+## Assumptions
+Integer scaling is acceptable for "crisp"; canvas CSS in index.html (image-rendering) is kept. Manual interventions: none.
+FINDINGS
+
+# Coder report (OUTPUT_DIR artifacts/logs/coder.9PHBOq)
+
+Source: commit e500c44 + uncommitted changes. Toolchain: emcc 4.0.18 (emsdk sourced).
+
+## Work
+Read artifacts/reports/tester.md. Build was already working; the coder-owned open item was tester finding #3 (I9: no way to tell whether input_audio.c or the cap_fallback.c queue is linked).
+- platform/capstone_bridge.h: CAP_BRIDGE_VERSION 2->3; added exports `cap_input_impl()` (1 = input_audio.c), `cap_input_delivered_count()`, `cap_input_dropped_count()`; weak declarations of the specialist's existing `cap_input_delivered/dropped`.
+- platform/doomgeneric_wasm.c: implements the three wrappers (weak-symbol check, so the fallback build still links and reports impl=0, counts 0).
+- Makefile: added the three exports to EXPORTED_FUNCTIONS.
+No specialist files, tests/, or loop/ touched.
+
+## Evidence
+- `make` (incremental, then the changed objects) succeeded; dist/ regenerated.
+- Ad-hoc Playwright check (/tmp, not saved): after load `_cap_input_impl()=1`, `_cap_ready()=1`, `_cap_bridge_version()=3`; after one ArrowLeft press+release `_cap_input_delivered_count()` went 0->2, dropped 0.
+- Not run: tests/verify.sh, a clean `make clean && make`, the fallback-linked (impl=0) path.
+
+## Unresolved (owner)
+1. Tester: add I9 using `Module._cap_input_impl()==1` and the delivered counter (tests/ is not mine).
+2. Tester/runner: full tests/verify.sh on this build (the dist changed since the tester's hashes).
+3. Student: approve criteria; audio/persistence scope. Bridge contract still agent-proposed.
+4. Bridge v3 is a behavior-neutral addition, but the weak-symbol approach is untested with input_audio.c removed.
+
+## Assumptions
+Specialist's `cap_input_delivered/dropped` are non-static globals (confirmed in input_audio.c:85-86). Manual interventions: none.
+FINDINGS
+
+# Tester prepare report (OUTPUT_DIR artifacts/logs/tester.QSq2Uh)
+
+Not PASS: the full `tests/verify.sh` (clean rebuild + 300s soak + fault stage) was NOT run in this task, criteria remain agent-proposed (not student-approved), and A1/P1/G3/I9/H1 are UNVERIFIED.
+
+## Source identity
+- Commit e500c440656622db5ab3f8fb7df73d8b5998eeb3 + uncommitted changes (untracked platform/, web/, Makefile, tests/ are not in any git patch).
+- Tested dist/ (NOT rebuilt here; emsdk not sourced): doom.wasm sha256 prefix 23aac171a5498a3c, doom.js 4ce4b34137f86765. Tests sha (verify.sh+faults.sh+playtest+selftest+frames+package.json) prefix 3725fed52050b571.
+- Product source (platform/, web/) untouched. Only tests/ edited.
+
+## Prior findings read and how they were handled
+No artifacts/reports/ files exist; I read run reports under artifacts/runs/20261103T002748Z-51080 (reviewer 1/2, reviewer_requirements 1/2, tester 1/2, prepare).
+| Finding | Action |
+|---|---|
+| R2-1 / audit: I3.turn-left flaky (~4 fails in ~10 runs) | Fixed in the check (see Test correction). 10 consecutive QUICK playtests on the same dist: 0 FAIL (quick-1..10.log). |
+| R2-3 / F2,F3: key edge cases untested | New checks E1 (F5, Ctrl+R not default-prevented; ArrowUp is), E2a pagehide and E2b visibilitychange release held key, E3 repeat keydown after blur acts as fresh press, E4 dual-Ctrl held until both up (JS state only). All PASS. |
+| R2-4 / F5: silent fallback | New I8: `Module._rt.frames` exists and increases (render_timing.c linked, not cap_fallback.c). Input side: I9 UNVERIFIED, needs a coder-exported diagnostic (owner: coder). |
+| R2-6: hidden-tab timing | H1 listed UNVERIFIED (headless cannot throttle a real background tab). |
+| Audit: "checks catch faults" only had pixel-helper selftests | New tests/faults.sh + `FAULT=` hook in playtest.mjs: browser-side injected faults against the real dist. All 4 caught (faults.log): drop-keyup -> I2 I5 C3 I7 FAIL; drop-blur -> I7; ignore-left -> I3 E2a E2b; swap-rb -> B4. verify.sh now runs it after a passing playtest (skipped in QUICK). |
+| R2-2/R2-5 audio, persistence | Unchanged: A1, P1 UNVERIFIED, scope is a student decision (owner: student). |
+| R2-7, R2-9, F1/F3/F4/F6 etc. | Coder/runner-owned; not addressed here. |
+
+## Test correction (recorded separately, with reason; thresholds NOT lowered)
+- rev 3: I1/I3 key hold 350ms -> 150ms (settle 900ms). Reason: 350ms turned ~200-240px, beyond bestShift's +-213px window, so the estimate aliased (I3 gave -116px on a correct turn; reviewer R2-1 frame evidence). Thresholds (|shift|>=8px, err<err0) unchanged. Added a saturation guard: a shift beyond 85% of the window now FAILs instead of aliasing. Selftest added for aliasing beyond the window and for an ~90px shift.
+- Observed after correction: I1 -60/-98px, I3 +56/+78/+84px: the same sign, far from the window edge. The reviewer's aliasing hypothesis was not directly instrumented; the evidence is that 10/10 runs pass, with shifts well inside the window. The left/right asymmetry (56 vs 98px) was not investigated.
+
+## Evidence (in this OUTPUT_DIR)
+quick-1..10.log + quick-N/ (screens, playtest-results.json), repeat-summary.txt, faults.log + faults/<fault>.log and dirs, repeat.sh (the exact driver). Selftest: `node tests/selftest.mjs` all ok.
+
+## Unresolved (owner)
+1. Run the full `source ~/Developer/emsdk/emsdk_env.sh && tests/verify.sh` on the integrated tree (clean build, 300s soak, fault stage), absolute OUT_DIR (owner: tester next task/runner).
+2. Student: approve or replace proposed criteria (still none in artifacts/); decide audio/persistence scope.
+3. Coder: export an input-delivery diagnostic so I9 can be checked.
+4. G3 door/level-exit and "faithful play" oracle (e.g. demo/determinism) still absent.
+5. Faults injected are browser-side only; none rebuild the C source (e.g. dropped key release in C queue, frozen loop, linker fallback). The regression-injection requirement is still the student/instructor's to run.
+
+## Assumptions
+Doom default keys; headless Chromium via Playwright 1.49.1; canvas id `canvas`; 320x200 HUD layout; screenshots-based inference. Usage: not available. Manual interventions: none.
+total 24
+drwx------  3 sarahtseng  staff    96 Nov  2 19:05 .
+drwxr-xr-x  7 sarahtseng  staff   224 Nov  2 19:05 ..
+-rw-r--r--  1 sarahtseng  staff  9073 Nov  2 19:05 agent.log
+ M loop/agents.yaml
+ M loop/loop.sh
+ M platform/doomgeneric_wasm.c
+ M tests/README.md
+ M web/index.html
+?? .claude/
+?? .mcp.json
+?? BUILD.md
+?? Makefile
+?? artifacts/logs/
+?? artifacts/reports/
+?? artifacts/runs/
+?? loop/DESIGN_DECISION_QUESTIONS.md
+?? loop/playwright-mcp.sh
+?? loop/prompts/
+?? loop/run-command.py
+?? platform/cap_fallback.c
+?? platform/capstone_bridge.h
+?? platform/engine_stubs.c
+?? platform/input_audio.c
+?? platform/input_audio.h
+?? platform/render_timing.c
+?? platform/render_timing.h
+?? tests/faults.sh
+?? tests/lib/
+?? tests/package-lock.json
+?? tests/package.json
+?? tests/playtest.mjs
+?? tests/selftest.mjs
+?? tests/verify.sh
+?? web/input_audio.js
+?? web/render_timing.js
+)
+
+Calling Bash()
+
+Bash response → (
+# Browser port starting points
+
+`doomgeneric_wasm.c` deliberately contains empty platform callbacks and no
+entry point. The engine is in `third_party/doomgeneric/`; its public platform
+interface is `doomgeneric.h`. Build scripts and browser integration are student
+work. The supplied HTML does not yet load a compiled module.
+
+Some details of this engine matter when implementing the browser port:
+
+- **Pixels:** the default framebuffer is 640 by 400, with 32-bit pixels.
+  Despite the `rgba8888` mode name, `i_video.c` packs red at bit 16, green at
+  bit 8, and blue at bit 0, without setting alpha. On little-endian WebAssembly
+  the bytes are B, G, R, 0. This is not directly usable as opaque RGBA canvas
+  `ImageData`.
+- **Timing:** `doomgeneric_Tick()` is callable, but screen wipes in `d_main.c`
+  and tic synchronization in `d_loop.c` still contain clock/sleep waits.
+  Browser integration must account for those waits and allow the browser to
+  process events. The stub clock always returning zero cannot run the game.
+- **Input:** the interface accepts Doom key codes and press/release events.
+  Mouse event generation is commented out in the supplied `i_input.c`.
+- **Files:** the engine reads the WAD with standard C file operations.
+  Keeping `assets/doom1.wad` on the host does not itself make that file
+  available inside the browser module. Packaging and runtime paths are part
+  of the port. Save/config persistence across reloads is also separate work.
+- **Audio:** sound is disabled by default. Enabling `FEATURE_SOUND` requires
+  implementations of `DG_sound_module` and `DG_music_module` from `i_sound.h`;
+  it also activates an `SDL_mixer.h` include in `i_sound.c`. The six callbacks
+  in `doomgeneric.h` do not implement audio. A browser-native backend must
+  account for that include if it does not use SDL mixer.
+
+No additional sound assets are needed: the bundled WAD contains 55 sampled
+sound effects, 13 MUS music scores, and GENMIDI instrument definitions.
+Browser Web Audio can play decoded samples without external audio libraries.
+Music needs sequencing and synthesis; the included `mus2mid.c` converts score
+data but does not generate audio. Reproducing OPL-style instruments is a
+larger task than playing sound effects. See the
+[Web Audio specification](https://www.w3.org/TR/webaudio-1.0/).
+      91 platform/cap_fallback.c
+      99 platform/doomgeneric_wasm.c
+       7 platform/engine_stubs.c
+      86 platform/input_audio.c
+      90 platform/render_timing.c
+      76 platform/capstone_bridge.h
+      11 platform/input_audio.h
+      11 platform/render_timing.h
+      25 web/index.html
+     102 web/input_audio.js
+      20 web/render_timing.js
+     618 total
+// Private header for platform/input_audio.c (coder_input_audio-owned).
+// The cross-module hooks are declared in capstone_bridge.h; only extras here.
+#ifndef INPUT_AUDIO_H
+#define INPUT_AUDIO_H
+
+// Diagnostics for tests/reports (not exported to JS unless the coder adds
+// them to EXPORTED_FUNCTIONS).
+unsigned cap_input_dropped(void);   // events rejected (queue full, repeat, bad key)
+unsigned cap_input_delivered(void); // events handed to the engine
+
+#endif // INPUT_AUDIO_H
+// Browser keyboard capture for the Doom port (coder_input_audio-owned).
+// Maps KeyboardEvent.code -> doomkeys.h codes and forwards to the C queue
+// (cap_input_event / cap_input_reset). Self-installing; resolves `Module`
+// lazily, so script order relative to the Emscripten glue does not matter.
+// Load with: <script src="input_audio.js"></script>
+// Audio and persistence are not implemented here (scope undecided).
+(function () {
+  'use strict';
+
+  var KEYS = {
+    ArrowLeft: 0xac, ArrowRight: 0xae, ArrowUp: 0xad, ArrowDown: 0xaf,
+    ControlLeft: 0xa3, ControlRight: 0xa3, Space: 0xa2,
+    ShiftLeft: 0xb6, ShiftRight: 0xb6, AltLeft: 0xb8, AltRight: 0xb8,
+    Comma: 0xa0, Period: 0xa1, Enter: 13, NumpadEnter: 13, Escape: 27,
+    Tab: 9, Backspace: 0x7f, Pause: 0xff, Minus: 0x2d, Equal: 0x3d,
+    NumpadSubtract: 0x2d, NumpadAdd: 0x3d, Slash: 0x2f,
+    Home: 0xc7, End: 0xcf, PageUp: 0xc9, PageDown: 0xd1,
+    Insert: 0xd2, Delete: 0xd3,
+    Numpad8: 0xad, Numpad2: 0xaf, Numpad4: 0xac, Numpad6: 0xae,
+    F1: 0xbb, F2: 0xbc, F3: 0xbd, F4: 0xbe, F5: 0xbf, F6: 0xc0,
+    F7: 0xc1, F8: 0xc2, F9: 0xc3, F10: 0xc4, F11: 0xd7, F12: 0xd8
+  };
+
+  // KeyboardEvent.code -> doom key; 0 if unmapped.
+  function doomKey(code) {
+    if (Object.prototype.hasOwnProperty.call(KEYS, code)) return KEYS[code];
+    var m = /^Key([A-Z])$/.exec(code);
+    if (m) return m[1].toLowerCase().charCodeAt(0);
+    m = /^Digit(\d)$/.exec(code);
+    return m ? m[1].charCodeAt(0) : 0;
+  }
+
+  // Physical codes currently held (so keyup always matches its keydown even
+  // if the layout/modifiers changed in between).
+  var held = {};
+
+  function mod() { return window.Module; }
+  function ready() {
+    var M = mod();
+    return !!(M && M.calledRun && M._cap_input_event);
+  }
+
+  function send(pressed, key) {
+    if (ready()) mod()._cap_input_event(pressed, key);
+  }
+
+  // Keys the browser needs: reload/fullscreen/devtools, and Ctrl+letter/digit
+  // (Ctrl is also Doom fire, so the key is still forwarded, just not blocked).
+  function browserShortcut(e) {
+    if (e.code === 'F5' || e.code === 'F11' || e.code === 'F12') return true;
+    return e.ctrlKey && /^(Key[A-Z]|Digit\d)$/.test(e.code);
+  }
+
+  function onKeyDown(e) {
+    var key = doomKey(e.code);
+    // Leave browser/OS shortcuts (Cmd+R, Ctrl is fire so only Meta is checked).
+    if (!key || e.metaKey) return;
+    if (!browserShortcut(e)) e.preventDefault();
+    // Auto-repeat of a key we already hold: Doom repeats itself. A repeat for
+    // a key we do NOT hold means releaseAll() ran while it was still down
+    // (refocus), so treat it as a fresh press.
+    if (held[e.code]) return;
+    var already = false;
+    for (var c in held) if (held[c] === key) already = true;
+    held[e.code] = key;
+    if (!already) send(1, key); // L+R Ctrl map to one doom key: one press
+  }
+
+  function onKeyUp(e) {
+    var key = held[e.code];
+    if (!key) {
+      if (doomKey(e.code)) e.preventDefault();
+      return;
+    }
+    delete held[e.code];
+    e.preventDefault();
+    // Two physical keys can map to one doom key (left/right Ctrl): release
+    // only when no other held code maps to it.
+    for (var c in held) if (held[c] === key) return;
+    send(0, key);
+  }
+
+  // Focus/visibility loss: browsers drop keyups, so release everything.
+  function releaseAll() {
+    held = {};
+    if (ready() && mod()._cap_input_reset) mod()._cap_input_reset();
+  }
+
+  window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keyup', onKeyUp);
+  window.addEventListener('blur', releaseAll);
+  window.addEventListener('pagehide', releaseAll);
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) releaseAll();
+  });
+  // Ctrl+click / right-click opens a menu and swallows the matching keyup.
+  window.addEventListener('contextmenu', function (e) { e.preventDefault(); releaseAll(); });
+  // Cmd (macOS) swallows keyups for other keys while held.
+  window.addEventListener('keydown', function (e) { if (e.key === 'Meta') releaseAll(); });
+
+  window.CapInput = { doomKey: doomKey, releaseAll: releaseAll, held: function () { return Object.keys(held); } };
+})();
+Doom default keys; headless Chromium via Playwright 1.49.1; canvas id `canvas`; 320x200 HUD layout; screenshots-based inference. Usage: not available. Manual interventions: none.
+total 24
+drwx------  3 sarahtseng  staff    96 Nov  2 19:05 .
+drwxr-xr-x  7 sarahtseng  staff   224 Nov  2 19:05 ..
+-rw-r--r--  1 sarahtseng  staff  9073 Nov  2 19:05 agent.log
+ M loop/agents.yaml
+ M loop/loop.sh
+ M platform/doomgeneric_wasm.c
+ M tests/README.md
+ M web/index.html
+?? .claude/
+?? .mcp.json
+?? BUILD.md
+?? Makefile
+?? artifacts/logs/
+?? artifacts/reports/
+?? artifacts/runs/
+?? loop/DESIGN_DECISION_QUESTIONS.md
+?? loop/playwright-mcp.sh
+?? loop/prompts/
+?? loop/run-command.py
+?? platform/cap_fallback.c
+?? platform/capstone_bridge.h
+?? platform/engine_stubs.c
+?? platform/input_audio.c
+?? platform/input_audio.h
+?? platform/render_timing.c
+?? platform/render_timing.h
+?? tests/faults.sh
+?? tests/lib/
+?? tests/package-lock.json
+?? tests/package.json
+?? tests/playtest.mjs
+?? tests/selftest.mjs
+?? tests/verify.sh
+?? web/input_audio.js
+?? web/render_timing.js
+)
+
+Calling Bash()
+)
+
+Calling Bash()
+
+Bash response → (
+# Doom -> WebAssembly build. Requires Emscripten 4.0.18 (source emsdk_env.sh
+# or use the Dockerfile image). Output: dist/{index.html,doom.js,doom.wasm,doom.data}
+EMCC      ?= emcc
+ENGINE    := third_party/doomgeneric
+BUILD     := build
+DIST      := dist
+WAD       := assets/doom1.wad
+
+# Platform-specific/unused engine files: dummy.c, i_cdmus.c, i_joystick.c are
+# stubs here; net_* sources are absent from this tree.
+ENGINE_EXCLUDE := $(ENGINE)/dummy.c $(ENGINE)/doomgeneric_sdl.c
+ENGINE_SRC := $(filter-out $(ENGINE_EXCLUDE),$(wildcard $(ENGINE)/*.c))
+PLAT_SRC   := $(wildcard platform/*.c)
+OBJS       := $(patsubst %.c,$(BUILD)/%.o,$(ENGINE_SRC) $(PLAT_SRC))
+
+CFLAGS  := -O2 -I$(ENGINE) -Iplatform -MMD -MP
+ENGINE_CFLAGS := -w   # silence warnings for the supplied engine only
+LDFLAGS := -O2 -sASYNCIFY -sASYNCIFY_STACK_SIZE=65536 -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=64MB \
+           -sEXPORTED_FUNCTIONS=_main,_cap_ready,_cap_tic_count,_cap_input_event,_cap_input_reset,_cap_bridge_version,_cap_framebuffer_ptr,_cap_input_impl,_cap_input_delivered_count,_cap_input_dropped_count \
+           -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,HEAPU8 \
+           --preload-file $(WAD)@/doom1.wad
+
+.PHONY: all clean
+all: $(DIST)/index.html
+
+$(BUILD)/$(ENGINE)/%.o: $(ENGINE)/%.c
+	@mkdir -p $(dir $@)
+	$(EMCC) $(CFLAGS) $(ENGINE_CFLAGS) -c $< -o $@
+
+$(BUILD)/platform/%.o: platform/%.c
+	@mkdir -p $(dir $@)
+	$(EMCC) $(CFLAGS) -c $< -o $@
+
+-include $(OBJS:.o=.d)
+
+$(DIST)/doom.js: $(OBJS) $(WAD)
+	@mkdir -p $(DIST)
+	$(EMCC) $(OBJS) $(LDFLAGS) -o $@
+
+WEB_FILES := web/index.html web/input_audio.js
+
+$(DIST)/index.html: $(DIST)/doom.js $(WEB_FILES)
+	cp $(WEB_FILES) $(DIST)/
+
+clean:
+	rm -rf $(BUILD) $(DIST)
+// Shared bridge contract between the coder-owned DG adapters
+// (platform/doomgeneric_wasm.c) and the specialist modules
+// (render_timing.*, input_audio.*). AGENT-PROPOSED; not student-approved.
+// Full prose: artifacts/runs/20261103T002748Z-51080/coder/plan/attempt-1/interface-contract.md
+// Only the coder role edits this file; request changes via your report.
+#ifndef CAPSTONE_BRIDGE_H
+#define CAPSTONE_BRIDGE_H
+
+#include <stdint.h>
+
+#include "doomgeneric.h"
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#define CAP_EXPORT EMSCRIPTEN_KEEPALIVE
+#else
+#define CAP_EXPORT
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// v3: added cap_input_impl(), cap_input_delivered_count(), cap_input_dropped_count().
+// v2: added cap_tic_count(). Specialist hooks have WEAK defaults in
+// platform/cap_fallback.c; a strong definition in another platform/*.c wins.
+#define CAP_BRIDGE_VERSION 3
+
+// Framebuffer: DG_ScreenBuffer is DOOMGENERIC_RESX x DOOMGENERIC_RESY
+// (640x400) pixel_t (uint32_t). Memory bytes per pixel are B,G,R,0 (alpha is
+// NOT set); the render module converts to opaque RGBA for canvas ImageData.
+#define CAP_FB_WIDTH   DOOMGENERIC_RESX
+#define CAP_FB_HEIGHT  DOOMGENERIC_RESY
+#define CAP_FB_BYTES   (CAP_FB_WIDTH * CAP_FB_HEIGHT * 4)
+
+// Paths inside the Emscripten virtual FS.
+#define CAP_WAD_PATH   "/doom1.wad"
+
+// ---- Owner: coder (platform/doomgeneric_wasm.c) -------------------------
+// The DG_* callbacks in doomgeneric.h are thin adapters that forward to the
+// cap_* functions below. Only the coder defines the DG_* symbols and main().
+CAP_EXPORT int      cap_bridge_version(void);        // returns CAP_BRIDGE_VERSION
+CAP_EXPORT const void *cap_framebuffer_ptr(void);    // DG_ScreenBuffer address (valid after startup)
+CAP_EXPORT int      cap_tic_count(void);             // engine gametic (35/s at full speed); for T2 checks
+CAP_EXPORT int      cap_input_impl(void);            // 1 = input_audio.c linked, 0 = cap_fallback.c queue
+CAP_EXPORT unsigned cap_input_delivered_count(void); // events handed to the engine (0 if fallback)
+CAP_EXPORT unsigned cap_input_dropped_count(void);   // events refused by the queue (0 if fallback)
+CAP_EXPORT int      cap_ready(void);                 // 1 once doomgeneric_Create() returned
+
+// ---- Owner: coder_render_timing (platform/render_timing.c) --------------
+void     cap_render_init(void);                      // from DG_Init
+void     cap_render_present(const pixel_t *fb);      // from DG_DrawFrame; must not retain fb
+uint32_t cap_time_ms(void);                          // from DG_GetTicksMs; monotonic, ms
+                                                     // since page start, MUST be nonzero
+                                                     // by the first engine call (i_timer.c
+                                                     // treats basetime==0 as unset)
+void     cap_sleep_ms(uint32_t ms);                  // from DG_SleepMs (engine wipe/tic waits)
+void     cap_set_title(const char *title);           // from DG_SetWindowTitle
+
+// ---- Owner: coder_input_audio (platform/input_audio.c) ------------------
+// Optional diagnostics (strong in input_audio.c; absent in the fallback):
+unsigned cap_input_delivered(void) __attribute__((weak));
+unsigned cap_input_dropped(void) __attribute__((weak));
+void cap_input_init(void);                           // from DG_Init
+int  cap_input_poll(int *pressed, unsigned char *doom_key); // from DG_GetKey; 1=event
+                                                     // returned, 0=queue empty.
+                                                     // doom_key is a doomkeys.h code.
+CAP_EXPORT void cap_input_event(int pressed, int doom_key); // JS->C enqueue (bounded queue)
+CAP_EXPORT void cap_input_reset(void);               // release all keys (blur/visibility)
+void cap_audio_init(void);                           // optional; no-op until audio scope approved
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // CAPSTONE_BRIDGE_H
+// WebAssembly platform layer for doomgeneric (coder-owned).
+// DG_* callbacks forward to the cap_* functions declared in capstone_bridge.h.
+// Default (weak) cap_* implementations live in cap_fallback.c; specialist
+// modules override them with strong definitions.
+
+#include <stdint.h>
+
+#include <emscripten.h>
+
+#include "capstone_bridge.h"
+
+extern int gametic;
+
+static int cap_started;
+
+void DG_Init()
+{
+    cap_render_init();
+    cap_input_init();
+    cap_audio_init();
+}
+
+void DG_DrawFrame()
+{
+    cap_render_present(DG_ScreenBuffer);
+}
+
+void DG_SleepMs(uint32_t ms)
+{
+    cap_sleep_ms(ms);
+}
+
+uint32_t DG_GetTicksMs()
+{
+    return cap_time_ms();
+}
+
+int DG_GetKey(int *pressed, unsigned char *key)
+{
+    return cap_input_poll(pressed, key);
+}
+
+void DG_SetWindowTitle(const char *title)
+{
+    cap_set_title(title);
+}
+
+int cap_bridge_version(void)
+{
+    return CAP_BRIDGE_VERSION;
+}
+
+int cap_ready(void)
+{
+    return cap_started;
+}
+
+int cap_input_impl(void)
+{
+    return cap_input_delivered != NULL;
+}
+
+unsigned cap_input_delivered_count(void)
+{
+    return cap_input_delivered ? cap_input_delivered() : 0;
+}
+
+unsigned cap_input_dropped_count(void)
+{
+    return cap_input_dropped ? cap_input_dropped() : 0;
+}
+
+const void *cap_framebuffer_ptr(void)
+{
+    return DG_ScreenBuffer;
+}
+
+int cap_tic_count(void)
+{
+    return gametic;
+}
+
+int main(int argc, char **argv)
+{
+    static char *args[] = { "doom", "-iwad", CAP_WAD_PATH, NULL };
+    (void)argc;
+    (void)argv;
+
+    doomgeneric_Create(3, args);
+    cap_started = 1;
+
+    // ASYNCIFY build: cap_sleep_ms yields to the browser inside the engine's
+    // tic waits; the explicit sleep(0) yields once per frame otherwise.
+    for (;;) {
+        doomgeneric_Tick();
+        emscripten_sleep(0);
+    }
+    return 0;
+}
+// Keyboard input queue for the WebAssembly port (coder_input_audio-owned).
+// JS (web/input_audio.js) calls cap_input_event(); the engine drains events via
+// DG_GetKey -> cap_input_poll(). Strong definitions override cap_fallback.c.
+//
+// Invariants:
+//  - Events are doomkeys.h codes 1..255.
+//  - A press for a key already down (auto-repeat) is dropped; a release for a
+//    key that is not down is dropped. The engine therefore sees strictly
+//    alternating press/release per key.
+//  - A release is never lost to a full queue: presses are refused once
+//    PRESS_LIMIT entries are pending, and at most 255 releases can be
+//    outstanding, so the queue (2*PRESS_LIMIT) always has room for them.
+//  - cap_input_reset() queues a release for every key still down.
+// Audio and persistence are NOT implemented (scope undecided); see the report.
+
+#include <string.h>
+
+#include "capstone_bridge.h"
+#include "input_audio.h"
+
+#define PRESS_LIMIT 256
+#define QSIZE       512 /* power of two */
+
+static struct { unsigned char pressed, key; } q[QSIZE];
+static unsigned qhead, qtail;
+static unsigned char down[256];
+static unsigned dropped, delivered;
+
+static void push(int pressed, int key)
+{
+    q[qtail % QSIZE].pressed = (unsigned char)pressed;
+    q[qtail % QSIZE].key = (unsigned char)key;
+    qtail++;
+}
+
+void cap_input_init(void)
+{
+    qhead = qtail = 0;
+    memset(down, 0, sizeof down);
+}
+
+void cap_audio_init(void)
+{
+    // Intentionally empty: no audio scope approved (FEATURE_SOUND is not defined by the Makefile, so the engine has no sound path).
+}
+
+int cap_input_poll(int *pressed, unsigned char *doom_key)
+{
+    if (qhead == qtail)
+        return 0;
+    *pressed = q[qhead % QSIZE].pressed;
+    *doom_key = q[qhead % QSIZE].key;
+    qhead++;
+    delivered++;
+    return 1;
+}
+
+void cap_input_event(int pressed, int doom_key)
+{
+    if (doom_key <= 0 || doom_key > 255) {
+        dropped++;
+        return;
+    }
+    pressed = pressed != 0;
+    if (pressed == down[doom_key]) { // repeat press or stray release
+        dropped++;
+        return;
+    }
+    if (pressed && qtail - qhead >= PRESS_LIMIT) {
+        dropped++;
+        return;
+    }
+    down[doom_key] = (unsigned char)pressed;
+    push(pressed, doom_key);
+}
+
+void cap_input_reset(void)
+{
+    for (int k = 1; k < 256; k++) {
+        if (down[k])
+            cap_input_event(0, k);
+    }
+}
+
+unsigned cap_input_dropped(void)   { return dropped; }
+unsigned cap_input_delivered(void) { return delivered; }
+// Globals the engine references from net code that is not part of this tree
+// (multiplayer is disabled; see doomfeatures.h). Coder-owned.
+
+#include "doomtype.h"
+
+boolean drone = false;
+boolean net_client_connected = false;
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Doom (WASM)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    html, body { margin: 0; height: 100%; background: #000; }
+    body { display: flex; align-items: center; justify-content: center; }
+    canvas { background: #111; image-rendering: pixelated; image-rendering: crisp-edges; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="640" height="400"></canvas>
+  <script>
+    var Module = {
+      canvas: document.getElementById('canvas'),
+      print: function (t) { console.log(t); },
+      printErr: function (t) { console.warn(t); }
+    };
+  </script>
+  <script src="input_audio.js"></script>
+  <script src="doom.js"></script>
+</body>
+</html>
+# Building the Doom WebAssembly port
+
+Toolchain: Emscripten **4.0.18** (`source ~/Developer/emsdk/emsdk_env.sh`), GNU make, Node (tests only).
+
+    make        # builds build/*.o and dist/{index.html,doom.js,doom.wasm,doom.data}
+    make clean  # removes build/ and dist/
+
+- Engine sources: all `third_party/doomgeneric/*.c` except `dummy.c`, `doomgeneric_sdl.c`; platform code: `platform/*.c`.
+- WAD packaging: `assets/doom1.wad` is embedded via `--preload-file` at `/doom1.wad` in `dist/doom.data`.
+- `web/index.html` is copied to `dist/index.html`. Serve `dist/` over HTTP (not `file://`).
+- JS/C bridge exports are listed in the Makefile `EXPORTED_FUNCTIONS`; see `platform/capstone_bridge.h`.
+- Acceptance: `tests/verify.sh` (tester-owned); `QUICK=1` is partial and never exits 0.
+ls: third_party/doomgeneric/doomgeneric: No such file or directory
+)
+
+Calling Bash()
+
+Bash response → (
+am_map.c
+am_map.h
+config.h
+d_englsh.h
+d_event.c
+
+#ifndef DOOM_FEATURES_H
+#define DOOM_FEATURES_H
+
+#undef FEATURE_WAD_MERGE
+
+#undef FEATURE_DEHACKED
+
+#undef FEATURE_MULTIPLAYER
+
+#endif /* #ifndef DOOM_FEATURES_H */
+
+#ifndef __I_SOUND__
+#define __I_SOUND__
+
+#include "doomtype.h"
+
+//
+// SoundFX struct.
+//
+typedef struct sfxinfo_struct	sfxinfo_t;
+
+struct sfxinfo_struct
+{
+    // tag name, used for hexen.
+    char *tagname;
+
+    // lump name.  If we are running with use_sfx_prefix=true, a
+    // 'DS' (or 'DP' for PC speaker sounds) is prepended to this.
+
+    char name[9];
+
+    // Sfx priority
+    int priority;
+
+    // referenced sound if a link
+    sfxinfo_t *link;
+
+    // pitch if a link
+    int pitch;
+
+    // volume if a link
+    int volume;
+
+    // this is checked every second to see if sound
+    // can be thrown out (if 0, then decrement, if -1,
+    // then throw out, if > 0, then it is in use)
+    int usefulness;
+
+    // lump number of sfx
+    int lumpnum;		
+
+    // Maximum number of channels that the sound can be played on 
+    // (Heretic)
+    int numchannels;
+
+    // data used by the low level code
+    void *driver_data;
+};
+
+//
+// MusicInfo struct.
+//
+typedef struct
+{
+    // up to 6-character name
+    char *name;
+
+    // lump number of music
+    int lumpnum;
+
+    // music data
+    void *data;
+
+    // music handle once registered
+    void *handle;
+
+} musicinfo_t;
+
+typedef enum 
+{
+    SNDDEVICE_NONE = 0,
+    SNDDEVICE_PCSPEAKER = 1,
+    SNDDEVICE_ADLIB = 2,
+    SNDDEVICE_SB = 3,
+    SNDDEVICE_PAS = 4,
+    SNDDEVICE_GUS = 5,
+    SNDDEVICE_WAVEBLASTER = 6,
+    SNDDEVICE_SOUNDCANVAS = 7,
+    SNDDEVICE_GENMIDI = 8,
+    SNDDEVICE_AWE32 = 9,
+    SNDDEVICE_CD = 10,
+} snddevice_t;
+
+// Interface for sound modules
+
+typedef struct
+{
+    // List of sound devices that this sound module is used for.
+
+    snddevice_t *sound_devices;
+    int num_sound_devices;
+
+    // Initialise sound module
+    // Returns true if successfully initialised
+
+    boolean (*Init)(boolean use_sfx_prefix);
+
+    // Shutdown sound module
+
+    void (*Shutdown)(void);
+
+    // Returns the lump index of the given sound.
+
+    int (*GetSfxLumpNum)(sfxinfo_t *sfxinfo);
+
+    // Called periodically to update the subsystem.
+
+    void (*Update)(void);
+
+    // Update the sound settings on the given channel.
+
+    void (*UpdateSoundParams)(int channel, int vol, int sep);
+
+    // Start a sound on a given channel.  Returns the channel id
+    // or -1 on failure.
+
+    int (*StartSound)(sfxinfo_t *sfxinfo, int channel, int vol, int sep);
+
+    // Stop the sound playing on the given channel.
+
+    void (*StopSound)(int channel);
+
+    // Query if a sound is playing on the given channel
+
+    boolean (*SoundIsPlaying)(int channel);
+
+    // Called on startup to precache sound effects (if necessary)
+
+    void (*CacheSounds)(sfxinfo_t *sounds, int num_sounds);
+
+} sound_module_t;
+
+void I_InitSound(boolean use_sfx_prefix);
+void I_ShutdownSound(void);
+int I_GetSfxLumpNum(sfxinfo_t *sfxinfo);
+void I_UpdateSound(void);
+void I_UpdateSoundParams(int channel, int vol, int sep);
+int I_StartSound(sfxinfo_t *sfxinfo, int channel, int vol, int sep);
+void I_StopSound(int channel);
+boolean I_SoundIsPlaying(int channel);
+void I_PrecacheSounds(sfxinfo_t *sounds, int num_sounds);
+
+// Interface for music modules
+
+typedef struct
+{
+    // List of sound devices that this music module is used for.
+
+    snddevice_t *sound_devices;
+    int num_sound_devices;
+
+    // Initialise the music subsystem
+
+    boolean (*Init)(void);
+
+    // Shutdown the music subsystem
+
+    void (*Shutdown)(void);
+
+    // Set music volume - range 0-127
+
+    void (*SetMusicVolume)(int volume);
+
+    // Pause music
+
+    void (*PauseMusic)(void);
+
+    // Un-pause music
+
+    void (*ResumeMusic)(void);
+
+    // Register a song handle from data
+    // Returns a handle that can be used to play the song
+
+    void *(*RegisterSong)(void *data, int len);
+
+    // Un-register (free) song data
+
+    void (*UnRegisterSong)(void *handle);
+
+    // Play the song
+
+    void (*PlaySong)(void *handle, boolean looping);
+
+    // Stop playing the current song.
+
+    void (*StopSong)(void);
+
+    // Query if music is playing.
+
+    boolean (*MusicIsPlaying)(void);
+
+    // Invoked periodically to poll.
+
+    void (*Poll)(void);
+} music_module_t;
+
+void I_InitMusic(void);
+void I_ShutdownMusic(void);
+void I_SetMusicVolume(int volume);
+void I_PauseSong(void);
+void I_ResumeSong(void);
+void *I_RegisterSong(void *data, int len);
+void I_UnRegisterSong(void *handle);
+void I_PlaySong(void *handle, boolean looping);
+void I_StopSong(void);
+boolean I_MusicIsPlaying(void);
+
+extern int snd_sfxdevice;
+extern int snd_musicdevice;
+extern int snd_samplerate;
+extern int snd_cachesize;
+extern int snd_maxslicetime_ms;
+extern char *snd_musiccmd;
+
+void I_BindSoundVariables(void);
+
+// Sound modules
+
+void I_InitTimidityConfig(void);
+#ifdef FEATURE_SOUND
+extern sound_module_t DG_sound_module;
+extern music_module_t DG_music_module;
+#endif
+extern sound_module_t sound_pcsound_module;
+extern music_module_t music_opl_module;
+
+// For OPL module:
+
+extern int opl_io_port;
+
+// For native music module:
+
+extern char *timidity_cfg_path;
+
+#endif
+
+21:#if defined(FEATURE_SOUND) && !defined(__DJGPP__)
+22:#include <SDL_mixer.h>
+74:static sound_module_t *sound_modules[] = 
+76:    #ifdef FEATURE_SOUND
+77:    &DG_sound_module,
+109:    for (i=0; sound_modules[i] != NULL; ++i)
+115:                            sound_modules[i]->sound_devices,
+116:                            sound_modules[i]->num_sound_devices))
+120:            if (sound_modules[i]->Init(use_sfx_prefix))
+122:                sound_module = sound_modules[i];
+133:#ifdef FEATURE_SOUND
+134:    music_module = &DG_music_module;
+135:#endif /* FEATURE_SOUND */
+177:        // the TIMIDITY_CFG environment variable here before SDL_mixer
+411:#ifdef FEATURE_SOUND
+416:    // Before SDL_mixer version 1.2.11, MIDI music caused the game
+417:    // to crash when it looped.  If this is an old SDL_mixer version,
+dummy.c
+i_cdmus.c
+i_cdmus.h
+i_endoom.c
+i_endoom.h
+i_input.c
+i_joystick.c
+i_joystick.h
+i_scale.c
+i_scale.h
+i_sound.c
+i_sound.h
+i_swap.h
+i_system.c
+i_system.h
+i_timer.c
+i_timer.h
+i_video.c
+i_video.h
+mus2mid.c
+mus2mid.h
+s_sound.c
+s_sound.h
+)
+
+Calling Bash()
+
+Bash response → (
+//
+// Copyright(C) 1993-1996 Id Software, Inc.
+// Copyright(C) 2005-2014 Simon Howard
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// DESCRIPTION:  none
+//
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#if defined(FEATURE_SOUND) && !defined(__DJGPP__)
+#include <SDL_mixer.h>
+#endif
+
+#include "config.h"
+#include "doomfeatures.h"
+#include "doomtype.h"
+
+#ifdef ORIGCODE
+#include "gusconf.h"
+int snd_musicdevice = SNDDEVICE_SB;
+int snd_sfxdevice = SNDDEVICE_SB;
+
+// DOS-specific options: These are unused but should be maintained
+// so that the config file can be shared between chocolate
+// doom and doom.exe
+
+static int snd_sbport = 0;
+static int snd_sbirq = 0;
+static int snd_sbdma = 0;
+static int snd_mport = 0;
+
+// Compiled-in sound modules:
+
+static sound_module_t *sound_modules[] = 
+{
+    #ifdef FEATURE_SOUND
+    &DG_sound_module,
+    #endif
+    NULL,
+};
+
+// Check if a sound device is in the given list of devices
+
+static boolean SndDeviceInList(snddevice_t device, snddevice_t *list,
+                               int len)
+{
+    int i;
+
+    for (i=0; i<len; ++i)
+    {
+        if (device == list[i])
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// Find and initialize a sound_module_t appropriate for the setting
+// in snd_sfxdevice.
+
+static void InitSfxModule(boolean use_sfx_prefix)
+{
+    int i;
+
+    sound_module = NULL;
+
+    for (i=0; sound_modules[i] != NULL; ++i)
+    {
+        // Is the sfx device in the list of devices supported by
+        // this module?
+
+        if (SndDeviceInList(snd_sfxdevice, 
+                            sound_modules[i]->sound_devices,
+                            sound_modules[i]->num_sound_devices))
+        {
+            // Initialize the module
+
+            if (sound_modules[i]->Init(use_sfx_prefix))
+            {
+                sound_module = sound_modules[i];
+                return;
+            }
+        }
+    }
+}
+
+// Initialize music according to snd_musicdevice.
+
+static void InitMusicModule(void)
+{
+#ifdef FEATURE_SOUND
+    music_module = &DG_music_module;
+#endif /* FEATURE_SOUND */
+}
+
+//
+// Initializes sound stuff, including volume
+// Sets channels, SFX and music volume,
+//  allocates channel buffer, sets S_sfx lookup.
+//
+
+void I_InitSound(boolean use_sfx_prefix)
+{  
+    boolean nosound, nosfx, nomusic;
+
+    //!
+    // @vanilla
+    //
+    // Disable all sound output.
+    //
+
+    nosound = M_CheckParm("-nosound") > 0;
+
+    //!
+    // @vanilla
+    //
+    // Disable sound effects. 
+    //
+
+    nosfx = M_CheckParm("-nosfx") > 0;
+
+    //!
+    // @vanilla
+    //
+    // Disable music.
+    //
+
+    nomusic = M_CheckParm("-nomusic") > 0;
+
+    // Initialize the sound and music subsystems.
+
+    if (!nosound && !screensaver_mode)
+    {
+        // This is kind of a hack. If native MIDI is enabled, set up
+        // the TIMIDITY_CFG environment variable here before SDL_mixer
+        // is opened.
+
+        if (!nomusic
+         && (snd_musicdevice == SNDDEVICE_GENMIDI
+          || snd_musicdevice == SNDDEVICE_GUS))
+        {
+            //I_InitTimidityConfig();
+        }
+
+        if (!nosfx)
+        {
+            InitSfxModule(use_sfx_prefix);
+        }
+
+        if (!nomusic)
+        {
+            InitMusicModule();
+        }
+    }
+
+}
+
+void I_ShutdownSound(void)
+{
+    if (sound_module != NULL)
+    {
+        sound_module->Shutdown();
+    }
+
+    if (music_module != NULL)
+    {
+        music_module->Shutdown();
+    }
+}
+
+int I_GetSfxLumpNum(sfxinfo_t *sfxinfo)
+{
+    if (sound_module != NULL) 
+    {
+        return sound_module->GetSfxLumpNum(sfxinfo);
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+void I_UpdateSound(void)
+{
+    if (sound_module != NULL)
+    {
+        sound_module->Update();
+    }
+
+    if (music_module != NULL && music_module->Poll != NULL)
+    {
+        music_module->Poll();
+    }
+}
+
+static void CheckVolumeSeparation(int *vol, int *sep)
+{
+    if (*sep < 0)
+    {
+        *sep = 0;
+    }
+    else if (*sep > 254)
+    {
+        *sep = 254;
+    }
+
+    if (*vol < 0)
+    {
+        *vol = 0;
+    }
+    else if (*vol > 127)
+    {
+        *vol = 127;
+    }
+}
+
+void I_UpdateSoundParams(int channel, int vol, int sep)
+{
+    M_BindVariable("snd_musicdevice",   &snd_musicdevice);
+    M_BindVariable("snd_sfxdevice",     &snd_sfxdevice);
+    M_BindVariable("snd_sbport",        &snd_sbport);
+    M_BindVariable("snd_sbirq",         &snd_sbirq);
+    M_BindVariable("snd_sbdma",         &snd_sbdma);
+    M_BindVariable("snd_mport",         &snd_mport);
+    M_BindVariable("snd_maxslicetime_ms", &snd_maxslicetime_ms);
+    M_BindVariable("snd_musiccmd",      &snd_musiccmd);
+    M_BindVariable("snd_samplerate",    &snd_samplerate);
+    M_BindVariable("snd_cachesize",     &snd_cachesize);
+
+#ifdef FEATURE_SOUND
+    M_BindVariable("use_libsamplerate",   &use_libsamplerate);
+    M_BindVariable("libsamplerate_scale", &libsamplerate_scale);
+#endif
+
+    // Before SDL_mixer version 1.2.11, MIDI music caused the game
+    // to crash when it looped.  If this is an old SDL_mixer version,
+    // disable MIDI.
+}
+
+dummy.c:43:#ifndef FEATURE_SOUND
+m_config.c:808:    // the empty string, SDL_mixer's internal MIDI playback is used.
+m_config.c:1079:#ifdef FEATURE_SOUND
+doomfeatures.h:36://#undef FEATURE_SOUND
+bazel
+build
+docker
+)
+Audio is the only missing piece, since the controls already exist and there's no sound module yet, so I'm checking the engine APIs for a Web Audio backend.
+
+
+Calling Bash()
+
+Bash response → (
+#ifndef MUS2MID_H
+#define MUS2MID_H
+
+#include "doomtype.h"
+#include "memio.h"
+
+boolean mus2mid(MEMFILE *musinput, MEMFILE *midioutput);
+
+#endif /* #ifndef MUS2MID_H */
+60:int	W_CheckNumForName (char* name);
+61:int	W_GetNumForName (char* name);
+63:int	W_LumpLength (unsigned int lump);
+66:void*	W_CacheLumpNum (int lump, int tag);
+73:void    W_ReleaseLumpNum(int lump);
+i_sound.c:39:int snd_samplerate = 44100;
+i_sound.c:44:int snd_cachesize = 64 * 1024 * 1024;
+i_sound.c:49:int snd_maxslicetime_ms = 28;
+i_sound.c:397:    extern int use_libsamplerate;
+i_sound.c:398:    extern float libsamplerate_scale;
+i_sound.c:406:    M_BindVariable("snd_maxslicetime_ms", &snd_maxslicetime_ms);
+i_sound.c:408:    M_BindVariable("snd_samplerate",    &snd_samplerate);
+i_sound.c:409:    M_BindVariable("snd_cachesize",     &snd_cachesize);
+i_sound.c:412:    M_BindVariable("use_libsamplerate",   &use_libsamplerate);
+i_sound.c:413:    M_BindVariable("libsamplerate_scale", &libsamplerate_scale);
+    CONFIG_VARIABLE_INT(mouseb_nextweapon),
+
+    //!
+    // If non-zero, double-clicking a mouse button acts like pressing
+    // the "use" key to use an object in-game, eg. a door or switch.
+    //
+
+    CONFIG_VARIABLE_INT(dclick_use),
+
+#ifdef FEATURE_SOUND
+
+    //!
+    // Controls whether libsamplerate support is used for performing
+    // sample rate conversions of sound effects.  Support for this
+    // must be compiled into the program.
+    //
+    // If zero, libsamplerate support is disabled.  If non-zero,
+    // libsamplerate is enabled. Increasing values roughly correspond
+    // to higher quality conversion; the higher the quality, the
+    // slower the conversion process.  Linear conversion = 1;
+    // Zero order hold = 2; Fast Sinc filter = 3; Medium quality
+/*---------------------------------------------------------------------*
+ *  private functions                                                  *
+ *---------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------*
+ *  public functions                                                   *
+ *---------------------------------------------------------------------*/
+
+#ifndef FEATURE_SOUND
+
+void I_InitTimidityConfig(void)
+{
+}
+
+#endif
+
+/*---------------------------------------------------------------------*
+ *  eof                                                                *
+ *---------------------------------------------------------------------*/
+472:        sfx->lumpnum = I_GetSfxLumpNum(sfx);
+mus2mid.c:16:// mus2mid.c - Ben Ryves 2006 - http://benryves.com - benryves@benryves.com
+mus2mid.c:25:#include "mus2mid.h"
+mus2mid.c:444:boolean mus2mid(MEMFILE *musinput, MEMFILE *midioutput)
+579:    I_SetMusicVolume(volume);
+644:    I_PlaySong(handle, looping);
+)
+
+Calling Bash()
+
+Bash response → (
+*vol = 127;
+    }
+}
+
+void I_UpdateSoundParams(int channel, int vol, int sep)
+{
+    if (sound_module != NULL)
+    {
+        CheckVolumeSeparation(&vol, &sep);
+        sound_module->UpdateSoundParams(channel, vol, sep);
+    }
+}
+
+int I_StartSound(sfxinfo_t *sfxinfo, int channel, int vol, int sep)
+{
+    if (sound_module != NULL)
+    {
+        CheckVolumeSeparation(&vol, &sep);
+        return sound_module->StartSound(sfxinfo, channel, vol, sep);
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+void I_StopSound(int channel)
+{
+    if (sound_module != NULL)
+    {
+        sound_module->StopSound(channel);
+    }
+}
+
+boolean I_SoundIsPlaying(int channel)
+{
+    if (sound_module != NULL)
+    {
+        return sound_module->SoundIsPlaying(channel);
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void I_PrecacheSounds(sfxinfo_t *sounds, int num_sounds)
+{
+    if (sound_module != NULL && sound_module->CacheSounds != NULL)
+    {
+	sound_module->CacheSounds(sounds, num_sounds);
+    }
+}
+
+void I_InitMusic(void)
+{
+    if(music_module != NULL)
+    {
+        music_module->Init();
+    }
+}
+
+void I_ShutdownMusic(void)
+{
+
+}
+
+void I_SetMusicVolume(int volume)
+{
+    if (music_module != NULL)
+    {
+        music_module->SetMusicVolume(volume);
+    }
+}
+
+void I_PauseSong(void)
+{
+    if (music_module != NULL)
+    {
+        music_module->PauseMusic();
+    }
+}
+
+void I_ResumeSong(void)
+{
+    if (music_module != NULL)
+    {
+        music_module->ResumeMusic();
+    }
+}
+
+void *I_RegisterSong(void *data, int len)
+{
+    if (music_module != NULL)
+    {
+        return music_module->RegisterSong(data, len);
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+void I_UnRegisterSong(void *handle)
+{
+    if (music_module != NULL)
+    {
+        music_module->UnRegisterSong(handle);
+    }
+}
+
+void I_PlaySong(void *handle, boolean looping)
+{
+    if (music_module != NULL)
+    {
+        music_module->PlaySong(handle, looping);
+    }
+}
+
+void I_StopSong(void)
+{
+    if (music_module != NULL)
+    {
+        music_module->StopSong();
+    }
+}
+
+boolean I_MusicIsPlaying(void)
+{
+    if (music_module != NULL)
+    {
+        return music_module->MusicIsPlaying();
+    }
+    else
+    {
+        return false;
+    }
+
+}
+
+void I_BindSoundVariables(void)
+26:} mem_rel_t;
+28:MEMFILE *mem_fopen_read(void *buf, size_t buflen);
+29:size_t mem_fread(void *buf, size_t size, size_t nmemb, MEMFILE *stream);
+30:MEMFILE *mem_fopen_write(void);
+31:size_t mem_fwrite(const void *ptr, size_t size, size_t nmemb, MEMFILE *stream);
+32:void mem_get_buf(MEMFILE *stream, void **buf, size_t *buflen);
+33:void mem_fclose(MEMFILE *stream);
+34:long mem_ftell(MEMFILE *stream);
+35:int mem_fseek(MEMFILE *stream, signed long offset, mem_rel_t whence);
+}
+
+//
+// Starts some music with the music id found in sounds.h.
+//
+
+void S_StartMusic(int m_id)
+{
+    S_ChangeMusic(m_id, false);
+}
+
+void S_ChangeMusic(int musicnum, int looping)
+{
+    musicinfo_t *music = NULL;
+    char namebuf[9];
+    void *handle;
+
+    // The Doom IWAD file has two versions of the intro music: d_intro
+    // and d_introa.  The latter is used for OPL playback.
+
+    if (musicnum == mus_intro && (snd_musicdevice == SNDDEVICE_ADLIB
+                               || snd_musicdevice == SNDDEVICE_SB))
+    {
+        musicnum = mus_introa;
+    }
+
+    if (musicnum <= mus_None || musicnum >= NUMMUSIC)
+    {
+        I_Error("Bad music number %d", musicnum);
+    }
+    else
+    {
+        music = &S_music[musicnum];
+    }
+
+    if (mus_playing == music)
+    {
+        return;
+    }
+
+    // shutdown old music
+    S_StopMusic();
+
+    // get lumpnum if neccessary
+    if (!music->lumpnum)
+    {
+        M_snprintf(namebuf, sizeof(namebuf), "d_%s", DEH_String(music->name));
+        music->lumpnum = W_GetNumForName(namebuf);
+    }
+
+    music->data = W_CacheLumpNum(music->lumpnum, PU_STATIC);
+
+    handle = I_RegisterSong(music->data, W_LumpLength(music->lumpnum));
+    music->handle = handle;
+    I_PlaySong(handle, looping);
+
+    mus_playing = music;
+}
+
+boolean S_MusicPlaying(void)
+{
+86:int sfxVolume = 8;
+106:int snd_channels = 8;
+114:void S_Init(int sfxVolume, int musicVolume)
+120:    S_SetSfxVolume(sfxVolume);
+126:    channels = Z_Malloc(snd_channels*sizeof(channel_t), PU_STATIC, 0);
+129:    for (i=0 ; i<snd_channels ; i++)
+170:        for (i=0; i<snd_channels; i++)
+198:    for (cnum=0 ; cnum<snd_channels ; cnum++)
+247:    for (cnum=0 ; cnum<snd_channels ; cnum++)
+270:    for (cnum=0 ; cnum<snd_channels ; cnum++)
+284:    if (cnum == snd_channels)
+287:        for (cnum=0 ; cnum<snd_channels ; cnum++)
+295:        if (cnum == snd_channels)
+323:static int S_AdjustSoundParams(mobj_t *listener, mobj_t *source,
+432:        rc = S_AdjustSoundParams(players[consoleplayer].mo,
+515:    for (cnum=0; cnum<snd_channels; cnum++)
+546:                    audible = S_AdjustSoundParams(listener,
+d_main.c:1614:    I_InitSound(true);
+d_main.c:1615:    I_InitMusic();
+i_sound.c:144:void I_InitSound(boolean use_sfx_prefix)
+i_sound.c:309:void I_InitMusic(void)
+)
+
+Calling Bash()
+
+Bash response → (
+2:// port links and plays before render_timing.c / input_audio.c exist.
+63:WEAK void cap_audio_init(void) {}
+1094:    CONFIG_VARIABLE_INT(use_libsamplerate),
+1106:    CONFIG_VARIABLE_FLOAT(libsamplerate_scale),
+/Users/sarahtseng/Developer/emsdk/emsdk_env.sh
+doom.data
+doom.js
+doom.wasm
+index.html
+input_audio.js
+faults.sh
+lib
+node_modules
+package-lock.json
+package.json
+playtest.mjs
+README.md
+selftest.mjs
+verify.sh
+168:  // E*: input edge cases from reviewer findings F2/F3/R2-3 (web/input_audio.js) and identity R2-4.
+221:for (const [id, why] of [['A1.audio', 'scope undecided; an active AudioContext would not prove correct sound/music'],
+223:  ['I9.input-module-identity', 'input_audio.c has no exported diagnostic (e.g. cap_input_delivered), so a silent fallback queue cannot be told apart; needs coder export (R2-4)'],
+)
+
+Calling Bash()
+
+Bash response → (
+#ifdef ORIGCODE
+#include "gusconf.h"
+#endif
+#include "i_sound.h"
+#include "i_video.h"
+#include "m_argv.h"
+#include "m_config.h"
+
+// Sound sample rate to use for digital output (Hz)
+
+int snd_samplerate = 44100;
+
+// Maximum number of bytes to dedicate to allocated sound effects.
+// (Default: 64MB)
+
+int snd_cachesize = 64 * 1024 * 1024;
+
+// Config variable that controls the sound buffer size.
+// We default to 28ms (1000 / 35fps = 1 buffer per tic).
+
+int snd_maxslicetime_ms = 28;
+
+// External command to invoke to play back music.
+
+char *snd_musiccmd = "";
+
+// Low-level sound and music modules we are using
+
+static sound_module_t *sound_module = NULL;
+static music_module_t *music_module = NULL;
+
+int snd_musicdevice = SNDDEVICE_SB;
+m_config.c:530:    CONFIG_VARIABLE_INT(snd_musicdevice),
+m_config.c:539:    CONFIG_VARIABLE_INT(snd_sfxdevice),
+m_config.c:809:    // This only has any effect when snd_musicdevice is set to General
+s_sound.c:610:    if (musicnum == mus_intro && (snd_musicdevice == SNDDEVICE_ADLIB
+s_sound.c:611:                               || snd_musicdevice == SNDDEVICE_SB))
+97:#undef ORIGCODE
+)
+
+Calling Bash()
+
+Bash response → (
+1:// Keyboard input queue for the WebAssembly port (coder_input_audio-owned).
+2:// JS (web/input_audio.js) calls cap_input_event(); the engine drains events via
+14:// Audio lives in audio_web.c / web/audio_web.js. Persistence is not implemented (see report).
+19:#include "input_audio.h"
+)
+
+Calling Write()
+
+Write response → "File created successfully at: /Users/sarahtseng/Projects/fellowship-loop-capstone/web/audio_web.js (file state is current in your context — no need to Read it back)"
+The audio sources are written, and I'm building them into a scratch dist under my OUTPUT_DIR. The Makefile and index.html are off-limits, so I'll override them on the command line and leave the real dist/ untouched.
+
+
+Calling Bash()
+
+Bash response → (
+emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 4.0.18 (fae107463db4d20a276a27ede393048deaeebf76)
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -w    -c third_party/doomgeneric/r_sky.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/r_sky.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -w    -c third_party/doomgeneric/r_things.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/r_things.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -w    -c third_party/doomgeneric/s_sound.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/s_sound.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -w    -c third_party/doomgeneric/sha1.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/sha1.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -w    -c third_party/doomgeneric/sounds.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/sounds.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -w    -c third_party/doomgeneric/st_lib.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/st_lib.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -w    -c third_party/doomgeneric/st_stuff.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/st_stuff.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -w    -c third_party/doomgeneric/statdump.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/statdump.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -w    -c third_party/doomgeneric/tables.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/tables.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -w    -c third_party/doomgeneric/v_video.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/v_video.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -w    -c third_party/doomgeneric/w_checksum.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/w_checksum.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -w    -c third_party/doomgeneric/w_file_stdc.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/w_file_stdc.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -w    -c third_party/doomgeneric/w_file.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/w_file.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -w    -c third_party/doomgeneric/w_main.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/w_main.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -w    -c third_party/doomgeneric/w_wad.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/w_wad.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -w    -c third_party/doomgeneric/wi_stuff.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/wi_stuff.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -w    -c third_party/doomgeneric/z_zone.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/z_zone.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -c platform/audio_web.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/platform/audio_web.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -c platform/cap_fallback.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/platform/cap_fallback.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -c platform/doomgeneric_wasm.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/platform/doomgeneric_wasm.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -c platform/engine_stubs.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/platform/engine_stubs.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -c platform/input_audio.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/platform/input_audio.o
+emcc -O2 -Ithird_party/doomgeneric -Iplatform -Iplatform/audio_compat -DFEATURE_SOUND -MMD -MP -c platform/render_timing.c -o artifacts/logs/coder_input_audio.KWBVgQ/build/platform/render_timing.o
+emcc artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/am_map.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/d_event.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/d_items.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/d_iwad.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/d_loop.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/d_main.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/d_mode.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/d_net.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/doomdef.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/doomgeneric.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/doomstat.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/dstrings.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/f_finale.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/f_wipe.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/g_game.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/gusconf.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/hu_lib.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/hu_stuff.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/i_cdmus.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/i_endoom.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/i_input.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/i_joystick.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/i_scale.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/i_sound.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/i_system.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/i_timer.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/i_video.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/icon.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/info.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/m_argv.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/m_bbox.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/m_cheat.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/m_config.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/m_controls.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/m_fixed.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/m_menu.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/m_misc.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/m_random.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/memio.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/mus2mid.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/p_ceilng.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/p_doors.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/p_enemy.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/p_floor.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/p_inter.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/p_lights.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/p_map.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/p_maputl.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/p_mobj.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/p_plats.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/p_pspr.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/p_saveg.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/p_setup.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/p_sight.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/p_spec.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/p_switch.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/p_telept.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/p_tick.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/p_user.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/r_bsp.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/r_data.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/r_draw.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/r_main.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/r_plane.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/r_segs.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/r_sky.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/r_things.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/s_sound.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/sha1.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/sounds.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/st_lib.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/st_stuff.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/statdump.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/tables.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/v_video.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/w_checksum.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/w_file_stdc.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/w_file.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/w_main.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/w_wad.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/wi_stuff.o artifacts/logs/coder_input_audio.KWBVgQ/build/third_party/doomgeneric/z_zone.o artifacts/logs/coder_input_audio.KWBVgQ/build/platform/audio_web.o artifacts/logs/coder_input_audio.KWBVgQ/build/platform/cap_fallback.o artifacts/logs/coder_input_audio.KWBVgQ/build/platform/doomgeneric_wasm.o artifacts/logs/coder_input_audio.KWBVgQ/build/platform/engine_stubs.o artifacts/logs/coder_input_audio.KWBVgQ/build/platform/input_audio.o artifacts/logs/coder_input_audio.KWBVgQ/build/platform/render_timing.o -O2 -sASYNCIFY -sASYNCIFY_STACK_SIZE=65536 -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=64MB -sEXPORTED_FUNCTIONS=_main,_cap_ready,_cap_tic_count,_cap_input_event,_cap_input_reset,_cap_bridge_version,_cap_framebuffer_ptr,_cap_input_impl,_cap_input_delivered_count,_cap_input_dropped_count -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,HEAPU8 --preload-file assets/doom1.wad@/doom1.wad -o artifacts/logs/coder_input_audio.KWBVgQ/dist/doom.js
+cp web/index.html web/input_audio.js artifacts/logs/coder_input_audio.KWBVgQ/dist/
+)
+The flagged build links. Now I'll test it in headless Chromium, using a scratch copy of the page with `audio_web.js` added.
+Calling Bash()
+
+Bash response → (
+15:  <script>
+21:  </script>
+22:  <script src="input_audio.js"></script>
+23:  <script src="audio_web.js"></script>
+24:  <script src="doom.js"></script>
+{
+  "url": "http://127.0.0.1:62558/",
+  "errs": [],
+  "title": {
+    "sfxRequested": 0,
+    "sfxPlayed": 0,
+    "sfxSuppressed": 0,
+    "sfxBad": 0,
+    "musicRequested": 0,
+    "musicStarted": 0,
+    "notesScheduled": 0,
+    "musicErrors": 0,
+    "maxPeak": 0,
+    "lastPeak": 0,
+    "ctxState": "running",
+    "sampleRate": 48000,
+    "sfxChannelsActive": 0,
+    "musicPlaying": false,
+    "musicVoices": 0
+  },
+  "afterStart": {
+    "sfxRequested": 3,
+    "sfxPlayed": 3,
+    "sfxSuppressed": 0,
+    "sfxBad": 0,
+    "musicRequested": 0,
+    "musicStarted": 0,
+    "notesScheduled": 0,
+    "musicErrors": 0,
+    "maxPeak": 0,
+    "lastPeak": 0,
+    "ctxState": "running",
+    "sampleRate": 48000,
+    "sfxChannelsActive": 0,
+    "musicPlaying": false,
+    "musicVoices": 0
+  },
+  "afterPlay": {
+    "sfxRequested": 7,
+    "sfxPlayed": 7,
+    "sfxSuppressed": 0,
+    "sfxBad": 0,
+    "musicRequested": 0,
+    "musicStarted": 0,
+    "notesScheduled": 0,
+    "musicErrors": 0,
+    "maxPeak": 0.38393130898475647,
+    "lastPeak": 0,
+    "ctxState": "running",
+    "sampleRate": 48000,
+    "sfxChannelsActive": 0,
+    "musicPlaying": false,
+    "musicVoices": 0
+  }
+}
+)
+Sound effects work: 7 of 7 played, with a measured peak of 0.38 on the master bus. Music was never requested, so the engine isn't reaching `PlaySong`. I'll look for the reason.
+Calling Bash()
+
+Bash response → (
+s_sound.c:90:int musicVolume = 8;
+s_sound.c:102:static musicinfo_t *mus_playing = NULL;
+s_sound.c:114:void S_Init(int sfxVolume, int musicVolume)
+s_sound.c:121:    S_SetMusicVolume(musicVolume);
+s_sound.c:240:    S_ChangeMusic(mnum, true);
+s_sound.c:484:    if (mus_playing && !mus_paused)
+s_sound.c:493:    if (mus_playing && mus_paused)
+s_sound.c:596:void S_StartMusic(int m_id)
+s_sound.c:598:    S_ChangeMusic(m_id, false);
+s_sound.c:601:void S_ChangeMusic(int musicnum, int looping)
+s_sound.c:625:    if (mus_playing == music)
+s_sound.c:646:    mus_playing = music;
+s_sound.c:656:    if (mus_playing)
+s_sound.c:664:        I_UnRegisterSong(mus_playing->handle);
+s_sound.c:665:        W_ReleaseLumpNum(mus_playing->lumpnum);
+s_sound.c:666:        mus_playing->data = NULL;
+s_sound.c:667:        mus_playing = NULL;
+d_main.c:104://extern  int	musicVolume;
+d_main.c:362:    M_BindVariable("music_volume",           &musicVolume);
+d_main.c:538:	  S_StartMusic(mus_dm2ttl);
+d_main.c:540:	  S_StartMusic (mus_intro);
+d_main.c:559:	    S_StartMusic(mus_dm2ttl);
+d_main.c:1615:    I_InitMusic();
+d_main.c:1770:    S_Init (sfxVolume * 8, musicVolume * 8);
+void S_Init(int sfxVolume, int musicVolume)
+{  
+    int i;
+
+    I_PrecacheSounds(S_sfx, NUMSFX);
+
+    S_SetSfxVolume(sfxVolume);
+    S_SetMusicVolume(musicVolume);
+
+    // Allocating the internal channels for mixing
+    // (the maximum numer of sounds rendered
+    // simultaneously) within zone memory.
+    channels = Z_Malloc(snd_channels*sizeof(channel_t), PU_STATIC, 0);
+
+    // Free all channels for use
+    for (i=0 ; i<snd_channels ; i++)
+    {
+        channels[i].sfxinfo = 0;
+    }
+
+    // no sounds are playing, and they are not mus_paused
+    mus_paused = 0;
+
+    // Note that sounds have not been cached (yet).
+    for (i=1 ; i<NUMSFX ; i++)
+    {
+        S_sfx[i].lumpnum = S_sfx[i].usefulness = -1;
+    }
+
+    I_AtExit(S_Shutdown, true);
+}
+
+void S_Shutdown(void)
+{
+    I_ShutdownSound();
+    I_ShutdownMusic();
+}
+
+static void S_StopChannel(int cnum)
+{
+    int i;
+    channel_t *c;
+
+    c = &channels[cnum];
+
+    if (c->sfxinfo)
+    {
+)
+
+Calling Bash()
+
+Bash response → (
+// a stream (midioutput).
+//
+// Returns 0 on success or 1 on failure.
+
+boolean mus2mid(MEMFILE *musinput, MEMFILE *midioutput)
+{
+    // Header for the MUS file
+    musheader musfileheader;
+
+    // Descriptor for the current MUS event
+    byte eventdescriptor;
+    int channel; // Channel number
+    musevent event;
+
+    // Bunch of vars read from MUS lump
+    byte key;
+    byte controllernumber;
+    byte controllervalue;
+
+    // Buffer used for MIDI track size record
+    byte tracksizebuffer[4];
+
+    // Flag for when the score end marker is hit.
+    int hitscoreend = 0;
+
+    // Temp working byte
+    byte working;
+    // Used in building up time delays
+    unsigned int timedelay;
+
+132:            return false;
+154:    return false;
+189:    return false;
+224:    return false;
+258:    return false;
+286:    return false;
+335:    return false;
+692:    return false;
+35:	size_t alloced;
+46:	file = Z_Malloc(sizeof(MEMFILE), PU_STATIC, 0);
+)
+
+Calling Bash()
+
+Bash response → (
+}
+
+    tracksizebuffer[0] = (tracksize >> 24) & 0xff;
+    tracksizebuffer[1] = (tracksize >> 16) & 0xff;
+    tracksizebuffer[2] = (tracksize >> 8) & 0xff;
+    tracksizebuffer[3] = tracksize & 0xff;
+
+    if (mem_fwrite(tracksizebuffer, 1, 4, midioutput) != 4)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+#ifdef STANDALONE
+--
+)
+Confirmed: `mus2mid` returns `true` on **failure** (the opposite of what I assumed), so every song was being rejected. I'll fix the inverted check.
+Calling Bash()
+
+Bash response → (
+Exit code 1
+122:        if (!mus2mid(in, out)) { // mus2mid returns true on FAILURE
+0
+Traceback (most recent call last):
+  File "<string>", line 2, in <module>
+    import json,sys; d=json.load(sys.stdin); print(d['errs']);
+                       ~~~~~~~~~^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.15/lib/python3.15/json/__init__.py", line 306, in load
+    return loads(fp.read(),
+        cls=cls, object_hook=object_hook,
+        parse_float=parse_float, parse_int=parse_int,
+        parse_constant=parse_constant, object_pairs_hook=object_pairs_hook,
+        array_hook=array_hook, **kw)
+  File "/Library/Frameworks/Python.framework/Versions/3.15/lib/python3.15/json/__init__.py", line 371, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.15/lib/python3.15/json/decoder.py", line 358, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.15/lib/python3.15/json/decoder.py", line 376, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+)
+`make` re-copied `index.html` and dropped my script tag, so I'll re-add it and rerun.
+Calling Bash()
+
+Bash response → (
+1
+[]
+title {'sfxPlayed': 0, 'musicRequested': 1, 'musicStarted': 1, 'notesScheduled': 37, 'musicErrors': 0, 'musicPlaying': True, 'musicVoices': 9, 'maxPeak': 0.19422882795333862, 'ctxState': 'running'}
+afterStart {'sfxPlayed': 3, 'musicRequested': 2, 'musicStarted': 2, 'notesScheduled': 85, 'musicErrors': 0, 'musicPlaying': True, 'musicVoices': 5, 'maxPeak': 0, 'ctxState': 'running'}
+afterPlay {'sfxPlayed': 7, 'musicRequested': 2, 'musicStarted': 2, 'notesScheduled': 123, 'musicErrors': 0, 'musicPlaying': True, 'musicVoices': 5, 'maxPeak': 0.39020538330078125, 'ctxState': 'running'}
+)
+Music is playing now, with both the title and E1M1 tracks starting and a master-bus peak of 0.19 on the title screen. Next I'll check pause/resume, the stats readout and the controls.
+
+
+Calling Bash()
+
+Bash response → "{'errs': [], 'musicPeak': 0.28169679641723633, 'delivered0': 8, 'delivered1': 12, 'ticsAdvanced': 53, 'pausedPeak': 0, 'resumedPeak': 0.29091501235961914}\npaused True 0 resumed True 14"
+Pause and resume now mute and restore the music, and the keyboard input path still works. Next I'll confirm that the default make build, without -DFEATURE_SOUND, still compiles the new file.
+
+
+Calling Bash()
+
+Bash response → (
+default-flags-compile-ok
+5.1M	artifacts/logs/coder_input_audio.KWBVgQ
+?? platform/audio_compat/
+?? platform/audio_web.c
+?? platform/input_audio.c
+?? platform/input_audio.h
+?? web/audio_web.js
+?? web/input_audio.js
+e500c44
+)
+
+Calling Write()
+
+Write response → "File created successfully at: /Users/sarahtseng/Projects/fellowship-loop-capstone/artifacts/logs/coder_input_audio.KWBVgQ/report.md (file state is current in your context — no need to Read it back)"
+Sound effects and music now work in a scratch build, but they are not wired into the real build. The report is `artifacts/logs/coder_input_audio.KWBVgQ/report.md`, and it starts with `FINDINGS`.
+
+**What I did**
+- **Controls:** `input_audio.c` and `input_audio.js` already worked, so I left them alone. The only change is that the empty `cap_audio_init` moved into the new audio file.
+- **New files:** the audio code is in `platform/audio_web.c` and `web/audio_web.js`. A small `platform/audio_compat/SDL_mixer.h` stub covers the header the engine pulls in when sound is enabled.
+- **Bug fixed along the way:** the engine's `mus2mid` returns `true` on failure, and I had assumed the opposite. That rejected every song until I fixed the check.
+
+**Evidence** (headless Chromium, scratch build; the real `dist/` is untouched)
+- **Sound effects:** 7 of 7 requested effects played, with a measured output peak of 0.39.
+- **Music:** the title song and the E1M1 song both start, and music-only peak was 0.28.
+- **Pause/resume:** engine pause drops the peak to 0, and unpausing brings it back.
+- **Controls:** the key-delivery counter still advances (8 to 12 after two key presses).
+- **Not run:** `tests/verify.sh` and a headed browser, and nobody has listened to it.
+
+**What you still need to do**
+- The scratch build only works because I overrode the build flags on the command line, and I'm not allowed to edit the build files or `index.html`.
+- The coder role needs to make three changes:
+  - add `-DFEATURE_SOUND -Iplatform/audio_compat` to the Makefile CFLAGS;
+  - add `web/audio_web.js` to `WEB_FILES`;
+  - add `<script src="audio_web.js"></script>` to `web/index.html`, before `doom.js`.
+- Without the first change the engine has no sound module and the port stays silent.
+
+**Limits**
+- **Music fidelity:** the music is a generic synthesizer, not OPL-accurate. It doesn't use the WAD's GENMIDI instruments, so it will sound different from original Doom.
+- **Untested:** I only started two songs, and real-browser autoplay policy is untested because the headless runs disabled it.
+- **Persistence:** I assumed it is out of scope, since none was specified. Volumes reset on every load.

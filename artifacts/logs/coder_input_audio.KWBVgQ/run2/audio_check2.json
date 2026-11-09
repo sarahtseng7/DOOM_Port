@@ -1,0 +1,43 @@
+{
+  "errs": [],
+  "musicPeak": 0.28169679641723633,
+  "delivered0": 8,
+  "delivered1": 12,
+  "ticsAdvanced": 53,
+  "paused": {
+    "sfxRequested": 3,
+    "sfxPlayed": 3,
+    "sfxSuppressed": 0,
+    "sfxBad": 0,
+    "musicRequested": 2,
+    "musicStarted": 2,
+    "notesScheduled": 82,
+    "musicErrors": 0,
+    "maxPeak": 0.28169679641723633,
+    "lastPeak": 0,
+    "ctxState": "running",
+    "sampleRate": 48000,
+    "sfxChannelsActive": 0,
+    "musicPlaying": true,
+    "musicVoices": 0
+  },
+  "pausedPeak": 0,
+  "resumedPeak": 0.29091501235961914,
+  "resumed": {
+    "sfxRequested": 3,
+    "sfxPlayed": 3,
+    "sfxSuppressed": 0,
+    "sfxBad": 0,
+    "musicRequested": 2,
+    "musicStarted": 2,
+    "notesScheduled": 110,
+    "musicErrors": 0,
+    "maxPeak": 0.29091501235961914,
+    "lastPeak": 0.29091501235961914,
+    "ctxState": "running",
+    "sampleRate": 48000,
+    "sfxChannelsActive": 0,
+    "musicPlaying": true,
+    "musicVoices": 14
+  }
+}

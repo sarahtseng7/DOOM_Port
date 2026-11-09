@@ -1,0 +1,11 @@
+{"url":"http://localhost:8000/?r=1793769856391","viewport":"1280x720","cache":"CDP clearBrowserCache + setCacheDisabled",
+ "requests":{"/":200,"/render_timing.js":200,"/input_audio.js":200,"/audio_web.js":200,"/doom.js":200,"/doom.data":200,"/doom.wasm":200},
+ "failed_requests":0,"page_errors":0,"console_errors":0,"console_warnings":0,
+ "pre_frame":{"ms":172,"tic":0,"colors":1,"transparent_px":2560,"title":"Doom (WASM)"},
+ "first_frame":{"ms":276,"tic":3,"colors":192,"transparent_px":0,"title":"DOOM Shareware"},
+ "tic_series_endpoints":{"start":[276,3],"half_sec":[701,18],"end":[4979,168]},
+ "tic_rate_overall":35.08,"tic_rate_first_0_5s":35.3,
+ "canvas_1280x720":{"backing":"640x400","css":"1152x720","left":64,"top":0},
+ "canvas_800x600":{"backing":"640x400","css":"800x500","left":0,"top":50,"scroll":"800x600 (none)"},
+ "input":{"tic_before_esc":863,"tic_after_resize":930,"esc1":"menu opened (after-esc.png)","esc2":"menu closed, demo continues (after-esc2.png)"},
+ "note":"full per-100ms series is in the MCP tool result of this run; endpoints transcribed here"}

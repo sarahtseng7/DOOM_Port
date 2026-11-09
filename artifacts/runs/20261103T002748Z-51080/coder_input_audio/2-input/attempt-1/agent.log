@@ -1,0 +1,813 @@
+
+Calling Bash()
+
+Bash response → (
+# Capstone: build an agent loop to port DOOM
+
+**You have one week to design, operate, and evaluate a multi-agent system
+that can carry a substantial software task through to a verified result.**
+
+Your workload is porting the supplied Doom engine from C to WebAssembly
+with Emscripten so it runs and plays in a browser. You decide what faithful
+play means and how to establish it.
+
+The main deliverable is your loop: how it assigns work, challenges claims,
+uses evidence, preserves state, recovers from failure, and decides to stop.
+A working game is necessary, but it does not establish that your system works.
+
+## Your responsibility
+
+This is a brief for you, the student. You must turn it into an architecture,
+role-specific instructions, acceptance criteria, and an evaluation plan.
+Passing this README to an ordinary coding agent and submitting its output
+does not satisfy the assignment.
+
+You own the system design and the decisions about what evidence to trust.
+Agents implement and repair the port. Design the loop yourself; repository
+agent instructions prohibit agents from designing it or modifying `loop/`.
+You must explain your choices and demonstrate their consequences.
+Record manual interventions rather than attributing them to the loop.
+
+## Design decisions you must make
+
+Before implementation, document your answers in `loop/`:
+
+- **Work:** How does a broad goal become bounded tasks? Who decides what
+  happens next when agents disagree or progress stalls?
+- **Context:** What does each role see? What information must survive when
+  every agent starts with a fresh context?
+- **Authority:** Which tools and files can each role access? Who can change
+  the checks used to accept the coder's work?
+- **Evidence:** What constitutes success? How will you distinguish a plausible
+  report from a verified result, and a weak check from a useful one?
+- **Recovery:** What happens after a tool error, failed check, interrupted
+  run, or repeated unsuccessful repair?
+- **Limits:** What are the time, token or cost, and retry budgets? How do
+  success, exhaustion, and stalled progress produce different stopping decisions?
+
+There is no prescribed orchestration algorithm. Your design should make these
+choices explicit and testable.
+
+## Required roles and tools
+
+Use separate **coder, reviewer, and tester** agent invocations, with separate
+contexts and explicit handoffs. They may use the same model. Define their
+responsibilities, permissions, and the information exchanged between them.
+A single agent describing itself as three roles is not sufficient.
+
+Use **MCP for tool access and handoffs** where needed. Include the relevant tool definitions
+and configuration. Explain how the tools enforce the boundaries you chose;
+role names and prompts alone do not enforce permissions.
+
+Sandboxing is recommended but optional; see [SANDBOX.md](SANDBOX.md). Document
+network access and pin your toolchain version. Keep credentials out of the
+repository and sandbox.
+
+## Evaluate the system you built
+
+Write your own measurable acceptance criteria before the agents implement
+the port. Cover actual use in your chosen browser and explain the limits of
+your checks. A successful compile, screenshot, or agent declaration alone
+cannot establish that the task is complete.
+
+Your evaluation must demonstrate:
+
+- **Independent verification:** acceptance checks are protected from coder
+  edits, and results identify the source revision and supporting evidence.
+- **Checks that catch faults:** deliberately broken behavior causes the
+  relevant checks to fail. Explain what those checks still cannot establish.
+- **Autonomous repair:** after initial success, a teammate or instructor
+  introduces at least two regressions without disclosing their cause to the
+  repair agents. The loop detects and repairs them and verifies the result.
+- **Resumption:** an interrupted run continues with fresh agent contexts
+  using saved state, without you reconstructing its history by hand.
+- **Accountability:** you can trace findings to subsequent actions and explain
+artifacts:
+README.md
+runs
+
+artifacts/runs/20261103T002748Z-51080:
+coder
+coder_input_audio
+coder_render_timing
+manifest.txt
+reviewer
+reviewer_requirements
+tester
+verification-1.log
+run_id: 20261103T002748Z-51080
+source_commit: e500c440656622db5ab3f8fb7df73d8b5998eeb3
+artifacts/runs/.DS_Store
+artifacts/runs/20261103T001738Z-47122/initial-source.patch
+artifacts/runs/20261103T001738Z-47122/manifest.txt
+artifacts/runs/20261103T001738Z-47122/status.txt
+artifacts/runs/20261103T001738Z-47122/initial-source-status.txt
+artifacts/runs/20261030T202822-loop-sh/.DS_Store
+artifacts/runs/20261030T202822-loop-sh/manifest.txt
+artifacts/runs/20261103T002748Z-51080/manifest.txt
+artifacts/runs/20261103T002748Z-51080/verification-1.log
+artifacts/runs/20261102T235903Z-41864/initial-source.patch
+artifacts/runs/20261102T235903Z-41864/manifest.txt
+artifacts/runs/20261102T235903Z-41864/status.txt
+artifacts/runs/20261102T235903Z-41864/initial-source-status.txt
+artifacts/runs/20261030T202822-loop-sh/logs/loop.log
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-19.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-2.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-29.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-6.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-28.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-7.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-18.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-3.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-8.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-13.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-27.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-23.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-17.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-22.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-16.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-9.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-12.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-26.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-21.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-15.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-11.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-25.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-10.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-24.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-20.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-14.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-30.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-4.md
+artifacts/runs/20261030T202822-loop-sh/handoffs/agent-session-notes-5.md
+artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/invocation.txt
+artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/result.json
+artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/report.md
+artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/proposed-criteria.md
+artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/playtest-quick.log
+artifacts/runs/20261103T001738Z-47122/tester/prepare/attempt-1/agent.log
+)
+
+Calling Bash()
+
+Bash response → (
+<persisted-output>
+Output too large (36.3KB). Full output saved to: /Users/sarahtseng/.claude/projects/-Users-sarahtseng-Projects-fellowship-loop-capstone/23f4d7de-fbba-46c5-b362-0d6429629ff0/tool-results/b1gtm7k2z.txt
+
+Preview (first 2KB):
+./manifest.txt
+./verification-1.log
+./tester/verify-005841Z/verify.log
+./tester/verify-005841Z/identity.txt
+./coder/1-integrate/attempt-1/source-commit.txt
+./coder/1-integrate/attempt-1/invocation.txt
+./coder/1-integrate/attempt-1/result.json
+./coder/1-integrate/attempt-1/verify-full.log
+./coder/1-integrate/attempt-1/report.md
+./coder/1-integrate/attempt-1/dist-sha256.txt
+./coder/1-integrate/attempt-1/agent.log
+./coder/1-integrate/attempt-1/source-status.txt
+./coder/plan/attempt-1/invocation.txt
+./coder/plan/attempt-1/result.json
+./coder/plan/attempt-1/report.md
+./coder/plan/attempt-1/proposed-spec.md
+./coder/plan/attempt-1/agent.log
+./coder/plan/attempt-1/interface-contract.md
+./coder/plan/attempt-1/source-status.txt
+./coder/2-build/attempt-1/source-commit.txt
+./coder/2-build/attempt-1/invocation.txt
+./coder/2-build/attempt-1/result.json
+./coder/2-build/attempt-1/verify-full.log
+./coder/2-build/attempt-1/report.md
+./coder/2-build/attempt-1/source-dirty.patch
+./coder/2-build/attempt-1/agent.log
+./coder/2-build/attempt-1/source-status.txt
+./coder/2-build/attempt-1/verify-exit.txt
+./coder/1-build/attempt-1/invocation.txt
+./coder/1-build/attempt-1/result.json
+./coder/1-build/attempt-1/verify-full.log
+./coder/1-build/attempt-1/report.md
+./coder/1-build/attempt-1/dist-sha256.txt
+./coder/1-build/attempt-1/agent.log
+./coder/1-build/attempt-1/build.log
+./coder/1-integrate/attempt-1/verify-full/playtest-results.json
+./coder/1-integrate/attempt-1/verify-full/verify-result.json
+./coder/1-integrate/attempt-1/verify-full/verify.log
+./coder/1-integrate/attempt-1/verify-full/playtest.log
+./coder/1-integrate/attempt-1/verify-full/selftest.log
+./coder/1-integrate/attempt-1/verify-full/dist-sha256.txt
+./coder/1-integrate/attempt-1/verify-full/browser-console.log
+./coder/1-integrate/attempt-1/verify-full/identity.txt
+./coder/1-integrate/attempt-1/verify-full/build.log
+./coder/2-build/attempt-1/verify-full/playtest-results.json
+./coder/2-build/attempt-1/verify-full/verify-result.json
+...
+</persisted-output>
+)
+
+Calling Bash()
+
+Bash response → (
+Exit code 1
+./reviewer/1-review/attempt-1/invocation.txt
+./reviewer/1-review/attempt-1/result.json
+./reviewer/1-review/attempt-1/report.md
+./reviewer/1-review/attempt-1/agent.log
+./coder_input_audio/2-input/attempt-1/invocation.txt
+./coder_input_audio/2-input/attempt-1/agent.log
+./coder_input_audio/1-input/attempt-1/source-commit.txt
+./coder_input_audio/1-input/attempt-1/invocation.txt
+./coder_input_audio/1-input/attempt-1/playtest.log
+./coder_input_audio/1-input/attempt-1/result.json
+./coder_input_audio/1-input/attempt-1/report.md
+./coder_input_audio/1-input/attempt-1/qtest.log
+./coder_input_audio/1-input/attempt-1/dist-sha256.txt
+./coder_input_audio/1-input/attempt-1/agent.log
+./coder_input_audio/1-input/attempt-1/source-status.txt
+./coder_input_audio/1-input/attempt-1/build.log
+./coder_render_timing/2-render/attempt-1/source-commit.txt
+./coder_render_timing/2-render/attempt-1/invocation.txt
+./coder_render_timing/2-render/attempt-1/playtest.log
+./coder_render_timing/2-render/attempt-1/result.json
+./coder_render_timing/2-render/attempt-1/report.md
+./coder_render_timing/2-render/attempt-1/dist-sha256.txt
+./coder_render_timing/2-render/attempt-1/agent.log
+./coder_render_timing/2-render/attempt-1/source-status.txt
+./coder_render_timing/2-render/attempt-1/source-diff-sha256.txt
+./coder_render_timing/2-render/attempt-1/build.log
+./coder_render_timing/2-render/attempt-1/playtest/playtest-results.json
+./coder_render_timing/2-render/attempt-1/playtest/browser-console.log
+./coder_input_audio/1-input/attempt-1/playtest/playtest-results.json
+./coder_input_audio/1-input/attempt-1/playtest/browser-console.log
+./coder_render_timing/1-render/attempt-1/invocation.txt
+./coder_render_timing/1-render/attempt-1/playtest.log
+./coder_render_timing/1-render/attempt-1/result.json
+./coder_render_timing/1-render/attempt-1/report.md
+./coder_render_timing/1-render/attempt-1/dist-sha256.txt
+./coder_render_timing/1-render/attempt-1/agent.log
+./coder_render_timing/1-render/attempt-1/source-status.txt
+./reviewer_requirements/1-audit/attempt-1/invocation.txt
+./reviewer_requirements/1-audit/attempt-1/result.json
+./reviewer_requirements/1-audit/attempt-1/report.md
+./reviewer_requirements/1-audit/attempt-1/agent.log
+./coder/plan/attempt-1/invocation.txt
+./coder/plan/attempt-1/result.json
+./coder/plan/attempt-1/report.md
+./coder/plan/attempt-1/proposed-spec.md
+./coder/plan/attempt-1/agent.log
+./coder/plan/attempt-1/interface-contract.md
+./coder/plan/attempt-1/source-status.txt
+./coder_render_timing/2-render/attempt-1/playtest/screens/013-move-fwd-held2.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/026-settle.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/final-page.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/006-idle-b.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/014-settle.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/023-settle.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/003-main-menu.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/036-fire-rest-b.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/019-settle.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/045-soak.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/044-soak.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/031-blur-b.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/029-settle.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/011-move-start.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/033-fire-anim.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/043-soak.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/024-settle.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/020-move-fwd-stopped.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/009-turn-right-settled.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/021-settle.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/016-settle.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/030-settle.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/032-fire-pre.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/015-settle.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/022-settle.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/042-soak-start.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/046-soak.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/047-soak.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/039-automap-off.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/027-blur-turning.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/035-fire-rest-a.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/018-settle.png
+./coder_render_timing/2-render/attempt-1/playtest/screens/038-automap-on.png
+./coder_render_timing/2-render/attempt-1/pla
+
+... [6223 characters truncated] ...
+
+r_render_timing/1-render/attempt-1/playtest/screens/015-settle.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/022-settle.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/042-soak-start.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/046-soak.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/047-soak.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/039-automap-off.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/027-blur-turning.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/035-fire-rest-a.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/018-settle.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/038-automap-on.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/004-level-start.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/012-move-fwd-held.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/001-boot.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/008-turn-right.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/041-esc-closed.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/007-turn-start.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/034-fire-post.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/017-settle.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/010-turn-left.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/040-esc-menu.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/028-blur-turning-b.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/037-automap-pre.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/005-idle-a.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/002-title.png
+./coder_render_timing/1-render/attempt-1/playtest/screens/025-settle.png
+# Interface contract (AGENT-PROPOSED, not student-approved)
+
+Authoritative declarations: `platform/capstone_bridge.h`, **version 2** (unchanged this run; no interface change).
+Carried forward from run 20261103T001738Z-47122. Change from v1: added `cap_tic_count()` (already implemented in
+platform/doomgeneric_wasm.c by the prior 1-build attempt, but the version had
+not been bumped).
+
+## Ownership
+| File | Owner |
+|---|---|
+| platform/doomgeneric_wasm.c, platform/cap_fallback.c, platform/engine_stubs.c, platform/capstone_bridge.h, web/index.html, Makefile, BUILD.md | coder |
+| platform/render_timing.{c,h}, web/render_timing.js | coder_render_timing (not yet delivered) |
+| platform/input_audio.{c,h}, web/input_audio.js | coder_input_audio (not yet delivered) |
+| tests/ | tester |
+
+## Symbol table
+| Symbol | Direction | Defined by | Notes |
+|---|---|---|---|
+| cap_bridge_version, cap_framebuffer_ptr, cap_tic_count, cap_ready | JS -> C (exported) | doomgeneric_wasm.c | main loop runs doomgeneric_Tick() (no JS-driven frame call) |
+| cap_render_init / cap_render_present(fb) / cap_time_ms / cap_sleep_ms / cap_set_title | C -> module | weak in cap_fallback.c; strong override in render_timing.c | present must not retain fb; time must be nonzero at first call |
+| cap_input_init / cap_input_poll / cap_audio_init | C -> module | weak in cap_fallback.c; override in input_audio.c | poll returns 1 = event, 0 = empty |
+| cap_input_event(pressed, doom_key), cap_input_reset() | JS -> C (exported) | weak in cap_fallback.c; override in input_audio.c | bounded queue; reset releases all keys |
+
+## DG adapter mapping (doomgeneric_wasm.c)
+DG_Init -> cap_render_init, cap_input_init, cap_audio_init; DG_DrawFrame ->
+cap_render_present(DG_ScreenBuffer); DG_SleepMs -> cap_sleep_ms; DG_GetTicksMs
+-> cap_time_ms; DG_GetKey -> cap_input_poll; DG_SetWindowTitle -> cap_set_title.
+
+## Engine facts relied on
+- DG_ScreenBuffer is 640x400 uint32 pixels, bytes B,G,R,0; alpha must be forced to 255.
+- i_timer.c treats basetime==0 as unset, so DG_GetTicksMs must be nonzero on first call.
+- Engine waits (d_main.c wipe loop, d_loop.c TryRunTics) call I_Sleep(1); real time
+  must advance during them and the tab must not hang (current build: ASYNCIFY).
+- Key codes are already Doom codes (doomkeys.h); I_GetEvent processes one release
+  per call, so the queue must tolerate repeated polling.
+- doomgeneric_Create() runs D_DoomMain and returns; main() calls it once and then
+  drives doomgeneric_Tick() per frame.
+
+## Weak/strong override rule
+Specialist modules define the same symbols non-weak in their own platform/*.c;
+the linker prefers them over cap_fallback.c. Makefile compiles platform/*.c.
+Only the coder edits capstone_bridge.h; changes are requested via report.md and
+require a CAP_BRIDGE_VERSION bump plus an update to this file.
+
+## Build interface
+`make clean all` -> dist/index.html, doom.js, doom.wasm, doom.data. Flags: -O2
+-sASYNCIFY, --preload-file assets/doom1.wad@/doom1.wad (per prior build report).
+
+## Open
+Audio (`cap_audio_init` is a placeholder), persistence, mouse: UNDECIDED.
+(eval):1: = not found
+)
+
+Calling Bash()
+
+Bash response → (
+platform:
+cap_fallback.c
+capstone_bridge.h
+doomgeneric_wasm.c
+engine_stubs.c
+input_audio.c
+input_audio.h
+README.md
+render_timing.c
+render_timing.h
+
+tests:
+lib
+node_modules
+package-lock.json
+package.json
+playtest.mjs
+README.md
+selftest.mjs
+verify.sh
+
+web:
+index.html
+input_audio.js
+      91 platform/cap_fallback.c
+      69 platform/capstone_bridge.h
+      84 platform/doomgeneric_wasm.c
+       7 platform/engine_stubs.c
+      86 platform/input_audio.c
+      11 platform/input_audio.h
+      37 platform/README.md
+      85 platform/render_timing.c
+      11 platform/render_timing.h
+      25 web/index.html
+      90 web/input_audio.js
+     596 total
+CODER_INPUT_AUDIO.md
+CODER_RENDER_TIMING.md
+CODER.md
+REVIEWER_REQUIREMENTS.md
+REVIEWER.md
+TESTER.md
+(eval):1: no matches found: loop/prompts/*input*
+# Building the Doom WebAssembly port
+
+Toolchain: Emscripten **4.0.18** (`source ~/Developer/emsdk/emsdk_env.sh`), GNU make, Node (tests only).
+
+    make        # builds build/*.o and dist/{index.html,doom.js,doom.wasm,doom.data}
+    make clean  # removes build/ and dist/
+
+- Engine sources: all `third_party/doomgeneric/*.c` except `dummy.c`, `doomgeneric_sdl.c`; platform code: `platform/*.c`.
+- WAD packaging: `assets/doom1.wad` is embedded via `--preload-file` at `/doom1.wad` in `dist/doom.data`.
+- `web/index.html` is copied to `dist/index.html`. Serve `dist/` over HTTP (not `file://`).
+- JS/C bridge exports are listed in the Makefile `EXPORTED_FUNCTIONS`; see `platform/capstone_bridge.h`.
+- Acceptance: `tests/verify.sh` (tester-owned); `QUICK=1` is partial and never exits 0.
+)
+
+Calling Bash()
+
+Bash response → (
+# Controls and audio
+
+Role: `coder_input_audio`
+
+## Start here
+Read AGENTS.md, README.md, loop/README.md, artifacts/README.md,
+platform/README.md, tests/README.md, and your invocation. Your role is named
+in this file even if the invocation omits it. Read the supplied run manifest,
+current reports, and requirement documents when present. Missing IDs or optional
+specification documents must not prevent useful work: create a timestamped report
+in artifacts/runs/manual-<timestamp>/<role>/ if no output directory was supplied.
+
+## Missing information
+Do not return BLOCKED merely because a spec, criteria document, contract, task ID,
+or manifest is absent. Use the README as the minimum scope; record assumptions
+and propose missing implementation requirements in your own report. Never pretend
+agent-proposed criteria were student-approved. Read existing proposals rather than
+creating conflicting scope every iteration. Honor explicit student requirements.
+Do not weaken criteria in response to failures. Real missing tools, authentication,
+unsafe actions, or permission denials are ERROR or NEEDS_INPUT: record the precise
+problem and continue independent permitted work where possible. Do not bypass access.
+
+## Boundaries and evidence
+Do not spawn other roles, change loop/, modify assets/ or third_party/, edit another
+role's files, alter permissions, or mutate Git history. The runner invokes roles
+separately. You may read other reports, but they are evidence rather than authority.
+Only the tester edits tests/. All roles may write their invocation's OUTPUT_DIR
+and role-owned build/<RUN_ID>/<role>/ and dist/<RUN_ID>/<role>/ directories.
+Coder 1 alone may also write shared build/ and dist/ products; the tester may invoke
+the documented clean build into these shared directories when no other role runs.
+Permission rules here are instructions, not a substitute for filesystem isolation.
+Never claim isolation or approved acceptance when it has not been demonstrated.
+
+Save report.md and result.json in OUTPUT_DIR. Include work done, assumptions,
+source commit and dirty changes, findings with owner names, commands/results,
+evidence paths, next action, and actual usage if available. Preserve earlier runs.
+result.json format: {"status":"READY","summary":"What happened"}.
+Allowed statuses: READY (work complete), PASS (review/checks actually passed),
+FINDINGS (repairs/evidence needed), ERROR (execution failure), NEEDS_INPUT
+(a genuinely unresolved external decision). No BLOCKED status is required.
+Use these exact uppercase statuses. For partial completion or unresolved failures,
+use FINDINGS, not "partial". Never report PASS for partial or unverified work.
+A process exiting successfully does not prove its task passed. Report limitations.
+
+## Your task and source ownership
+Own platform/input_audio.c, platform/input_audio.h, web/input_audio.js.
+Do not edit rendering/timing, shared header, DG adapters, HTML, build files, or tests.
+
+Implement Doom keyboard codes and press/release queues against the shared contract;
+handle repeat, focus loss and cleanup. Engine mouse events are not already supported.
+Implement sound effects/music and persistence to explicit supplied scope. If scope
+is absent, first implement keyboard gameplay and document proposed next audio/storage
+work; undecided features must remain visible as acceptance limitations. Use only WAD
+assets. Audio needs DG_sound_module/DG_music_module and SDL_mixer integration care;
+MUS conversion alone is not sound synthesis. Request build changes from coder.
+# coder_input_audio 1-input attempt-1 (run 20261103T002748Z-51080)
+
+Source: commit e500c44 + uncommitted changes (source-status.txt). Criteria/spec are AGENT-PROPOSED (coder/plan, tester/prepare); no student-approved specification, acceptance-criteria, or interface-contract exists. Only the proposed R4 (keyboard) is in scope; audio/storage scope is absent.
+
+## Work done (owned files only)
+- `platform/input_audio.c` (new): strong overrides of the weak hooks in cap_fallback.c: `cap_input_init`, `cap_input_poll`, `cap_input_event`, `cap_input_reset`, `cap_audio_init` (empty). Strictly alternating press/release per key: auto-repeat presses and stray releases are dropped; releases can never be lost to a full queue (press limit 256 of 512 slots); reset queues a release for every key still down.
+- `platform/input_audio.h` (new): diagnostics `cap_input_dropped()/cap_input_delivered()` (not exported to JS).
+- `web/input_audio.js` (new): self-installing keyboard capture. KeyboardEvent.code -> doomkeys.h (arrows, Ctrl/Space/Shift/Alt, `,` `.` strafe, Enter, Esc, Tab, F1-F12, letters, digits, Backspace, Pause, -, =, Home/End/PgUp/PgDn/Ins/Del, numpad arrows). Tracks held physical codes so keyup always matches its keydown; L/R Ctrl share one doom key (released only when both up). Releases all on blur, visibilitychange(hidden), pagehide, contextmenu, and Meta keydown (macOS swallows keyups under Cmd). Meta combos are not hijacked. Resolves `window.Module` lazily (script order independent).
+- Mouse: NOT implemented (engine mouse generation is commented out in i_input.c; needs engine-level work outside my ownership).
+- Audio (SFX/music) and save/config persistence: NOT implemented. Scope is undecided, so per role prompt they stay visible acceptance limitations (proposed-spec UNDECIDED list).
+
+## Evidence
+- Native queue unit test (scratch, build/.../qtest.c): `qtest.log` PASS (repeat drop, stray release, bad keys, reset, flood with all 255 releases preserved, no key left down after saturated queue).
+- emcc 4.0.18 build into role-owned dirs (`make BUILD=build/<RUN>/coder_input_audio/obj DIST=dist/<RUN>/coder_input_audio`): build.log, exit 0. Shared build/ and dist/ untouched.
+- Role-local page = web/index.html with inline key handlers removed and `<script src="input_audio.js">` added (made by script in dist/<RUN>/coder_input_audio/, not committed to web/index.html). Existing `tests/playtest.mjs` with `QUICK=1 DIST_DIR=...`: all 31 checks PASS incl. I1-I7 (turn/move/blur-release), C1-C3, U1-U4, T2; failed=0; exit 3 is the by-design QUICK exit. See `playtest.log`, `playtest/`. dist-sha256.txt lists hashes.
+
+## Limits
+- QUICK 15s soak only, headless Chromium only, single run; not a full verify.sh run and not independently reviewed. A test that passes with the old inline handlers already existed, so these checks show no regression, not that my JS is the better of the two.
+- Not tested: keyboard layouts/IME, Meta/context-menu release paths, two-physical-keys-one-doom-key, real focus loss in a headed browser (playtest I7 simulates blur only).
+- Unrequested input_audio.js is not yet loaded by the shipped page.
+
+## Findings / requests (owner)
+1. **coder**: add `<script src="input_audio.js"></script>` to web/index.html (before doom.js), delete its inline key code, and make the Makefile copy `web/input_audio.js` to `dist/` (currently only index.html is copied). Until then my JS is unused and the page's inline handler feeds the C queue (still correct: C dedupes).
+2. **coder**: optionally export `_cap_input_dropped,_cap_input_delivered` for diagnostics.
+3. **student**: decide audio scope. Proposed next work: (a) SFX via Web Audio: implement `DG_sound_module` (i_sound.h) in C, decode DMX lumps (8-bit PCM, 11025 Hz) into AudioBuffers, per-channel gain/pan from engine volume/sep; requires `FEATURE_SOUND` plus avoiding the `SDL_mixer.h` include (coder/build change); gate on user gesture for AudioContext. (b) Music: MUS->MIDI via mus2mid.c plus a GENMIDI-based synth; much larger; propose deferring. (c) Persistence: mount IDBFS at a save dir, set savegamedir/config path, `syncfs` after saves/config writes; checks need a reload test. Tester must define oracles (an active AudioContext proves nothing).
+4. **tester**: add checks for held-key release on tab hide and for repeated keydown not double-firing; A1/P1 remain UNVERIFIED.
+
+Manual interventions: none. Usage: not available.
+{"status":"FINDINGS","summary":"Keyboard input (C queue + web/input_audio.js) implemented; queue unit test and QUICK playtest (31 checks) pass against a role-local build. Not READY: page/Makefile wiring needs coder, mouse/audio/persistence not implemented (scope undecided), no full verify or review."}
+# Requirements & evidence audit — reviewer_requirements, attempt-1
+Run 20261103T002748Z-51080, task 1-audit. Source commit e500c44 + 27 uncommitted/untracked paths (git status at audit time; loop/ also modified, not by me). Read-only audit: no code, tests, loop/, or other roles' files touched. No commands were re-run (no build, no playtest); all technical claims below are from other roles' reports and are evidence, not authority.
+
+## Assumptions
+- artifacts/specification.md, acceptance-criteria.md, interface-contract.md and artifacts/state.json do NOT exist. Fallback = run 20261103T001738Z-47122 coder/plan (proposed-spec.md, interface-contract.md) and tester/prepare (proposed-criteria.md rev 2). All are AGENT-PROPOSED; none is student-approved.
+- This run (…51080) contains only manifest.txt (no coder/tester outputs yet), so there is no current-run candidate evidence.
+- loop/DESIGN_DECISION_QUESTIONS.md is a student draft: Evidence, Limits and Recovery answers are thin ("compilation, screenshots, plausible explanations…" is listed as success, which the README says is insufficient). It is not an approved acceptance document.
+
+## Product readiness (README R1-R6 as proposed)
+| Item | Status | Evidence / gap |
+|---|---|---|
+| Clean build (emcc 4.0.18) | PARTIAL | Coder 1-build of run …47122 reports `make clean all` exit 0. Predates the current tree? dist/ files are timestamped 16:52 and platform/render_timing.c, input_audio.c, web/input_audio.js (16:37-16:40) exist, but prior reports say these modules are "not delivered"/absent. Which modules are in the tested dist is NOT_ESTABLISHED. |
+| Quick playtest | PARTIAL | 0 FAIL, 32 PASS, 3 UNVERIFIED (A1, P1, G3), twice (tester + coder), QUICK exits 3 by design. |
+| Full 300s soak / `tests/verify.sh` | NOT_ESTABLISHED | Never run in any run. |
+| Audio, persistence, door/exit, mouse, other browsers | NOT_ESTABLISHED | Student scope undecided; A1/P1/G3 UNVERIFIED. "Faithful play" undefined (no demo/determinism check). |
+| I5/I7 timing hypothesis | WEAK | Earlier failures attributed to test timing; tester then loosened to settle-polling. Two passes on one build, flakiness unassessed. Criteria were changed in response to failure (logged in rev 2 change log, but with no student sign-off) — must not count as evidence the port was right. |
+
+## Assignment readiness
+| Obligation | Status | Next action |
+|---|---|---|
+| Student-approved spec & criteria written before implementation | NOT_ESTABLISHED | Criteria were written by the tester agent after the build existed (run …41864 coder 1-build preceded criteria). Student must review/freeze artifacts/acceptance-criteria.md and record approval + date. |
+| Documented design decisions in loop/ | PARTIAL | Draft answers exist; Evidence/Limits/Authority truncated or vague; no numeric time/token/retry budgets or stop rules distinguishing success/exhaustion/stall. |
+| Separate coder/reviewer/tester invocations | PARTIAL | Prompts and per-role output dirs exist. |
+| Permission enforcement | NOT_ESTABLISHED | loop.sh states isolation is not implemented; every report says instruction-only. No demonstration that coder cannot edit tests/. Today tests/ is untracked and unprotected by hash/read-only mode. |
+| MCP tools / handoffs | NOT_ESTABLISHED | No MCP config or tool definitions found in artifacts evidence. |
+| Independent verification w/ revision identity | PARTIAL | Reports cite commit + "uncommitted changes", but the tree is dirty and untracked; initial-source.patch exists for earlier runs but dist hash vs. tree for the current candidate is unchecked. Recommend recording a tree hash (including untracked files). |
+| Checks catch faults (mutation evidence) | PARTIAL | tests/selftest.mjs covers pixel helpers only (black/swapped/transparent/static/mis-shifted). No evidence that broken *builds* (e.g. dropped key release, BGR swap, frozen loop) fail the playtest. |
+| Autonomous repair of ≥2 undisclosed regressions | NOT_ESTABLISHED | None injected. Needs a teammate/instructor. |
+| Resumption with fresh contexts | NOT_ESTABLISHED | Runs resume by reading prior reports, but no interruption was staged and no state.json exists. loop.log of 20261030T202822-loop-sh shows an earlier failure (missing ANTHROPIC_API_KEY). |
+| Resource accounting | NOT_ESTABLISHED | All reports: "Usage: not available". |
+| Manual interventions log | PARTIAL | Reports say "none"; no central log, and student edits to loop/ are uncommitted. |
+| Deployment (hosting) | NOT_ESTABLISHED | Only local http.server; no hosting decision. |
+| Reflection / disagreement write-up | NOT_ESTABLISHED | Not started. |
+
+## Findings (owner)
+1. (student) Approve or replace the agent-proposed spec and criteria; until then no result is "accepted". Decide audio, persistence, mouse, browsers, faithful-play definition.
+2. (tester) Run full `tests/verify.sh` with absolute OUT_DIR on the current tree; record tree hash/dist hash. Add fault-injection runs proving checks fail on broken builds, and repeat quick runs for I5/I7 flakiness.
+3. (coder) Report whether render_timing / input_audio modules are in dist; reconcile stale "absent" statements in prior reports; no delivery report exists for them.
+4. (student/runner) Implement real permission enforcement (read-only tests/ for coder, hash check of protected files) or document honestly as unenforced; add MCP config.
+5. (student/runner) Add state.json, budgets, usage accounting, stop rules.
+6. (student + instructor) Schedule regression-injection, interruption/resume demonstration, and reflection.
+7. (reviewer note) Prior builds shared dist/; earlier run evidence must be preserved — currently preserved.
+
+## Next action
+Student to freeze criteria (finding 1); tester to run the full verify; coder to clarify module status. Re-audit afterward.
+Usage: not available. Manual interventions by this role: none.
+# reviewer 1-review attempt-1 (run 20261103T002748Z-51080)
+
+Status: FINDINGS (not PASS). Static review of platform/ and web/ plus a check of the coder's evidence. I did not rebuild or rerun the browser tests.
+
+## Basis and assumptions
+- Source: commit e500c44 + uncommitted changes (manifest source_commit). The shipped `dist/` hashes match `coder/1-integrate/attempt-1/verify-full/dist-sha256.txt` (doom.js, doom.wasm, doom.data, index.html, input_audio.js), so that evidence describes the current build.
+- No `artifacts/specification.md`, `acceptance-criteria.md` or `interface-contract.md` exists. I used the AGENT-PROPOSED `coder/plan/attempt-1/{proposed-spec,interface-contract}.md` and `tester/prepare/attempt-1/proposed-criteria.md`. None is student-approved; I did not approve them.
+- No earlier reviewer findings exist under `artifacts/runs/`.
+- Files read: platform/{capstone_bridge.h,doomgeneric_wasm.c,cap_fallback.c,input_audio.{c,h},render_timing.{c,h},engine_stubs.c}, web/{index.html,input_audio.js}, Makefile. Checked against third_party/doomgeneric `doomkeys.h`, `i_input.c`, `doomfeatures.h`.
+
+## Verified correct (no action)
+- BGR(0) -> RGBA conversion in render_timing.c: the word is 0x00RRGGBB, output is 0xFF BB GG RR, which is R,G,B,A in memory. Alpha is forced to 255.
+- Every `web/input_audio.js` key code matches `doomkeys.h`: arrows, Ctrl=KEY_FIRE 0xa3, Space=KEY_USE 0xa2, Shift 0xb6, Alt 0xb8, strafe 0xa0/0xa1, F-keys, Home/End/PgUp/PgDn/Ins/Del, Esc/Tab/Enter, `-`/`=`.
+- The `input_audio.c` queue invariant holds: pending presses are capped at 256 and at most 255 releases can be outstanding, so the 512-slot queue never drops a release.
+- Weak (`cap_fallback.c`) / strong (`input_audio.c`, `render_timing.c`) overrides resolve correctly. The built page loads `input_audio.js`, and playtest I1-I7, C1-C3, U1-U4 and T2 passed on that build.
+- `cap_time_ms` is nonzero on first call, as `i_timer.c` requires.
+
+## Findings (most severe first)
+
+### F1 (medium, correctness/robustness) Exported `cap_frame` is unsafe alongside the ASYNCIFY main loop
+`main()` (platform/doomgeneric_wasm.c) runs `for(;;){doomgeneric_Tick(); emscripten_sleep(0);}`. `cap_frame` is also exported (Makefile EXPORTED_FUNCTIONS) and the interface contract says "JS calls once per animation frame". If any JS calls `_cap_frame` while main is suspended inside an ASYNCIFY sleep, it re-enters `doomgeneric_Tick` in the middle of an unwound async operation. That aborts or corrupts engine state. Nothing calls it today (no JS/test caller), so it is dormant. Action: remove the export and `cap_frame`, or document and test that exactly one driver exists. Fix the contract text either way.
+
+### F2 (medium, test gap) Key-handling edge cases have no behavioural coverage
+The playtest simulates blur only through Playwright. Not exercised: `visibilitychange`, `pagehide`, `contextmenu` and Meta releases. Also untested: two physical keys on one Doom key (L+R Ctrl), keydown auto-repeat, and a key held across a refocus. After refocus a still-held key is silently ignored, because `e.repeat` returns before `held` is repopulated. The player must release and re-press it. Tester should add these checks. The coder_input_audio report lists the same gaps.
+
+### F3 (low-medium, usability) `web/input_audio.js` swallows browser shortcuts
+`preventDefault` is called for any mapped key unless Meta is held. On Windows/Linux this blocks Ctrl+R, F5 reload, F12 devtools, F11 fullscreen, and Ctrl+letter shortcuts (letters are mapped). Tab traps keyboard focus. Action: do not hijack F5/F11/F12 (the F-key table maps them), and skip `preventDefault` when `e.ctrlKey` and the key is a letter, or document this as intended.
+
+### F4 (low, robustness) ASYNCIFY stack size is untested
+The link flags use `-sASYNCIFY` with the default `ASYNCIFY_STACK_SIZE` (4096 bytes) and no `ASYNCIFY_ADD`/`ASYNCIFY_IGNORE`. The sleeps happen at shallow depth (TryRunTics, the wipe loop), and the 300 s soak passed. But a deeper path that sleeps, such as a startup/WAD-load error path or a menu path, could overflow the stack and abort with "unreachable". Action: set `-sASYNCIFY_STACK_SIZE` explicitly with margin, and add a test that reaches the E1M1 wipe, the intermission screen and the end of the demo loop.
+
+### F5 (low, maintainability) Duplicate weak/strong implementations hide a regression
+`cap_fallback.c` carries a second input queue and a second renderer, each different in behaviour from the strong ones. If `input_audio.c` or `render_timing.c` fails to be linked (rename, glob change), the build still succeeds and silently uses the fallback. There is no check of which implementation is active. Action: have a test assert the active implementation. For example, export a diagnostic such as `_cap_input_dropped`, or check `Module._rt` for the render module. This also matters for the required regression-injection evaluation.
+
+### F6 (low, build hygiene)
+- `CFLAGS` contains `-w`, which silences every warning for the platform code as well as the engine. Apply it only to `third_party` objects.
+- Object rules depend only on `capstone_bridge.h`. Edits to `input_audio.h`, `render_timing.h` or engine headers do not trigger a rebuild. Use `-MMD -MP`. The documented `make clean all` is unaffected.
+
+### F7 (low, documentation drift)
+- `coder/plan/.../interface-contract.md` lists `web/render_timing.js` and says the specialist modules are "not yet delivered". `web/render_timing.js` does not exist, and both modules are delivered and linked.
+- `input_audio.c` says "sound disabled in engine". That is true because the Makefile does not define `FEATURE_SOUND`, but `doomfeatures.h` has the `#undef FEATURE_SOUND` line commented out. State where sound is turned off.
+
+### F8 (low, presentation)
+The canvas is a fixed 640x400 CSS size with no `image-rendering: pixelated`. It looks small and soft on large or HiDPI displays. The tests run at deviceScaleFactor 1 and cannot see this. The coder already listed it as not done.
+
+### F9 (process) Source revision is not reproducible
+All code under review is uncommitted. The evidence identifies `commit + dirty_diff_sha256`, but that diff is not preserved, only the status list. Action: save the patch under `artifacts/` (earlier runs did, as `initial-source.patch`), or commit.
+
+## Coverage limits (what this review and the passing evidence do not show)
+- Audio (A1), save persistence (P1), door use and level exit (G3), mouse, non-Chromium browsers and touch are unimplemented or UNVERIFIED. "Faithful play" has no oracle such as demo or determinism comparison. A verify pass proves none of these.
+- One headless Chromium run. Flakiness, hidden-tab timing (setTimeout throttling slows the ASYNCIFY loop in background tabs), IME/keyboard layouts and real headed focus loss are unassessed.
+- I did not rebuild, run the tests, or run fault injection. No claim is made that the checks catch faults beyond the tester's selftest.
+
+## Next action
+Coder: F1, F3, F4, F5, F6, F9. Tester: F2 plus an implementation-identity check (F5). Student: approve or replace the proposed criteria, and decide the audio/persistence scope. Manual interventions: none. Usage: not available.
+Role=coder_input_audio RUN_ID=20261103T002748Z-51080 TASK_ID=2-input ATTEMPT_ID=attempt-1.
+OUTPUT_DIR=artifacts/runs/20261103T002748Z-51080/coder_input_audio/2-input/attempt-1. Manifest: artifacts/runs/20261103T002748Z-51080/manifest.txt. Task: Implement/repair owned controls and documented audio/storage scope.
+Follow your configured role prompt. Read earlier findings under artifacts/runs/.
+Use artifacts/specification.md, artifacts/acceptance-criteria.md and
+artifacts/interface-contract.md if present. Otherwise use proposals under
+1-test
+prepare
+verify-005841Z
+)
+
+Calling Bash()
+
+Bash response → (
+// Browser keyboard capture for the Doom port (coder_input_audio-owned).
+// Maps KeyboardEvent.code -> doomkeys.h codes and forwards to the C queue
+// (cap_input_event / cap_input_reset). Self-installing; resolves `Module`
+// lazily, so script order relative to the Emscripten glue does not matter.
+// Load with: <script src="input_audio.js"></script>
+// Audio and persistence are not implemented here (scope undecided).
+(function () {
+  'use strict';
+
+  var KEYS = {
+    ArrowLeft: 0xac, ArrowRight: 0xae, ArrowUp: 0xad, ArrowDown: 0xaf,
+    ControlLeft: 0xa3, ControlRight: 0xa3, Space: 0xa2,
+    ShiftLeft: 0xb6, ShiftRight: 0xb6, AltLeft: 0xb8, AltRight: 0xb8,
+    Comma: 0xa0, Period: 0xa1, Enter: 13, NumpadEnter: 13, Escape: 27,
+    Tab: 9, Backspace: 0x7f, Pause: 0xff, Minus: 0x2d, Equal: 0x3d,
+    NumpadSubtract: 0x2d, NumpadAdd: 0x3d, Slash: 0x2f,
+    Home: 0xc7, End: 0xcf, PageUp: 0xc9, PageDown: 0xd1,
+    Insert: 0xd2, Delete: 0xd3,
+    Numpad8: 0xad, Numpad2: 0xaf, Numpad4: 0xac, Numpad6: 0xae,
+    F1: 0xbb, F2: 0xbc, F3: 0xbd, F4: 0xbe, F5: 0xbf, F6: 0xc0,
+    F7: 0xc1, F8: 0xc2, F9: 0xc3, F10: 0xc4, F11: 0xd7, F12: 0xd8
+  };
+
+  // KeyboardEvent.code -> doom key; 0 if unmapped.
+  function doomKey(code) {
+    if (Object.prototype.hasOwnProperty.call(KEYS, code)) return KEYS[code];
+    var m = /^Key([A-Z])$/.exec(code);
+    if (m) return m[1].toLowerCase().charCodeAt(0);
+    m = /^Digit(\d)$/.exec(code);
+    return m ? m[1].charCodeAt(0) : 0;
+  }
+
+  // Physical codes currently held (so keyup always matches its keydown even
+  // if the layout/modifiers changed in between).
+  var held = {};
+
+  function mod() { return window.Module; }
+  function ready() {
+    var M = mod();
+    return !!(M && M.calledRun && M._cap_input_event);
+  }
+
+  function send(pressed, key) {
+    if (ready()) mod()._cap_input_event(pressed, key);
+  }
+
+  function onKeyDown(e) {
+    var key = doomKey(e.code);
+    // Leave browser/OS shortcuts (Cmd+R, Ctrl is fire so only Meta is checked).
+    if (!key || e.metaKey) return;
+    e.preventDefault();
+    if (e.repeat || held[e.code]) return; // auto-repeat: Doom repeats itself
+    held[e.code] = key;
+    send(1, key);
+  }
+
+  function onKeyUp(e) {
+    var key = held[e.code];
+    if (!key) {
+      if (doomKey(e.code)) e.preventDefault();
+      return;
+    }
+    delete held[e.code];
+    e.preventDefault();
+    // Two physical keys can map to one doom key (left/right Ctrl): release
+    // only when no other held code maps to it.
+    for (var c in held) if (held[c] === key) return;
+    send(0, key);
+  }
+
+  // Focus/visibility loss: browsers drop keyups, so release everything.
+  function releaseAll() {
+    held = {};
+    if (ready() && mod()._cap_input_reset) mod()._cap_input_reset();
+  }
+
+  window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keyup', onKeyUp);
+  window.addEventListener('blur', releaseAll);
+  window.addEventListener('pagehide', releaseAll);
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) releaseAll();
+  });
+  // Ctrl+click / right-click opens a menu and swallows the matching keyup.
+  window.addEventListener('contextmenu', function (e) { e.preventDefault(); releaseAll(); });
+  // Cmd (macOS) swallows keyups for other keys while held.
+  window.addEventListener('keydown', function (e) { if (e.key === 'Meta') releaseAll(); });
+
+  window.CapInput = { doomKey: doomKey, releaseAll: releaseAll, held: function () { return Object.keys(held); } };
+})();
+artifacts/README.md
+attempt-1
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Doom (WASM)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    html, body { margin: 0; height: 100%; background: #000; }
+    body { display: flex; align-items: center; justify-content: center; }
+    canvas { background: #111; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="640" height="400"></canvas>
+  <script>
+    var Module = {
+      canvas: document.getElementById('canvas'),
+      print: function (t) { console.log(t); },
+      printErr: function (t) { console.warn(t); }
+    };
+  </script>
+  <script src="input_audio.js"></script>
+  <script src="doom.js"></script>
+</body>
+</html>
+)
+Status: I've read the prior reports and my files. I'm now fixing two reviewer findings in `web/input_audio.js`: F2 (a key still held after refocus is ignored) and F3 (it blocks browser shortcuts).
+Calling Bash()
+
+Bash response → (
+ok
+8308f801511da836740f717820318be323c738c2efb1a2cf23511ba9806091d2  web/input_audio.js
+20261103T002748Z-51080
+doom.data
+doom.js
+doom.wasm
+index.html
+input_audio.js
+)
+
+Calling Bash()
+
+Bash response → (
+// check passes. Env: DIST_DIR (default dist), OUT_DIR (evidence), SOAK_SECONDS (default 300),
+const DIST = path.resolve(root, process.env.DIST_DIR || 'dist');
+const OUT = path.resolve(root, process.env.OUT_DIR || `artifacts/runs/manual-${Date.now()}/tester/playtest`);
+const QUICK = process.env.QUICK === '1';
+const SOAK = QUICK ? 15 : Number(process.env.SOAK_SECONDS || 300);
+fs.mkdirSync(path.join(OUT, 'screens'), { recursive: true });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const out = { status: code === 0 ? 'PASS' : 'FAIL', quick: QUICK, soak_seconds: SOAK, failed, unverified, results, ...extra };
+  fs.writeFileSync(path.join(OUT, 'playtest-results.json'), JSON.stringify(out, null, 2));
+  fs.writeFileSync(path.join(OUT, 'browser-console.log'), log.join('\n'));
+  console.log(`playtest: ${out.status} failed=${failed} unverified(not-in-scope, listed)=${unverified}${QUICK ? ' QUICK=partial' : ''}`);
+exit 1
+FAIL       B0.dist-present /Users/sarahtseng/Projects/dist/20261103T002748Z-51080/coder_input_audio/index.html missing
+playtest: FAIL failed=1 unverified(not-in-scope, listed)=0 QUICK=partial
+2
+)
+The path was relative to the repo root, and I ran it from `tests/`. I'll rerun from the root.
+Calling Bash()
+
+Bash response → (
+exit 3
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3.door-use-and-level-exit no stable cross-build oracle; manual/protocol check
+playtest: FAIL failed=0 unverified(not-in-scope, listed)=3 QUICK=partial
+0
+)
+Failed=0; exit 3 is the by-design QUICK exit. Writing the report.
+Calling Bash()
+
+Bash response → "(Bash completed with no output)"
+I fixed two reviewer findings in `web/input_audio.js`. Audio, persistence and mouse are still not implemented. The status is FINDINGS, not PASS.
+
+- **Refocus (F2):** after the window lost focus, a key you were still holding was ignored until you released and re-pressed it. A repeat keydown for a key the script isn't tracking now counts as a fresh press.
+- **Browser shortcuts (F3):** F5, F11, F12 and Ctrl+letter or Ctrl+digit are still sent to Doom, but the page no longer blocks the browser's own handling of them.
+- **Still open:** audio and persistence have no approved scope, and mouse needs engine work I don't own. The coder-owned findings F1, F4, F5, F6 and F9 are untouched.
+
+The quick playtest on a role-local build had 0 failures and 3 unverified checks (audio, saves, door/level exit). It exits 3 by design in quick mode. The playtest has no check for either fix, so both are verified by code inspection only. The 15-second quick soak ran once, in headless Chromium.
+
+The tester should add checks for refocus-while-held and shortcut pass-through. The coder should rebuild so the updated `input_audio.js` reaches `dist/`. The student needs to decide the audio, persistence and mouse scope.
+
+Everything is in `artifacts/runs/20261103T002748Z-51080/coder_input_audio/2-input/attempt-1/`: `report.md`, `result.json`, the playtest log and evidence, and the build hashes.

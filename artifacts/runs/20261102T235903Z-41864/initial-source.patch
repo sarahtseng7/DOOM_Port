@@ -1,0 +1,169 @@
+diff --git a/loop/agents.yaml b/loop/agents.yaml
+index e69de29..c9fc6f1 100644
+--- a/loop/agents.yaml
++++ b/loop/agents.yaml
+@@ -0,0 +1,55 @@
++agents:
++  coder:
++    description: "Build, startup, and integration"
++    harness:
++      type: claude-code
++      model: sonnet
++      effort: medium
++    instruction: |
++      You are coder. Read loop/prompts/CODER.md and follow the task in your invocation.
++      Missing optional planning documents should lead to documented proposals, not repeated inactivity.
++  coder_render_timing:
++    description: "Rendering and timing"
++    harness:
++      type: claude-code
++      model: sonnet
++      effort: medium
++    instruction: |
++      You are coder_render_timing. Read loop/prompts/CODER_RENDER_TIMING.md and follow the task in your invocation.
++      Missing optional planning documents should lead to documented proposals, not repeated inactivity.
++  coder_input_audio:
++    description: "Controls and audio"
++    harness:
++      type: claude-code
++      model: sonnet
++      effort: medium
++    instruction: |
++      You are coder_input_audio. Read loop/prompts/CODER_INPUT_AUDIO.md and follow the task in your invocation.
++      Missing optional planning documents should lead to documented proposals, not repeated inactivity.
++  reviewer:
++    description: "Technical review"
++    harness:
++      type: claude-code
++      model: sonnet
++      effort: medium
++    instruction: |
++      You are reviewer. Read loop/prompts/REVIEWER.md and follow the task in your invocation.
++      Missing optional planning documents should lead to documented proposals, not repeated inactivity.
++  reviewer_requirements:
++    description: "Requirements and evidence review"
++    harness:
++      type: claude-code
++      model: sonnet
++      effort: medium
++    instruction: |
++      You are reviewer_requirements. Read loop/prompts/REVIEWER_REQUIREMENTS.md and follow the task in your invocation.
++      Missing optional planning documents should lead to documented proposals, not repeated inactivity.
++  tester:
++    description: "Test preparation and independent verification"
++    harness:
++      type: claude-code
++      model: sonnet
++      effort: medium
++    instruction: |
++      You are tester. Read loop/prompts/TESTER.md and follow the task in your invocation.
++      Missing optional planning documents should lead to documented proposals, not repeated inactivity.
+diff --git a/loop/loop.sh b/loop/loop.sh
+old mode 100644
+new mode 100755
+index 40c0cf4..e9962b1
+--- a/loop/loop.sh
++++ b/loop/loop.sh
+@@ -1,3 +1,99 @@
+-#!/bin/bash
++#!/usr/bin/env bash
++# Run from any directory: bash /path/to/repository/loop/loop.sh
++set -euo pipefail
++cd "$(dirname "${BASH_SOURCE[0]}")/.."
++MAX_ITERATIONS="${MAX_ITERATIONS:-10}"
++[[ "$MAX_ITERATIONS" =~ ^[1-9][0-9]*$ ]] || exit 2
++CONFIG="loop/agents.yaml"
++RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)-$$"
++RUN="artifacts/runs/$RUN_ID"
++mkdir -p "$RUN"
++trap 'echo ERROR_OR_INTERRUPTED > "$RUN/status.txt"' INT TERM
++printf 'RUNNING\n' > "$RUN/status.txt"
++# The harness uses Claude Code subscription login, not ANTHROPIC_API_KEY.
++if ! claude auth status --text || ! docker agent doctor "$CONFIG"; then
++  echo ERROR_AUTH_OR_CONFIGURATION > "$RUN/status.txt"
++  exit 2
++fi
++{
++  echo "run_id: $RUN_ID"
++  echo "source_commit: $(git rev-parse HEAD)"
++  echo "max_iterations: $MAX_ITERATIONS"
++  echo "AI-assisted runner and prompts; permission isolation is not implemented by this script."
++} > "$RUN/manifest.txt"
++git diff --binary HEAD > "$RUN/initial-source.patch"
++git status --short > "$RUN/initial-source-status.txt"
+ 
+-set -eu
+\ No newline at end of file
++run_agent() {
++  local agent="$1" stage="$2" task="$3"
++  local dir="$RUN/$agent/$stage/attempt-1"
++  mkdir -p "$dir"
++  LAST_RESULT="$dir/result.json"
++  local message="Role=$agent RUN_ID=$RUN_ID TASK_ID=$stage ATTEMPT_ID=attempt-1.
++OUTPUT_DIR=$dir. Run manifest: $RUN/manifest.txt. Task: $task
++Read current reports under $RUN and prior runs for unresolved findings.
++Student inputs, if present: artifacts/specification.md, artifacts/acceptance-criteria.md,
++artifacts/interface-contract.md. Fallback spec: $RUN/coder/plan/attempt-1/proposed-spec.md.
++Fallback contract: $RUN/coder/plan/attempt-1/interface-contract.md.
++Fallback criteria: $RUN/tester/prepare/attempt-1/proposed-criteria.md.
++Missing optional inputs: propose sensible requirements, record assumptions, and proceed.
++Do not invent student approval or modify approved/frozen criteria.
++Save report.md and result.json with status and summary in OUTPUT_DIR."
++  printf '%s\n' "$message" > "$dir/invocation.txt"
++  echo "Running $agent ($stage); log: $dir/agent.log"
++  if ! docker agent run "$CONFIG" --agent "$agent" --exec "$message" > "$dir/agent.log" 2>&1; then
++    echo ERROR_AGENT_PROCESS > "$RUN/status.txt"
++    echo "Agent command failed. Inspect $dir/agent.log" >&2
++    exit 2
++  fi
++  STATUS="$(python3 - "$LAST_RESULT" <<'PY'
++import json,sys
++try:
++    d=json.load(open(sys.argv[1]))
++    assert d['status'] in {'READY','PASS','FINDINGS','ERROR','NEEDS_INPUT'}
++    assert isinstance(d['summary'],str) and d['summary'].strip()
++    print(d['status'])
++except Exception as e:
++    print(f'Invalid/missing result file: {e}',file=sys.stderr)
++    sys.exit(2)
++PY
++)" || { echo ERROR_MISSING_RESULT > "$RUN/status.txt"; exit 2; }
++  echo "$agent: $STATUS"
++  if [[ "$STATUS" == ERROR || "$STATUS" == NEEDS_INPUT ]]; then
++    echo "$STATUS" > "$RUN/status.txt"
++    echo "Read $dir/report.md for the exact unresolved problem." >&2
++    exit 2
++  fi
++}
++
++# Draft missing inputs and prepare verification BEFORE implementing the port.
++run_agent coder plan "Plan only: write missing proposed spec/contract, establish the bridge header, and document interfaces. Do not implement the game yet."
++run_agent tester prepare "Write missing proposed criteria and actual verification scripts before implementation. Do not wait for a Makefile or playable game to write tests."
++
++for ((i=1; i<=MAX_ITERATIONS; i++)); do
++  echo "Iteration $i/$MAX_ITERATIONS"
++  run_agent coder "$i-build" "Implement/repair owned startup, Makefile and WAD packaging; address existing findings."
++  run_agent coder_render_timing "$i-render" "Implement/repair owned rendering and timing against the saved shared contract."
++  run_agent coder_input_audio "$i-input" "Implement/repair owned controls and documented audio/storage scope."
++  run_agent coder "$i-integrate" "Integrate specialist handoffs through owned files; run development build; do not edit tests."
++  run_agent reviewer "$i-review" "Review integrated technical correctness; route concrete findings to file owners."
++  REVIEW_STATUS="$STATUS"
++  run_agent tester "$i-test" "Run the existing protected suite; preserve failures; report genuine results without weakening checks."
++  TEST_STATUS="$STATUS"
++  run_agent reviewer_requirements "$i-audit" "Audit product/evaluation evidence; distinguish missing student approvals and homework demonstrations from implementation failures."
++  AUDIT_STATUS="$STATUS"
++  # Require both independent reports and an actual verification exit code.
++  # No production edits occur between tester execution and this final rerun.
++  if [[ "$REVIEW_STATUS" == PASS && "$TEST_STATUS" == PASS && -f tests/verify.sh ]]; then
++    if bash tests/verify.sh > "$RUN/verification-$i.log" 2>&1; then
++      echo CANDIDATE_PASSED_PENDING_STUDENT_ACCEPTANCE > "$RUN/status.txt"
++      echo "Product checks passed. Audit status: $AUDIT_STATUS. Evidence: $RUN"
++      echo "This does not certify missing student approvals, isolation, regression or resumption demonstrations."
++      exit 0
++    fi
++  fi
++  echo "Not verified yet; next iteration will address saved findings."
++done
++printf 'ITERATION_LIMIT\n' > "$RUN/status.txt"
++echo "Iteration limit reached. Read reports under $RUN."
++exit 1

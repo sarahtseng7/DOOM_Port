@@ -1,0 +1,11 @@
+import { chromium } from '/Users/sarahtseng/Projects/fellowship-loop-capstone/tests/node_modules/playwright/index.mjs';
+import http from 'node:http'; import fs from 'node:fs'; import path from 'node:path';
+const root=process.argv[2];
+const srv=http.createServer((q,r)=>{let p=path.join(root,q.url.split('?')[0]==='/'?'index.html':q.url.split('?')[0]);fs.readFile(p,(e,d)=>{if(e){r.writeHead(404);r.end();return}r.writeHead(200,{'content-type':p.endsWith('.wasm')?'application/wasm':p.endsWith('.js')?'text/javascript':p.endsWith('.html')?'text/html':'application/octet-stream'});r.end(d)})}).listen(0);
+const port=srv.address().port;
+const b=await chromium.launch();const pg=await b.newPage();const errs=[];
+pg.on('pageerror',e=>errs.push(String(e)));pg.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
+await pg.goto(`http://127.0.0.1:${port}/`);await pg.waitForTimeout(6000);
+await pg.keyboard.press('Enter');await pg.waitForTimeout(300);
+const r=await pg.evaluate(()=>({impl:Module._cap_input_impl(),del:Module._cap_input_delivered_count(),drop:Module._cap_input_dropped_count(),ver:Module._cap_bridge_version(),tics:Module._cap_tic_count()}));
+console.log(JSON.stringify({...r,errs}));await b.close();srv.close();

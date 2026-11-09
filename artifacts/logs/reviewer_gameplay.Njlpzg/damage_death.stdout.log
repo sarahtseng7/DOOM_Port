@@ -1,0 +1,14 @@
+PASS entered-e1m1 {"tic":388,"valid":1,"lvl":101,"hp":100,"x":1056,"y":-3616,"ang":1073741824,"sfx":3,"sfxReq":3,"sfxBad":0,"mus":3}
+facing 257 1056 -3664
+shot 0 hp 100 -> 36 pos 1040 -3664 -> 1077 -3501
+shot 1 hp 36 -> 0 pos 1040 -3664 -> 1077 -3501
+PASS rocket-splash-damages-player {"firstHit":{"pre":100,"post":36,"sfxDelta":3},"hpTrace":[100,36,0]}
+PASS damage-plays-sfx {"note":"launch + explosion/pain expected","firstHit":{"pre":100,"post":36,"sfxDelta":3}}
+PASS player-dies-at-zero-hp {"dead":{"tic":872,"valid":1,"lvl":101,"hp":0,"x":1077,"y":-3501,"ang":3066036224,"sfx":9,"sfxReq":9,"sfxBad":0,"mus":3},"hpTrace":[100,36,0]}
+PASS no-movement-while-dead {"moved":0,"dAng":0,"hp":0}
+PASS use-respawns-level-restart {"before":{"tic":992,"valid":1,"lvl":101,"hp":0,"x":1078,"y":-3499,"ang":3066036224,"sfx":9,"sfxReq":9,"sfxBad":0,"mus":3},"after":{"tic":1105,"valid":1,"lvl":101,"hp":100,"x":1056,"y":-3616,"ang":1073741824,"sfx":9,"sfxReq":9,"sfxBad":0,"mus":3}}
+PASS music-continues-on-respawn {"musicStartedPre":3,"musicStartedPost":3,"musicPlaying":true,"musicErrors":0,"lastPeak":0.06386741250753403}
+PASS movement-after-respawn {"moved":140.00357138301862}
+PASS audio-counters-clean {"sfxRequested":9,"sfxPlayed":9,"sfxBad":0}
+PASS no-page-errors []
+SUMMARY pass=10 fail=0

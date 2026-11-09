@@ -1,0 +1,52 @@
+PASS       B0.dist-present 
+PASS       B1.canvas-640x400 canvas#canvas intrinsic size
+PASS       B2.boot-renders-frame after 222ms colors=240
+PASS       B3.opaque-pixels transparentFrac=0
+FAIL       B4.channel-order meanR=30.7 meanB=109.8 (title/menu are warm; swap => blue)
+PASS       B5.no-load-errors 
+PASS       T1.main-thread-responsive 60.0 rAF/s over 3s (need >=20)
+PASS       M1.enter-opens-menu diff=0.234
+PASS       G1.level-started diff-from-menu=0.93 statusbarColors=86
+PASS       B6.level-colors E1M1 view not blue-biased
+PASS       G1b.engine-state-e1m1 {"x":1056,"y":-3616,"angle":1073741824,"health":100,"level":101}
+PASS       G2.idle-stable diff=0.0000
+PASS       I1.turn-right shift=-75px err=3.3 err0=6.0
+PASS       I2.turn-stops-on-release diff=0.0000
+PASS       I3.turn-left shift=76px
+PASS       I4.forward-moves start-vs-mid=0.694 still-moving=0.601
+PASS       I4b.forward-moves-player moved 409 map units (need >=32)
+PASS       I5.forward-stops-on-release settled=true after 2108ms (momentum allowed up to 4s); later-diff=0.0002
+PASS       I6.backward-returns start-to-fwd=409 start-to-back=93 map units (pixel diff for reference: 0.394 vs 0.496)
+PASS       I7a.turn-held-keeps-changing diff=0.3641 (precondition: key effective before blur)
+PASS       I7.blur-releases-keys settled=true after 501ms; later-diff=0.0000 (key still physically down)
+PASS       C1.fire-animates view-diff=0.0280
+PASS       C2.fire-decrements-ammo ammo-region-diff=0.140 (persisting after weapon returns to rest)
+PASS       C3.fire-stops-on-release diff=0.0000
+PASS       U1.automap-toggles diff=0.760
+PASS       U2.automap-returns diff=0.000
+PASS       U3.escape-opens-menu diff=0.241
+PASS       U4.escape-closes-menu diff=0.241
+PASS       U5.menu-freezes-player coasting-before-menu=25.5u/120ms; frozen-in-menu moved=0.0u tics=53 over 1.5s
+PASS       E1.browser-shortcuts-not-blocked {"f5":false,"ctrlR":false,"up":true}
+PASS       E2a.pagehide-releases-keys precondition-turning=true settled=true later-diff=0.0001
+PASS       E2b.hidden-releases-keys precondition-turning=true settled=true later-diff=0.0013
+PASS       E3.repeat-after-blur-is-fresh-press diff=0.3160 (view must turn again)
+PASS       E4.dual-ctrl-held-until-both-up held after one up=1, after both=0 (JS state; engine side not observable)
+PASS       I8.render-module-active Module._rt.frames 2996 -> 3066
+PASS       I9.input-module-identity {"impl":1,"delivered":52,"dropped":0}
+PASS       S1.canvas-scales-16x10 viewports 1280x720, 500x300, 1000x700, 800x600 all 16:10 and fit
+PASS       A0.audio-context-created state=running after user gestures (suspended => autoplay resume broken)
+PASS       A2.sfx-played-no-errors sfxPlayed=9 sfxBad=0 musicStarted=3 musicErrors=0 notes=1008
+PASS       A3.audible-peak audio clock advanced 2.00s/2s; maxPeak=0.485 (non-silent only, not correct sound)
+PASS       T2.35-tics-per-second 34.96 tics/s over 4s (need 35 +/-10%)
+PASS       R1.soak-no-errors 5s; errors=
+PASS       R2.soak-still-rendering rAF/s=62.2 visibleFrame=true
+PASS       R3.no-long-stalls max longtask=0ms (must be <1500)
+PASS       R4.soak-frames-changed sampled frames that differed: 1
+PASS       G3a.door-opens-on-use start=(1056,-3616) closed-at-start=true sector4 ceil 0->16 steps=13 end=(1519,-2452)
+PASS       G3b.walk-through-door door-opened=true entered-sector-4=true reached-beyond=true start-sector=38 sector-sequence=[3>4>0]
+UNVERIFIED A1.audio scope undecided; an active AudioContext would not prove correct sound/music
+UNVERIFIED P1.save-persistence scope undecided
+UNVERIFIED G3c.level-exit walking through the door is checked (G3b); no route/oracle yet for finishing E1M1 (needs scripted route or coder level-exit hook)
+UNVERIFIED H1.hidden-tab-timing headless Chromium cannot throttle a real background tab; run the manual protocol in tests/README.md (H1)
+playtest: FAIL failed=1 unverified(not-in-scope, listed)=4

@@ -1,0 +1,49 @@
+{
+ "res": [
+  {
+   "id": "P.pause-key-freezes-world",
+   "ok": true,
+   "d": {
+    "dPos": 0,
+    "dAng": 0,
+    "gameticDelta": 46
+   }
+  },
+  {
+   "id": "P.unpause-resumes-movement",
+   "ok": true,
+   "d": {
+    "dPos": 96.0052081920559
+   }
+  },
+  {
+   "id": "P.menu-freezes-while-key-held",
+   "ok": true,
+   "d": {
+    "dPos": 0,
+    "gameticDelta": 43
+   }
+  },
+  {
+   "id": "F.no-coast-or-stuck-after-menu-close",
+   "ok": true,
+   "d": {
+    "dPos": 8,
+    "note": "momentum from before the menu may resume after close"
+   }
+  },
+  {
+   "id": "F.stopped-after-menu-close",
+   "ok": true,
+   "d": {
+    "dPos": 0
+   }
+  },
+  {
+   "id": "E.no-page-errors",
+   "ok": true,
+   "d": []
+  }
+ ],
+ "errs": []
+}

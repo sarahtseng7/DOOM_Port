@@ -1,0 +1,19 @@
+127.0.0.1 - - [02/Nov/2026 19:11:53] "HEAD /doom.wasm HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 19:11:53] "HEAD /doom.data HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 19:11:57] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 19:11:57] "GET /input_audio.js HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 19:11:57] "GET /audio_web.js HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 19:11:57] "GET /render_timing.js HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 19:11:57] "GET /doom.js HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 19:11:57] "GET /doom.data HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 19:11:57] "GET /doom.wasm HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 19:11:57] code 404, message File not found
+127.0.0.1 - - [02/Nov/2026 19:11:57] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [02/Nov/2026 19:12:07] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 19:12:17] "GET /?r=2 HTTP/1.1" 200 -
+127.0.0.1 - - [02/Nov/2026 19:12:17] "GET /audio_web.js HTTP/1.1" 304 -
+127.0.0.1 - - [02/Nov/2026 19:12:17] "GET /input_audio.js HTTP/1.1" 304 -
+127.0.0.1 - - [02/Nov/2026 19:12:17] "GET /render_timing.js HTTP/1.1" 304 -
+127.0.0.1 - - [02/Nov/2026 19:12:17] "GET /doom.js HTTP/1.1" 304 -
+127.0.0.1 - - [02/Nov/2026 19:12:17] "GET /doom.data HTTP/1.1" 304 -
+127.0.0.1 - - [02/Nov/2026 19:12:17] "GET /doom.wasm HTTP/1.1" 304 -

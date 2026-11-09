@@ -1,0 +1,16 @@
+{
+  "note": "Values transcribed from the Playwright MCP tool results of this run (run 1: cold load; run 2: steady-state Escape). Full per-100ms sample series is in the run transcript; endpoints and the first-frame samples are reproduced here.",
+  "url_run1": "http://localhost:8000/?r=1793774607281",
+  "cache": "CDP Network.clearBrowserCache + setCacheDisabled(true)",
+  "responses": {"/?r=...":200,"/input_audio.js":200,"/audio_web.js":200,"/render_timing.js":200,"/doom.js":200,"/doom.data":200,"/doom.wasm":200},
+  "requestfailed": [], "pageerrors": [],
+  "console_run1": {"log":33,"warning":0,"error":0},
+  "pre_first_frame": {"t_ms":17,"tic":null,"colors":1,"transparent":2560,"title":"Doom (WASM)","canvas":"640x400"},
+  "first_frame": {"t_ms":122,"tic":2,"colors":192,"transparent":0,"mean_rgb":[110,50,30],"title":"DOOM Shareware"},
+  "tic_rate": {"from":{"t_ms":122,"tic":2},"to":{"t_ms":4977,"tic":172},"per_s":35.02},
+  "geometry_1280x720": {"x":64,"y":0,"w":1152,"h":720,"scroll":"1280x720","bridge_version":5},
+  "geometry_800x600": {"x":0,"y":50,"w":800,"h":500,"scroll":"800x600"},
+  "run1_escape_during_wipe": {"input_delivered_before":0,"after":4,"dropped":0,"observation":"menu not visible in either screenshot; Escapes buffered during melt wipe and processed together"},
+  "run2_escape_steady": {"ticStart":261,"delivered0":0,"delivered_after_esc1":2,"ticMenu":285,"ticClosed":301,"delivered_final":4,"dropped":0},
+  "console_run2_warnings": ["AudioContext was not allowed to start (audio_web.js:27)","AudioContext was not allowed to start (audio_web.js:53)"]
+}

@@ -1,0 +1,31 @@
+FINDINGS
+
+No source edits this run. None of the six reports in artifacts/reports/ names a reproducible defect in a coder-owned file. I ran no browser and no rebuild, so this stays FINDINGS, not PASS.
+
+## Source identity (checked this session)
+- HEAD e500c44 plus uncommitted changes. `git diff HEAD -- . ':!artifacts' | shasum -a 256` prefix 92e25d7245a7dafd, the same as every report.
+- dist/doom.wasm prefix 7afb94fa1ec64b5c. `find platform web Makefile -newer dist/doom.wasm` is empty and `make -n` prints "Nothing to be done".
+- artifacts/specification.md and artifacts/acceptance-criteria.md do not exist.
+
+## Specialist integration
+- coder_input_audio and coder_render_timing: no defects, no interface change requested. Their files are already integrated in the current build.
+- reviewer_site: PASS (cold load, 0 console errors, ~35 tics/s). reviewer_gameplay: all five probes pass. Both only relied on, not rerun.
+- tester: `tests/verify.sh` exit 0, 47 playtest checks pass, 7/7 injected faults caught (build 7afb94fa1ec64b5c).
+- Any edit would change the wasm hash and invalidate that evidence, with no defect to justify it, so I changed nothing.
+
+## Unresolved (owner)
+1. G3c level exit: UNVERIFIED. Needs a coder level-exit hook (bridge version bump) and a tester check. Nobody has requested it.
+2. A1 (audio by ear) and H1 (real hidden tab): UNVERIFIED. Owner: human, protocol in tests/README.md.
+3. Cosmetic, owner coder: the static `<title>` "Doom (WASM)" in web/index.html shows for ~110-300 ms. Bundle the fix with the next functional change.
+4. Tester: faults.sh expectations are off (swap-rb lists B6, which does not detect it; drop-use omits G3b).
+5. Student decisions: approving the criteria, WASD/mouse, OPL-faithful music, persistence.
+6. Not covered: Firefox, Safari, HiDPI, pickups, damage/death.
+
+## Assumptions
+- Doom's default keys are the control requirement.
+- Criteria are agent-proposed, not student-approved.
+- Manual interventions: none. Token usage: not available.
+- Writes: this OUTPUT_DIR only.
+
+## Next action
+If G3c is wanted: coder adds the hook and the title fix, rebuilds with emcc 4.0.18, and the tester reruns `tests/verify.sh` (timeout of at least 30 minutes). A human runs A1 and H1.
